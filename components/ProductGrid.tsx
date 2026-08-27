@@ -8,36 +8,76 @@ import NoProductAvailable from "./NoProductAvailable";
 import { Loader2 } from "lucide-react";
 import Container from "./Container";
 import HomeTabbar from "./HomeTabbar";
-import { productType } from "@/constants/data";
 import { Product } from "@/sanity.types";
 
 const ProductGrid = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedTab, setSelectedTab] = useState(productType[0]?.title || "");
-  const query = `*[_type == "product" && variant == $variant] | order(name asc){
-  ...,"categories": categories[]->title
-}`;
-  const params = { variant: selectedTab.toLowerCase() };
+  const [selectedTab, setSelectedTab] = useState("all");
+  const [productTypes, setProductTypes] = useState<Array<{ title: string; value: string }>>([]);
 
+  // Fetch categories from Sanity
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const query = `*[_type == "category" && showInNavigation == true && !defined(parent)] | order(order asc) {
+          title,
+          "value": slug.current
+        }`;
+        const data = await client.fetch(query);
+        setProductTypes(data || []);
+        if (data?.length > 0) {
+          setSelectedTab(data[0].title);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setProductTypes([]);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Fetch products based on selected tab
   useEffect(() => {
     const fetchData = async () => {
+      if (!selectedTab) return;
+      
       setLoading(true);
       try {
+        let query;
+        let params;
+        
+        if (selectedTab === "all") {
+          query = `*[_type == "product"] | order(name asc){
+            ...,"categories": categories[]->title
+          }`;
+          params = {};
+        } else {
+          // Find the slug for the selected tab
+          const selectedCategory = productTypes.find(cat => cat.title === selectedTab);
+          const categorySlug = selectedCategory?.value || selectedTab.toLowerCase();
+          
+          query = `*[_type == "product" && references(*[_type == "category" && slug.current == $categorySlug]._id)] | order(name asc){
+            ...,"categories": categories[]->title
+          }`;
+          params = { categorySlug };
+        }
+        
         const response = await client.fetch(query, params);
-        setProducts(await response);
+        setProducts(response);
       } catch (error) {
         console.log("Product fetching Error", error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [selectedTab]);
+  }, [selectedTab, productTypes]);
 
   return (
     <Container className="flex flex-col lg:px-0 my-10">
-      <HomeTabbar selectedTab={selectedTab} onTabSelect={setSelectedTab} />
+      <HomeTabbar selectedTab={selectedTab} onTabSelect={setSelectedTab} productTypes={productTypes} />
       {loading ? (
         <div className="flex flex-col items-center justify-center py-10 min-h-80 space-y-4 text-center bg-gray-100 rounded-lg w-full mt-10">
           <motion.div className="flex items-center space-x-2 text-blue-600">

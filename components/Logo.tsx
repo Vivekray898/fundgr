@@ -1,32 +1,44 @@
-import { cn } from "@/lib/utils";
-import Link from "next/link";
 import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Store } from "lucide-react";
 
-const Logo = ({
-  className,
-  spanDesign,
-}: {
-  className?: string;
-  spanDesign?: string;
-}) => {
+interface LogoProps {
+  logoData?: {
+    image?: {
+      asset?: {
+        url?: string;
+      };
+    };
+    alt?: string;
+    width?: number;
+    height?: number;
+  };
+}
+
+const Logo = ({ logoData }: LogoProps) => {
+  const logoUrl = logoData?.image?.asset?.url;
+  const alt = logoData?.alt || "Logo";
+  const width = logoData?.width || 180;
+  const height = logoData?.height || 50;
+
   return (
-    <Link href={"/"} className="inline-flex">
-      <h2
-        className={cn(
-          "text-2xl text-shop_dark_green font-black tracking-wider uppercase hover:text-shop_light_green hoverEffect group font-sans",
-          className
-        )}
-      >
-        Shopcar
-        <span
-          className={cn(
-            "text-shop_light_green group-hover:text-shop_dark_green hoverEffect",
-            spanDesign
-          )}
-        >
-          t
-        </span>
-      </h2>
+    <Link href="/" className="flex items-center gap-2">
+      {logoUrl ? (
+        <Image
+          src={logoUrl}
+          alt={alt}
+          width={width}
+          height={height}
+          className="w-auto h-auto"
+          priority
+        />
+      ) : (
+        <div className="flex items-center gap-2">
+          <Store className="w-8 h-8 text-shop_light_green" />
+          <span className="text-xl font-bold text-gray-800">Shop</span>
+        </div>
+      )}
     </Link>
   );
 };

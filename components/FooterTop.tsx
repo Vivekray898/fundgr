@@ -1,5 +1,7 @@
+// components/FooterTop.tsx
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import React from "react";
+import { getFooterData } from "@/sanity/queries/footer";
 
 interface ContactItemData {
   title: string;
@@ -7,38 +9,54 @@ interface ContactItemData {
   icon: React.ReactNode;
 }
 
-const data: ContactItemData[] = [
+const iconMap = {
+  mapPin: MapPin,
+  phone: Phone,
+  clock: Clock,
+  mail: Mail,
+};
+
+// Default data
+const defaultData: ContactItemData[] = [
   {
     title: "Visit Us",
     subtitle: "New Orlean, USA",
-    icon: (
-      <MapPin className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />
-    ),
+    icon: <MapPin className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />,
   },
   {
     title: "Call Us",
     subtitle: "+12 958 648 597",
-    icon: (
-      <Phone className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />
-    ),
+    icon: <Phone className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />,
   },
   {
     title: "Working Hours",
     subtitle: "Mon - Sat: 10:00 AM - 7:00 PM",
-    icon: (
-      <Clock className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />
-    ),
+    icon: <Clock className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />,
   },
   {
     title: "Email Us",
-    subtitle: "Shopcart@gmail.com",
-    icon: (
-      <Mail className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />
-    ),
+    subtitle: "FundGrube-Bestpreis@gmail.com",
+    icon: <Mail className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />,
   },
 ];
 
-const FooterTop = () => {
+const FooterTop = async () => {
+  const footerData = await getFooterData();
+  
+  // Map Sanity data to component data
+  const data: ContactItemData[] = footerData?.contactInfo?.items?.length > 0
+    ? footerData.contactInfo.items.map((item) => {
+        const IconComponent = iconMap[item.icon as keyof typeof iconMap] || MapPin;
+        return {
+          title: item.title,
+          subtitle: item.subtitle,
+          icon: (
+            <IconComponent className="h-6 w-6 text-gray-600 group-hover:text-primary transition-colors" />
+          ),
+        };
+      })
+    : defaultData;
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 border-b">
       {data?.map((item, index) => (

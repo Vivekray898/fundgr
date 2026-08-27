@@ -16,6 +16,7 @@ interface Props {
   categories: Category[];
   brands: BRANDS_QUERYResult;
 }
+
 const Shop = ({ categories, brands }: Props) => {
   const searchParams = useSearchParams();
   const brandParams = searchParams?.get("brand");
@@ -29,6 +30,7 @@ const Shop = ({ categories, brands }: Props) => {
     brandParams || null
   );
   const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -39,24 +41,57 @@ const Shop = ({ categories, brands }: Props) => {
         minPrice = min;
         maxPrice = max;
       }
-      const query = `
-      *[_type == 'product' 
-        && (!defined($selectedCategory) || references(*[_type == "category" && slug.current == $selectedCategory]._id))
-        && (!defined($selectedBrand) || references(*[_type == "brand" && slug.current == $selectedBrand]._id))
-        && price >= $minPrice && price <= $maxPrice
-      ] 
-      | order(name asc) {
-        ...,"categories": categories[]->title
+
+      // Build the query based on selected filters
+      let query;
+      let params: any = { minPrice, maxPrice };
+
+      if (selectedCategory) {
+        // Filter by category slug (works for both parent and child categories)
+        query = `
+          *[_type == 'product' 
+            && references(*[_type == "category" && slug.current == $selectedCategory]._id)
+            && (!defined($selectedBrand) || references(*[_type == "brand" && slug.current == $selectedBrand]._id))
+            && price >= $minPrice && price <= $maxPrice
+          ] 
+          | order(name asc) {
+            ...,"categories": categories[]->title
+          }
+        `;
+        params = { ...params, selectedCategory, selectedBrand };
+      } else if (selectedBrand) {
+        // If only brand is selected
+        query = `
+          *[_type == 'product' 
+            && references(*[_type == "brand" && slug.current == $selectedBrand]._id)
+            && price >= $minPrice && price <= $maxPrice
+          ] 
+          | order(name asc) {
+            ...,"categories": categories[]->title
+          }
+        `;
+        params = { ...params, selectedBrand };
+      } else {
+        // No filters - show all products
+        query = `
+          *[_type == 'product' 
+            && price >= $minPrice && price <= $maxPrice
+          ] 
+          | order(name asc) {
+            ...,"categories": categories[]->title
+          }
+        `;
       }
-    `;
-      const data = await client.fetch(
-        query,
-        { selectedCategory, selectedBrand, minPrice, maxPrice },
-        { next: { revalidate: 0 } }
-      );
+
+      console.log("Query:", query);
+      console.log("Params:", params);
+
+      const data = await client.fetch(query, params, { next: { revalidate: 0 } });
+      console.log("Products fetched:", data);
       setProducts(data);
     } catch (error) {
       console.log("Shop product fetching Error", error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -65,6 +100,12 @@ const Shop = ({ categories, brands }: Props) => {
   useEffect(() => {
     fetchProducts();
   }, [selectedCategory, selectedBrand, selectedPrice]);
+
+  // Filter to only TOP-LEVEL categories (no parent)
+  const topLevelCategories = categories?.filter(
+    (category) => !category.parent
+  );
+
   return (
     <div className="border-t">
       <Container className="mt-5">
@@ -92,7 +133,7 @@ const Shop = ({ categories, brands }: Props) => {
         <div className="flex flex-col md:flex-row gap-5 border-t border-t-shop_dark_green/50">
           <div className="md:sticky md:top-20 md:self-start md:h-[calc(100vh-160px)] md:overflow-y-auto md:min-w-64 pb-5 md:border-r border-r-shop_btn_dark_green/50 scrollbar-hide">
             <CategoryList
-              categories={categories}
+              categories={topLevelCategories}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
             />

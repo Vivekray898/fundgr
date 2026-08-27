@@ -1,3 +1,4 @@
+// sanity/queries/index.ts
 import { sanityFetch } from "../lib/live";
 import {
   BLOG_CATEGORIES,
@@ -15,13 +16,23 @@ import {
 const getCategories = async (quantity?: number) => {
   try {
     const query = quantity
-      ? `*[_type == 'category'] | order(name asc) [0...$quantity] {
+      ? `*[_type == 'category' && !defined(parent)] | order(name asc) [0...$quantity] {
           ...,
-          "productCount": count(*[_type == "product" && references(^._id)])
+          "productCount": count(*[_type == "product" && references(^._id)]),
+          "children": *[_type == "category" && parent._ref == ^._id] | order(name asc) {
+            _id,
+            title,
+            "slug": slug.current
+          }
         }`
-      : `*[_type == 'category'] | order(name asc) {
+      : `*[_type == 'category' && !defined(parent)] | order(name asc) {
           ...,
-          "productCount": count(*[_type == "product" && references(^._id)])
+          "productCount": count(*[_type == "product" && references(^._id)]),
+          "children": *[_type == "category" && parent._ref == ^._id] | order(name asc) {
+            _id,
+            title,
+            "slug": slug.current
+          }
         }`;
     const { data } = await sanityFetch({
       query,
@@ -53,6 +64,7 @@ const getLatestBlogs = async () => {
     return [];
   }
 };
+
 const getDealProducts = async () => {
   try {
     const { data } = await sanityFetch({ query: DEAL_PRODUCTS });
@@ -62,6 +74,7 @@ const getDealProducts = async () => {
     return [];
   }
 };
+
 const getProductBySlug = async (slug: string) => {
   try {
     const product = await sanityFetch({
@@ -76,6 +89,7 @@ const getProductBySlug = async (slug: string) => {
     return null;
   }
 };
+
 const getBrand = async (slug: string) => {
   try {
     const product = await sanityFetch({
@@ -90,6 +104,7 @@ const getBrand = async (slug: string) => {
     return null;
   }
 };
+
 const getMyOrders = async (userId: string) => {
   try {
     const orders = await sanityFetch({
@@ -102,6 +117,7 @@ const getMyOrders = async (userId: string) => {
     return null;
   }
 };
+
 const getAllBlogs = async (quantity: number) => {
   try {
     const { data } = await sanityFetch({
@@ -127,6 +143,7 @@ const getSingleBlog = async (slug: string) => {
     return [];
   }
 };
+
 const getBlogCategories = async () => {
   try {
     const { data } = await sanityFetch({
@@ -151,6 +168,7 @@ const getOthersBlog = async (slug: string, quantity: number) => {
     return [];
   }
 };
+
 export {
   getCategories,
   getAllBrands,

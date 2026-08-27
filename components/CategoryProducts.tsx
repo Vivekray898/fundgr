@@ -5,9 +5,10 @@ import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { client } from "@/sanity/lib/client";
 import { AnimatePresence, motion } from "motion/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import NoProductAvailable from "./NoProductAvailable";
 import ProductCard from "./ProductCard";
+
 interface Props {
   categories: Category[];
   slug: string;
@@ -17,11 +18,20 @@ const CategoryProducts = ({ categories, slug }: Props) => {
   const [currentSlug, setCurrentSlug] = useState(slug);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const router = useRouter();
+
+  // Filter to only TOP-LEVEL categories (no parent)
+  const topLevelCategories = categories?.filter((category) => !category.parent);
+
   const handleCategoryChange = (newSlug: string) => {
-    if (newSlug === currentSlug) return; // Prevent unnecessary updates
+    if (newSlug === currentSlug) return;
     setCurrentSlug(newSlug);
-    router.push(`/category/${newSlug}`, { scroll: false }); // Update URL without
+    router.push(`/category/${newSlug}`, { scroll: false });
+  };
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
   const fetchProducts = async (categorySlug: string) => {
@@ -40,22 +50,58 @@ const CategoryProducts = ({ categories, slug }: Props) => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchProducts(currentSlug);
-  }, [router]);
+  }, [currentSlug]);
 
   return (
     <div className="py-5 flex flex-col md:flex-row items-start gap-5">
       <div className="flex flex-col md:min-w-40 border">
-        {categories?.map((item) => (
-          <Button
-            onClick={() => handleCategoryChange(item?.slug?.current as string)}
-            key={item?._id}
-            className={`bg-transparent border-0 p-0  rounded-none text-darkColor shadow-none hover:bg-shop_orange hover:text-white font-semibold hoverEffect border-b last:border-b-0 transition-colors capitalize ${item?.slug?.current === currentSlug && "bg-shop_orange text-white border-shop_orange"}`}
-          >
-            <p className="w-full text-left px-2">{item?.title}</p>
-          </Button>
-        ))}
+        {topLevelCategories?.map((item) => {
+          const hasChildren = item.children && item.children.length > 0;
+          const isExpanded = expandedCategory === item._id;
+          
+          return (
+            <div key={item?._id}>
+              <Button
+                onClick={() => handleCategoryChange(item?.slug?.current as string)}
+                className={`bg-transparent border-0 p-0 rounded-none text-darkColor shadow-none hover:bg-shop_orange hover:text-white font-semibold hoverEffect border-b last:border-b-0 transition-colors capitalize ${
+                  item?.slug?.current === currentSlug && "bg-shop_orange text-white border-shop_orange"
+                }`}
+              >
+                <p className="w-full text-left px-2 flex items-center justify-between">
+                  {item?.title}
+                  {hasChildren && (
+                    <ChevronDown 
+                      className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleCategory(item?._id);
+                      }}
+                    />
+                  )}
+                </p>
+              </Button>
+              
+              {hasChildren && isExpanded && (
+                <div className="bg-gray-50 border-b">
+                  {item.children?.map((child: any) => (
+                    <Button
+                      key={child?._id}
+                      onClick={() => handleCategoryChange(child?.slug?.current as string)}
+                      className={`bg-transparent border-0 p-0 rounded-none text-darkColor shadow-none hover:bg-shop_orange hover:text-white font-semibold hoverEffect transition-colors capitalize w-full pl-6 text-sm ${
+                        child?.slug?.current === currentSlug && "bg-shop_orange text-white"
+                      }`}
+                    >
+                      <p className="w-full text-left px-2 py-2">{child?.title}</p>
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="flex-1">
         {loading ? (

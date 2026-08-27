@@ -43,6 +43,51 @@ export const categoryType = defineType({
         hotspot: true,
       },
     }),
+    // Parent category for subcategories
+    defineField({
+      name: "parent",
+      title: "Parent Category",
+      type: "reference",
+      to: [{ type: "category" }],
+      description: "Select a parent category if this is a subcategory",
+    }),
+    // Order for sorting
+    defineField({
+      name: "order",
+      title: "Order",
+      type: "number",
+      initialValue: 0,
+      description: "Order in which categories appear",
+    }),
+    // Show in navigation
+    defineField({
+      name: "showInNavigation",
+      title: "Show in Navigation",
+      type: "boolean",
+      initialValue: true,
+      description: "Show this category in the main navigation",
+    }),
+    // Icon for navigation
+    defineField({
+      name: "icon",
+      title: "Icon",
+      type: "string",
+      options: {
+        list: [
+          { title: "Garden", value: "garden" },
+          { title: "Tools", value: "tools" },
+          { title: "Wood", value: "wood" },
+          { title: "Auto", value: "auto" },
+          { title: "Paint", value: "paint" },
+          { title: "Plumbing", value: "plumbing" },
+          { title: "Tiles", value: "tiles" },
+          { title: "Lighting", value: "lighting" },
+          { title: "Pets", value: "pets" },
+          { title: "Kitchen", value: "kitchen" },
+          { title: "Gift", value: "gift" },
+        ],
+      },
+    }),
   ],
   preview: {
     select: {
@@ -51,4 +96,12 @@ export const categoryType = defineType({
       media: "image",
     },
   },
+  // Order by order field
+  orderings: [
+    {
+      title: "Order",
+      name: "orderAsc",
+      by: [{ field: "order", direction: "asc" }],
+    },
+  ],
 });
