@@ -1,3 +1,4 @@
+// app/(client)/riff-raff/[slug]/page.tsx
 import Container from "@/components/Container";
 import Title from "@/components/Title";
 import { SINGLE_BLOG_QUERYResult } from "@/sanity.types";
@@ -8,12 +9,16 @@ import {
   getSingleBlog,
 } from "@/sanity/queries";
 import dayjs from "dayjs";
-import { Calendar, ChevronLeftIcon, Pencil } from "lucide-react";
+import "dayjs/locale/de";
+import { Calendar, ChevronLeft, User, Tag, Clock, ArrowRight } from "lucide-react";
 import { PortableText } from "next-sanity";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
+
+// Set German locale for dayjs
+dayjs.locale("de");
 
 const SingleBlogPage = async ({
   params,
@@ -25,215 +30,263 @@ const SingleBlogPage = async ({
   if (!blog) return notFound();
 
   return (
-    <div className="py-10">
-      <Container className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-        <div className="md:col-span-3">
+    <div className="py-6 sm:py-10 bg-white">
+      <Container className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-10">
+        {/* Main Content */}
+        <div className="lg:col-span-3">
+          {/* Back Button */}
+          <Link 
+            href="/riff-raff" 
+            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-rose-500 transition-colors mb-4"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Zurück zum Blog</span>
+          </Link>
+
+          {/* Main Image */}
           {blog?.mainImage && (
-            <Image
-              src={urlFor(blog?.mainImage).url()}
-              alt={blog.title || "Blog Image"}
-              width={800}
-              height={800}
-              className="w-full max-h-[500px] object-cover rounded-lg"
-            />
+            <div className="rounded-xl overflow-hidden mb-6">
+              <Image
+                src={urlFor(blog?.mainImage).url()}
+                alt={blog.title || "Blog Image"}
+                width={800}
+                height={500}
+                className="w-full max-h-[400px] object-cover"
+              />
+            </div>
           )}
-          <div>
-            <div className="text-xs flex items-center gap-5 my-7">
-              <div className="flex items-center relative group cursor-pointer">
-                {blog?.blogcategories?.map(
-                  (item: { title: string }, index: number) => (
-                    <p
-                      key={index}
-                      className="font-semibold text-shop_dark_green tracking-wider"
-                    >
-                      {item?.title}
-                    </p>
-                  )
-                )}
-                <span className="absolute left-0 -bottom-1.5 bg-lightColor/30 inline-block w-full h-[2px] group-hover:bg-shop_dark_green hover:cursor-pointer hoverEffect" />
+
+          {/* Meta Info */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm text-gray-500 mb-4">
+            {blog?.blogcategories && blog.blogcategories.length > 0 && (
+              <div className="flex items-center gap-1">
+                <Tag className="w-4 h-4 text-rose-400" />
+                {blog.blogcategories.map((item: { title: string }, index: number) => (
+                  <span key={index} className="font-medium text-rose-600">
+                    {item?.title}
+                    {index < blog.blogcategories.length - 1 && ", "}
+                  </span>
+                ))}
               </div>
-              <p className="flex items-center gap-1 text-lightColor relative group hover:cursor-pointer hover:text-shop_dark_green hoverEffect">
-                <Pencil size={15} /> {blog?.author?.name}
-                <span className="absolute left-0 -bottom-1.5 bg-lightColor/30 inline-block w-full h-[2px] group-hover:bg-shop_dark_green hoverEffect" />
-              </p>
-              <p className="flex items-center gap-1 text-lightColor relative group hover:cursor-pointer hover:text-shop_dark_green hoverEffect">
-                <Calendar size={15} />{" "}
-                {dayjs(blog.publishedAt).format("MMMM D, YYYY")}
-                <span className="absolute left-0 -bottom-1.5 bg-lightColor/30 inline-block w-full h-[2px] group-hover:bg-shop_dark_green hoverEffect" />
-              </p>
-            </div>
-            <h2 className="text-2xl font-bold my-5">{blog?.title}</h2>
-            <div className="flex flex-col">
-              <div className="text-lightColor">
-                <div>
-                  {blog.body && (
-                    <PortableText
-                      value={blog.body}
-                      components={{
-                        block: {
-                          normal: ({ children }) => (
-                            <p className="my-5 text-base/8 first:mt-0 last:mb-0">
-                              {children}
-                            </p>
-                          ),
-                          h2: ({ children }) => (
-                            <h2 className="my-5 text-2xl/8 font-medium tracking-tight text-gray-950 first:mt-0 last:mb-0">
-                              {children}
-                            </h2>
-                          ),
-                          h3: ({ children }) => (
-                            <h3 className="my-5 text-xl/8 font-medium tracking-tight text-gray-950 first:mt-0 last:mb-0">
-                              {children}
-                            </h3>
-                          ),
-                          blockquote: ({ children }) => (
-                            <blockquote className="my-5 border-l-2 border-l-gray-300 pl-6 text-base/8 text-gray-950 first:mt-0 last:mb-0">
-                              {children}
-                            </blockquote>
-                          ),
-                        },
-                        types: {
-                          image: ({ value }) => (
-                            <Image
-                              alt={value.alt || ""}
-                              src={urlFor(value).width(2000).url()}
-                              className="w-full rounded-2xl"
-                              width={1400}
-                              height={1000}
-                            />
-                          ),
-                          separator: ({ value }) => {
-                            switch (value.style) {
-                              case "line":
-                                return (
-                                  <hr className="my-5 border-t border-gray-200" />
-                                );
-                              case "space":
-                                return <div className="my-5" />;
-                              default:
-                                return null;
-                            }
-                          },
-                        },
-                        list: {
-                          bullet: ({ children }) => (
-                            <ul className="list-disc pl-4 text-base/8 marker:text-gray-400">
-                              {children}
-                            </ul>
-                          ),
-                          number: ({ children }) => (
-                            <ol className="list-decimal pl-4 text-base/8 marker:text-gray-400">
-                              {children}
-                            </ol>
-                          ),
-                        },
-                        listItem: {
-                          bullet: ({ children }) => {
-                            return (
-                              <li className="my-2 pl-2 has-[br]:mb-8">
-                                {children}
-                              </li>
-                            );
-                          },
-                          number: ({ children }) => {
-                            return (
-                              <li className="my-2 pl-2 has-[br]:mb-8">
-                                {children}
-                              </li>
-                            );
-                          },
-                        },
-                        marks: {
-                          strong: ({ children }) => (
-                            <strong className="font-semibold text-gray-950">
-                              {children}
-                            </strong>
-                          ),
-                          code: ({ children }) => (
-                            <>
-                              <span aria-hidden>`</span>
-                              <code className="text-[15px]/8 font-semibold text-gray-950">
-                                {children}
-                              </code>
-                              <span aria-hidden>`</span>
-                            </>
-                          ),
-                          link: ({ value, children }) => {
-                            return (
-                              <Link
-                                href={value.href}
-                                className="font-medium text-gray-950 underline decoration-gray-400 underline-offset-4 data-[hover]:decoration-gray-600"
-                              >
-                                {children}
-                              </Link>
-                            );
-                          },
-                        },
-                      }}
-                    />
-                  )}
-                  <div className="mt-10">
-                    <Link href="/blog" className="flex items-center gap-1">
-                      <ChevronLeftIcon className="size-5" />
-                      <span className="text-sm font-semibold">
-                        Back to blog
-                      </span>
-                    </Link>
-                  </div>
-                </div>
+            )}
+            {blog?.author && (
+              <div className="flex items-center gap-1">
+                <User className="w-4 h-4 text-rose-400" />
+                <span>{blog.author.name}</span>
               </div>
+            )}
+            {blog?.publishedAt && (
+              <div className="flex items-center gap-1">
+                <Calendar className="w-4 h-4 text-rose-400" />
+                <span>{dayjs(blog.publishedAt).format("DD. MMMM YYYY")}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Title */}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+            {blog?.title}
+          </h1>
+
+          {/* Excerpt */}
+          {blog?.excerpt && (
+            <div className="text-base sm:text-lg text-gray-600 bg-rose-50/50 border border-rose-100 rounded-xl p-4 mb-6 italic">
+              {blog.excerpt}
             </div>
+          )}
+
+          {/* Body Content */}
+          <div className="prose prose-rose max-w-none prose-headings:text-gray-800 prose-p:text-gray-600 prose-a:text-rose-500 hover:prose-a:text-rose-600 prose-strong:text-gray-800 prose-li:text-gray-600">
+            {blog.body && (
+              <PortableText
+                value={blog.body}
+                components={{
+                  block: {
+                    normal: ({ children }) => (
+                      <p className="my-4 text-base/7 first:mt-0 last:mb-0">
+                        {children}
+                      </p>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="my-6 text-2xl font-bold text-gray-800 first:mt-0 last:mb-0">
+                        {children}
+                      </h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="my-5 text-xl font-semibold text-gray-800 first:mt-0 last:mb-0">
+                        {children}
+                      </h3>
+                    ),
+                    h4: ({ children }) => (
+                      <h4 className="my-4 text-lg font-semibold text-gray-800 first:mt-0 last:mb-0">
+                        {children}
+                      </h4>
+                    ),
+                    blockquote: ({ children }) => (
+                      <blockquote className="my-4 border-l-4 border-rose-300 pl-4 text-gray-600 italic first:mt-0 last:mb-0">
+                        {children}
+                      </blockquote>
+                    ),
+                  },
+                  types: {
+                    image: ({ value }) => (
+                      <div className="my-6 rounded-xl overflow-hidden">
+                        <Image
+                          alt={value.alt || "Blog image"}
+                          src={urlFor(value).width(800).url()}
+                          className="w-full rounded-xl"
+                          width={800}
+                          height={500}
+                        />
+                        {value.alt && (
+                          <p className="text-sm text-gray-400 text-center mt-2">
+                            {value.alt}
+                          </p>
+                        )}
+                      </div>
+                    ),
+                  },
+                  list: {
+                    bullet: ({ children }) => (
+                      <ul className="list-disc pl-5 space-y-1 text-gray-600">
+                        {children}
+                      </ul>
+                    ),
+                    number: ({ children }) => (
+                      <ol className="list-decimal pl-5 space-y-1 text-gray-600">
+                        {children}
+                      </ol>
+                    ),
+                  },
+                  listItem: {
+                    bullet: ({ children }) => (
+                      <li className="my-1">{children}</li>
+                    ),
+                    number: ({ children }) => (
+                      <li className="my-1">{children}</li>
+                    ),
+                  },
+                  marks: {
+                    strong: ({ children }) => (
+                      <strong className="font-semibold text-gray-800">
+                        {children}
+                      </strong>
+                    ),
+                    em: ({ children }) => (
+                      <em className="italic text-gray-600">{children}</em>
+                    ),
+                    link: ({ value, children }) => (
+                      <Link
+                        href={value.href}
+                        className="text-rose-500 hover:text-rose-600 underline underline-offset-2 transition-colors"
+                        target={value.href.startsWith("http") ? "_blank" : undefined}
+                        rel={value.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                      >
+                        {children}
+                      </Link>
+                    ),
+                  },
+                }}
+              />
+            )}
+          </div>
+
+          {/* Back to Blog */}
+          <div className="mt-8 pt-6 border-t border-rose-100">
+            <Link
+              href="/riff-raff"
+              className="inline-flex items-center gap-2 text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Zurück zum Blog</span>
+            </Link>
           </div>
         </div>
-        <BlogLeft slug={slug} />
+
+        {/* Sidebar */}
+        <BlogSidebar slug={slug} />
       </Container>
     </div>
   );
 };
 
-const BlogLeft = async ({ slug }: { slug: string }) => {
+const BlogSidebar = async ({ slug }: { slug: string }) => {
   const categories = await getBlogCategories();
   const blogs = await getOthersBlog(slug, 5);
 
+  // Count blogs per category
+  const categoryCounts: { [key: string]: number } = {};
+  categories?.forEach((item: any) => {
+    const catTitle = item?.blogcategories?.[0]?.title;
+    if (catTitle) {
+      categoryCounts[catTitle] = (categoryCounts[catTitle] || 0) + 1;
+    }
+  });
+
   return (
-    <div>
-      <div className="border border-lightColor p-5 rounded-md">
-        <Title className="text-base">Blog Categories</Title>
-        <div className="space-y-2 mt-2">
-          {categories?.map(({ blogcategories }, index) => (
+    <div className="space-y-6">
+      {/* Categories */}
+      <div className="border border-rose-100 rounded-xl p-4 sm:p-5 bg-white">
+        <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <Tag className="w-4 h-4 text-rose-500" />
+          Blog-Kategorien
+        </h3>
+        <div className="space-y-2">
+          {Object.entries(categoryCounts).map(([title, count], index) => (
             <div
               key={index}
-              className="text-lightColor flex items-center justify-between text-sm font-medium"
+              className="flex items-center justify-between text-sm hover:bg-rose-50 rounded-lg px-2 py-1.5 transition-colors"
             >
-              <p>{blogcategories[0]?.title}</p>
-              <p className="text-darkColor font-semibold">{`(1)`}</p>
+              <span className="text-gray-600">{title}</span>
+              <span className="text-xs font-semibold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full">
+                {count}
+              </span>
             </div>
           ))}
+          {Object.keys(categoryCounts).length === 0 && (
+            <p className="text-sm text-gray-400">Keine Kategorien vorhanden</p>
+          )}
         </div>
       </div>
-      <div className="border border-lightColor p-5 rounded-md mt-10">
-        <Title className="text-base">Latest Blogs</Title>
-        <div className="space-y-4 mt-4">
-          {blogs?.map((blog: Blog, index: number) => (
+
+      {/* Latest Blogs */}
+      <div className="border border-rose-100 rounded-xl p-4 sm:p-5 bg-white">
+        <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-rose-500" />
+          Neueste Beiträge
+        </h3>
+        <div className="space-y-3">
+          {blogs?.map((blog: any, index: number) => (
             <Link
-              href={`/blog/${blog?.slug?.current}`}
+              href={`/riff-raff/${blog?.slug?.current}`}
               key={index}
-              className="flex items-center gap-2 group"
+              className="flex items-center gap-3 group p-2 rounded-lg hover:bg-rose-50 transition-colors"
             >
               {blog?.mainImage && (
                 <Image
                   src={urlFor(blog?.mainImage).url()}
-                  alt="blogImage"
-                  width={100}
-                  height={100}
-                  className="w-16 h-16 rounded-full object-cover border-[1px] border-shop_dark_green/10 group-hover:border-shop_dark_green hoverEffect"
+                  alt={blog?.title || "Blog"}
+                  width={60}
+                  height={60}
+                  className="w-14 h-14 rounded-lg object-cover border border-rose-100 group-hover:border-rose-300 transition-colors flex-shrink-0"
                 />
               )}
-              <p className="line-clamp-2 text-sm text-lightColor group-hover:text-shop_dark_green hoverEffect">
-                {blog?.title}
-              </p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-700 line-clamp-2 group-hover:text-rose-500 transition-colors">
+                  {blog?.title}
+                </p>
+                {blog?.publishedAt && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {dayjs(blog.publishedAt).format("DD. MMM YYYY")}
+                  </p>
+                )}
+              </div>
+              <ArrowRight className="w-4 h-4 text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
             </Link>
           ))}
+          {(!blogs || blogs.length === 0) && (
+            <p className="text-sm text-gray-400">Keine weiteren Beiträge</p>
+          )}
         </div>
       </div>
     </div>

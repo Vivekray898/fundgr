@@ -4,8 +4,10 @@ import Container from "@/components/Container";
 import FavoriteButton from "@/components/FavoriteButton";
 import ImageView from "@/components/ImageView";
 import PriceView from "@/components/PriceView";
+import RelatedProducts from "@/components/RelatedProducts";
+import RecentlyViewed from "@/components/RecentlyViewed";
 import ProductCharacteristics from "@/components/ProductCharacteristics";
-import { getProductBySlug } from "@/sanity/queries";
+import { getProductBySlug, getRelatedProducts } from "@/sanity/queries";
 import { getSettings } from "@/sanity/queries/settings";
 import { 
   CornerDownLeft, 
@@ -15,8 +17,7 @@ import {
   Share2, 
   MessageCircle, 
   Scale, 
-  Package,
-  Heart
+  Package
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import React from "react";
@@ -36,6 +37,13 @@ const SingleProductPage = async ({
   if (!product) {
     return notFound();
   }
+
+  // Fetch related products based on categories
+  const relatedProducts = await getRelatedProducts({
+    currentProductId: product._id,
+    categoryIds: product.categories?.map((cat: any) => cat._id) || [],
+    limit: 8,
+  });
 
   const isCatalogueMode = settings?.catalogueMode?.enabled || false;
   const pricePlaceholder = settings?.catalogueMode?.pricePlaceholder || "Preis im Markt erhältlich";
@@ -68,7 +76,7 @@ const SingleProductPage = async ({
         {/* Back Button */}
         <Link 
           href="/shop" 
-          className="inline-flex items-center gap-1 text-xs sm:text-sm text-gray-400 hover:text-blue-600 mb-3 sm:mb-4 transition-colors"
+          className="inline-flex items-center gap-1 text-xs sm:text-sm text-gray-400 hover:text-rose-500 mb-3 sm:mb-4 transition-colors"
         >
           <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           <span>Zurück</span>
@@ -96,7 +104,7 @@ const SingleProductPage = async ({
                     return (
                       <span 
                         key={index}
-                        className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full"
+                        className="text-[10px] font-medium text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full"
                       >
                         {categoryTitle}
                       </span>
@@ -119,8 +127,8 @@ const SingleProductPage = async ({
                     <StarIcon
                       key={index}
                       size={14}
-                      className="text-yellow-400"
-                      fill="#facc15"
+                      className="text-rose-400"
+                      fill="#f43f5e"
                     />
                   ))}
                 </div>
@@ -132,7 +140,7 @@ const SingleProductPage = async ({
             </div>
 
             {/* Price & Stock */}
-            <div className="border-t border-b border-gray-100 py-3 mb-3">
+            <div className="border-t border-b border-rose-100 py-3 mb-3">
               {!isCatalogueMode ? (
                 <div className="flex items-end justify-between">
                   <div>
@@ -164,7 +172,7 @@ const SingleProductPage = async ({
                     <p className="text-xl font-medium text-gray-600">
                       {pricePlaceholder}
                     </p>
-                    <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-50 text-blue-600">
+                    <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-50 text-amber-600">
                       Im Markt verfügbar
                     </span>
                   </div>
@@ -189,8 +197,8 @@ const SingleProductPage = async ({
             {/* Product Characteristics */}
             <ProductCharacteristics product={product} />
 
-            {/* Quick Actions - Always show labels, compact on mobile */}
-            <div className="flex items-center justify-between gap-1 sm:gap-2 border-t border-gray-100 py-3">
+            {/* Quick Actions */}
+            <div className="flex items-center justify-between gap-1 sm:gap-2 border-t border-rose-100 py-3">
               {[
                 { icon: Scale, label: "Vergleichen" },
                 { icon: MessageCircle, label: "Fragen" },
@@ -199,7 +207,7 @@ const SingleProductPage = async ({
               ].map((item, index) => (
                 <button
                   key={index}
-                  className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-gray-500 hover:text-blue-600 transition-colors px-1 sm:px-2 py-1 rounded hover:bg-gray-50"
+                  className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-gray-500 hover:text-rose-500 transition-colors px-1 sm:px-2 py-1 rounded hover:bg-rose-50"
                 >
                   <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                   <span className="whitespace-nowrap">{item.label}</span>
@@ -209,15 +217,15 @@ const SingleProductPage = async ({
 
             {/* Delivery Info */}
             <div className="space-y-2">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2.5">
-                <Truck className="w-4 h-4 text-blue-500 flex-shrink-0" />
+              <div className="flex items-center gap-3 bg-gradient-to-r from-rose-50/50 to-pink-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
+                <Truck className="w-4 h-4 text-rose-500 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-gray-700">Kostenloser Versand</p>
                   <p className="text-xs text-gray-400">PLZ für Verfügbarkeit prüfen</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2.5">
-                <CornerDownLeft className="w-4 h-4 text-blue-500 flex-shrink-0" />
+              <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50/50 to-rose-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
+                <CornerDownLeft className="w-4 h-4 text-rose-500 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-gray-700">Kostenlose Retoure</p>
                   <p className="text-xs text-gray-400">30 Tage Rückgaberecht</p>
@@ -226,6 +234,25 @@ const SingleProductPage = async ({
             </div>
           </div>
         </div>
+      </Container>
+
+      {/* Related Products Section */}
+      {relatedProducts && relatedProducts.length > 0 && (
+        <Container>
+          <RelatedProducts 
+            products={relatedProducts}
+            title="Das könnte Ihnen auch gefallen"
+          />
+        </Container>
+      )}
+
+      {/* Recently Viewed Section */}
+      <Container>
+        <RecentlyViewed 
+          currentProductId={product._id}
+          currentProduct={product}
+          maxItems={8}
+        />
       </Container>
     </>
   );

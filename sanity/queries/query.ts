@@ -1,7 +1,28 @@
 // sanity/queries/query.ts
 import { defineQuery } from "next-sanity";
 
-const BRANDS_QUERY = defineQuery(`*[_type=='brand'] | order(name asc) `);
+// ✅ Updated: Get Brands with all fields including market location
+const BRANDS_QUERY = defineQuery(`*[_type=='brand' && isActive == true] | order(order asc) {
+  _id,
+  title,
+  name,
+  "slug": slug.current,
+  "logo": logo.asset->url,
+  description,
+  website,
+  isActive,
+  order,
+  featured,
+  marketLocation {
+    name,
+    address,
+    googleMapsUrl,
+    phone,
+    openingHours,
+    isMainLocation,
+    additionalInfo
+  }
+}`);
 
 const LATEST_BLOG_QUERY = defineQuery(
   ` *[_type == 'blog' && isLatest == true]|order(name asc){
@@ -174,28 +195,47 @@ const MY_ORDERS_QUERY =
 }
 }`);
 
+// ✅ Updated: Get All Blogs with excerpt and proper fields
 const GET_ALL_BLOG = defineQuery(
   `*[_type == 'blog'] | order(publishedAt desc)[0...$quantity]{
-  ...,  
-     blogcategories[]->{
-    title
-}
+    _id,
+    title,
+    slug,
+    mainImage,
+    publishedAt,
+    excerpt,
+    "blogcategories": blogcategories[]->{
+      title,
+      slug
+    },
+    author->{
+      name,
+      image
     }
-  `
+  }`
 );
 
+// ✅ Updated: Get Single Blog with excerpt and full details
 const SINGLE_BLOG_QUERY =
   defineQuery(`*[_type == "blog" && slug.current == $slug][0]{
-  ..., 
-    author->{
-    name,
-    image,
-  },
-  blogcategories[]->{
+    _id,
     title,
-    "slug": slug.current,
-  },
-}`);
+    slug,
+    mainImage,
+    publishedAt,
+    excerpt,
+    body,
+    author->{
+      name,
+      image,
+      bio
+    },
+    "blogcategories": blogcategories[]->{
+      title,
+      slug,
+      description
+    }
+  }`);
 
 const BLOG_CATEGORIES = defineQuery(
   `*[_type == "blog"]{
@@ -210,20 +250,54 @@ const OTHERS_BLOG_QUERY = defineQuery(`*[
   && defined(slug.current)
   && slug.current != $slug
 ]|order(publishedAt desc)[0...$quantity]{
-...
-  publishedAt,
+  _id,
   title,
-  mainImage,
   slug,
+  mainImage,
+  publishedAt,
+  excerpt,
   author->{
     name,
     image,
   },
-  categories[]->{
+  "blogcategories": blogcategories[]->{
     title,
-    "slug": slug.current,
+    slug
   }
 }`);
+
+// ✅ NEW: Get Related Products based on categories
+const RELATED_PRODUCTS_QUERY = defineQuery(`
+  *[_type == "product" 
+    && _id != $currentProductId 
+    && count(categories[@._ref in $categoryIds]) > 0
+    && stock > 0
+  ] | order(_createdAt desc) [0...$limit] {
+    _id,
+    name,
+    slug,
+    price,
+    discount,
+    originalPrice,
+    stock,
+    status,
+    isDeal,
+    dealEndDate,
+    "images": images[]{
+      asset->{
+        _id,
+        url
+      }
+    },
+    "categories": categories[]->title,
+    "brand": brand->{
+      _id,
+      title,
+      name,
+      "slug": slug.current
+    }
+  }
+`);
 
 export {
   BRANDS_QUERY,
@@ -240,4 +314,5 @@ export {
   SINGLE_BLOG_QUERY,
   BLOG_CATEGORIES,
   OTHERS_BLOG_QUERY,
+  RELATED_PRODUCTS_QUERY,
 };

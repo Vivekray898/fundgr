@@ -15,6 +15,7 @@ import {
   PRODUCT_BY_SLUG_QUERY,
   SEASONAL_CATEGORIES_QUERY,
   SINGLE_BLOG_QUERY,
+  RELATED_PRODUCTS_QUERY,
 } from "./query";
 
 const getCategories = async (quantity?: number) => {
@@ -93,6 +94,7 @@ const getCategories = async (quantity?: number) => {
   }
 };
 
+// ✅ Updated: Get All Brands with complete data including market location
 const getAllBrands = async () => {
   try {
     const { data } = await sanityFetch({ query: BRANDS_QUERY });
@@ -100,6 +102,73 @@ const getAllBrands = async () => {
   } catch (error) {
     console.error("Error fetching all brands:", error);
     return [];
+  }
+};
+
+// ✅ Updated: Get Featured Brands (returns only featured brands)
+const getFeaturedBrands = async () => {
+  try {
+    const { data } = await sanityFetch({ 
+      query: `*[_type=='brand' && isActive == true && featured == true] | order(order asc) {
+        _id,
+        title,
+        name,
+        "slug": slug.current,
+        "logo": logo.asset->url,
+        description,
+        website,
+        isActive,
+        order,
+        featured,
+        marketLocation {
+          name,
+          address,
+          googleMapsUrl,
+          phone,
+          openingHours,
+          isMainLocation,
+          additionalInfo
+        }
+      }`
+    });
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching featured brands:", error);
+    return [];
+  }
+};
+
+// ✅ Updated: Get Brand by Slug with complete data
+const getBrandBySlug = async (slug: string) => {
+  try {
+    const { data } = await sanityFetch({
+      query: `*[_type == 'brand' && slug.current == $slug && isActive == true][0]{
+        _id,
+        title,
+        name,
+        "slug": slug.current,
+        "logo": logo.asset->url,
+        description,
+        website,
+        isActive,
+        order,
+        featured,
+        marketLocation {
+          name,
+          address,
+          googleMapsUrl,
+          phone,
+          openingHours,
+          isMainLocation,
+          additionalInfo
+        }
+      }`,
+      params: { slug },
+    });
+    return data || null;
+  } catch (error) {
+    console.error("Error fetching brand by slug:", error);
+    return null;
   }
 };
 
@@ -182,7 +251,37 @@ const getProductBySlug = async (slug: string) => {
   }
 };
 
-// ✅ Fixed: Get Brand with proper error handling
+// ✅ Get Related Products
+const getRelatedProducts = async ({
+  currentProductId,
+  categoryIds,
+  limit = 8,
+}: {
+  currentProductId: string;
+  categoryIds: string[];
+  limit?: number;
+}) => {
+  try {
+    if (!categoryIds || categoryIds.length === 0) {
+      return [];
+    }
+    
+    const { data } = await sanityFetch({
+      query: RELATED_PRODUCTS_QUERY,
+      params: {
+        currentProductId,
+        categoryIds,
+        limit,
+      },
+    });
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    return [];
+  }
+};
+
+// ✅ Fixed: Get Brand with proper error handling (legacy - kept for backward compatibility)
 const getBrand = async (slug: string) => {
   try {
     const { data } = await sanityFetch({
@@ -269,6 +368,8 @@ const getOthersBlog = async (slug: string, quantity: number) => {
 export {
   getCategories,
   getAllBrands,
+  getFeaturedBrands,
+  getBrandBySlug,
   getLatestBlogs,
   getDealProducts,
   getNewProducts,
@@ -276,6 +377,7 @@ export {
   getFeaturedCategories,
   getSeasonalCategories,
   getProductBySlug,
+  getRelatedProducts,
   getBrand,
   getMyOrders,
   getAllBlogs,

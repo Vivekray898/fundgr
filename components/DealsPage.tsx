@@ -1,6 +1,6 @@
 // components/DealsPage.tsx
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Container from "./Container";
 import DealsSection from "./deals/DealsSection";
 import DealsNavigation from "./deals/DealsNavigation";
@@ -50,12 +50,14 @@ const DealsPage = ({
 }: DealsPageProps) => {
   const { enabled } = useCatalogueMode();
   const [activeSection, setActiveSection] = useState("all");
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
+  // Helper to scroll to section
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
-      const offset = 80; // Height of sticky header
+      const offset = 100; // Height of sticky header + padding
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
       window.scrollTo({
@@ -72,24 +74,41 @@ const DealsPage = ({
         ? ["all", "kategorien", "neuheiten", "saisonal"]
         : ["all", "angebote", "neuheiten", "top", "kategorien", "saisonal"];
       
+      let currentSection = "all";
       for (const id of sections) {
         const element = document.getElementById(id);
         if (element) {
           const rect = element.getBoundingClientRect();
-          if (rect.top <= 100) {
-            setActiveSection(id);
-            break;
+          if (rect.top <= 120) {
+            currentSection = id;
           }
         }
       }
+      setActiveSection(currentSection);
     };
 
     window.addEventListener("scroll", handleScroll);
+    // Initial check
+    setTimeout(handleScroll, 100);
+    
     return () => window.removeEventListener("scroll", handleScroll);
   }, [enabled]);
 
+  // Get all products for "all" section
+  const getAllProducts = () => {
+    const all = [...dealProducts, ...newProducts, ...hotProducts];
+    // Remove duplicates by _id
+    const unique = all.filter((product, index, self) => 
+      index === self.findIndex((p) => p._id === product._id)
+    );
+    return unique;
+  };
+
+  const allProducts = getAllProducts();
+
   return (
     <div className="bg-white min-h-screen">
+      {/* Navigation */}
       <DealsNavigation activeSection={activeSection} onNavigate={scrollToSection} />
       
       <Container className="py-4 sm:py-6 md:py-8">
@@ -109,38 +128,57 @@ const DealsPage = ({
 
         {/* Sections */}
         <div className="space-y-6 sm:space-y-8 md:space-y-10">
-          {!enabled && (
+          {/* All Products Section */}
+          {allProducts.length > 0 && (
+            <DealsSection
+              id="all"
+              title={enabled ? "Alle Produkte" : "Alle Angebote"}
+              description={enabled ? "Entdecken Sie unsere gesamte Produktpalette" : "Alle aktuellen Angebote auf einen Blick"}
+              products={allProducts}
+              linkHref="/shop"
+              showViewAll={true}
+            />
+          )}
+
+          {/* Deals Section - Only when catalogue mode is OFF */}
+          {!enabled && dealProducts.length > 0 && (
             <DealsSection
               id="angebote"
               title="Aktuelle Angebote"
               description="Unsere besten Deals für Sie"
               products={dealProducts}
               linkHref="/shop?deal=true"
+              showViewAll={true}
             />
           )}
 
-          <DealsSection
-            id="neuheiten"
-            title="Neuheiten"
-            description="Entdecken Sie unsere neuesten Produkte"
-            products={newProducts}
-            linkHref="/shop?status=new"
-            showViewAll={!enabled}
-          />
+          {/* New Products Section */}
+          {newProducts.length > 0 && (
+            <DealsSection
+              id="neuheiten"
+              title="Neuheiten"
+              description="Entdecken Sie unsere neuesten Produkte"
+              products={newProducts}
+              linkHref="/shop?status=new"
+              showViewAll={!enabled}
+            />
+          )}
 
-          {!enabled && (
+          {/* Hot Products Section - Only when catalogue mode is OFF */}
+          {!enabled && hotProducts.length > 0 && (
             <DealsSection
               id="top"
               title="Top-Angebote"
               description="Unsere meistverkauften Produkte"
               products={hotProducts}
               linkHref="/shop?status=hot"
+              showViewAll={true}
             />
           )}
 
           {/* Featured Categories */}
-          {(featuredCategories?.length > 0) && (
-            <section id="kategorien" className="scroll-mt-24">
+          {featuredCategories?.length > 0 && (
+            <section id="kategorien" className="scroll-mt-24 pt-4">
               <div className="mb-4">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                   {enabled ? "Unsere Kategorien" : "Beliebte Kategorien"}
@@ -156,8 +194,10 @@ const DealsPage = ({
           )}
 
           {/* Seasonal Categories */}
-          {(seasonalCategories?.length > 0) && (
-            <ThemesSection themes={seasonalCategories} />
+          {seasonalCategories?.length > 0 && (
+            <section id="saisonal" className="scroll-mt-24">
+              <ThemesSection themes={seasonalCategories} />
+            </section>
           )}
         </div>
       </Container>
