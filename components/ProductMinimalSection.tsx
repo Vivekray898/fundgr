@@ -45,27 +45,27 @@ const ProductMinimalSection = ({
   }[columns];
 
   return (
-    <div className={`my-12 ${className}`}>
+    <div className={`my-6 sm:my-12 ${className}`}>
       {/* Section Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-6">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{title}</h2>
+          <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900">{title}</h2>
           {subtitle && (
-            <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+            <p className="text-[10px] sm:text-sm text-gray-500 mt-1">{subtitle}</p>
           )}
         </div>
         <Link 
           href={linkHref} 
-          className="text-rose-500 hover:text-rose-600 text-sm font-medium flex items-center gap-1"
+          className="text-[10px] sm:text-sm font-medium text-rose-500 hover:text-rose-600 flex items-center gap-1"
         >
           {linkText}
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
         </Link>
       </div>
 
-      {/* Product Grid */}
+      {/* Product Grid - Mobile: 2 columns, Desktop: 3-4 columns */}
       {products.length > 0 ? (
-        <div className={`grid ${gridCols} gap-3 sm:gap-4`}>
+        <div className={`grid ${gridCols} gap-2 sm:gap-4`}>
           {products.map((product) => (
             <ProductMinimalCard key={product._id} product={product} />
           ))}
