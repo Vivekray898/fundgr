@@ -476,16 +476,11 @@ export const headerType = defineType({
                   },
                 }),
                 defineField({
-                  name: "latitude",
-                  title: "Latitude",
-                  type: "number",
-                  description: "Latitude for Google Maps",
-                }),
-                defineField({
-                  name: "longitude",
-                  title: "Longitude",
-                  type: "number",
-                  description: "Longitude for Google Maps",
+                  name: "googleMapsLink",
+                  title: "Google Maps Link",
+                  type: "url",
+                  description: "Paste the Google Maps URL for this store location",
+                  placeholder: "https://maps.google.com/?q=52.5200,13.4050",
                 }),
                 defineField({
                   name: "isDefault",

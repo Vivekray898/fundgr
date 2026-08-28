@@ -29,17 +29,18 @@ const AddToCartButton = ({ product, className }: Props) => {
     }
   };
   return (
-    <div className="w-full h-12 flex items-center">
+    <div className="w-full min-h-[40px] sm:h-12 flex items-center">
       {itemCount ? (
-        <div className="text-sm w-full">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-darkColor/80">Quantity</span>
+        <div className="text-xs sm:text-sm w-full">
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-[10px] sm:text-xs text-gray-500">Qty</span>
             <QuantityButtons product={product} />
           </div>
-          <div className="flex items-center justify-between border-t pt-1">
-            <span className="text-xs font-semibold">Subtotal</span>
+          <div className="flex items-center justify-between border-t border-rose-100 pt-1 mt-0.5">
+            <span className="text-[10px] sm:text-xs font-semibold text-gray-700">Subtotal</span>
             <PriceFormatter
               amount={product?.price ? product?.price * itemCount : 0}
+              className="text-rose-500 font-semibold text-xs sm:text-sm"
             />
           </div>
         </div>
@@ -48,11 +49,12 @@ const AddToCartButton = ({ product, className }: Props) => {
           onClick={handleAddToCart}
           disabled={isOutOfStock}
           className={cn(
-            "w-full bg-shop_dark_green/80 text-lightBg shadow-none border border-shop_dark_green/80 font-semibold tracking-wide text-white hover:bg-shop_dark_green hover:border-shop_dark_green hoverEffect",
+            "w-full bg-rose-500 text-white shadow-none border border-rose-500 font-semibold tracking-wide hover:bg-rose-600 hover:border-rose-600 hoverEffect text-[11px] sm:text-sm py-1.5 sm:py-2 px-2 sm:px-4 h-auto min-h-[36px] sm:h-10",
             className
           )}
         >
-          <ShoppingBag /> {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+          <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> 
+          <span className="truncate">{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
         </Button>
       )}
     </div>

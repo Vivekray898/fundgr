@@ -16,22 +16,66 @@ import {
 const getCategories = async (quantity?: number) => {
   try {
     const query = quantity
-      ? `*[_type == 'category' && !defined(parent)] | order(name asc) [0...$quantity] {
-          ...,
+      ? `*[_type == 'category' && !defined(parent)] | order(order asc) [0...$quantity] {
+          _id,
+          title,
+          "slug": slug.current,
+          description,
+          teaserSubtitle,
+          range,
+          featured,
+          "image": image.asset->url,
+          parent,
+          order,
+          showInNavigation,
+          icon,
+          categoryIcon,
+          isSeasonal,
+          seasonalMessage,
+          seasonalStart,
+          seasonalEnd,
+          seasonalIcon,
           "productCount": count(*[_type == "product" && references(^._id)]),
-          "children": *[_type == "category" && parent._ref == ^._id] | order(name asc) {
+          "children": *[_type == "category" && parent._ref == ^._id] | order(order asc) {
             _id,
             title,
-            "slug": slug.current
+            "slug": slug.current,
+            isSeasonal,
+            seasonalMessage,
+            seasonalStart,
+            seasonalEnd,
+            seasonalIcon
           }
         }`
-      : `*[_type == 'category' && !defined(parent)] | order(name asc) {
-          ...,
+      : `*[_type == 'category' && !defined(parent)] | order(order asc) {
+          _id,
+          title,
+          "slug": slug.current,
+          description,
+          teaserSubtitle,
+          range,
+          featured,
+          "image": image.asset->url,
+          parent,
+          order,
+          showInNavigation,
+          icon,
+          categoryIcon,
+          isSeasonal,
+          seasonalMessage,
+          seasonalStart,
+          seasonalEnd,
+          seasonalIcon,
           "productCount": count(*[_type == "product" && references(^._id)]),
-          "children": *[_type == "category" && parent._ref == ^._id] | order(name asc) {
+          "children": *[_type == "category" && parent._ref == ^._id] | order(order asc) {
             _id,
             title,
-            "slug": slug.current
+            "slug": slug.current,
+            isSeasonal,
+            seasonalMessage,
+            seasonalStart,
+            seasonalEnd,
+            seasonalIcon
           }
         }`;
     const { data } = await sanityFetch({

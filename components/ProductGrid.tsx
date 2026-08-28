@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ProductCard from "./ProductCard";
 import { motion, AnimatePresence } from "motion/react";
 import { client } from "@/sanity/lib/client";
 import NoProductAvailable from "./NoProductAvailable";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Dot } from "lucide-react";
 import Container from "./Container";
 import HomeTabbar from "./HomeTabbar";
 import { Product } from "@/sanity.types";
@@ -15,6 +15,9 @@ const ProductGrid = () => {
   const [loading, setLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState("all");
   const [productTypes, setProductTypes] = useState<Array<{ title: string; value: string }>>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [totalSlides, setTotalSlides] = useState(0);
 
   // Fetch categories from Sanity
   useEffect(() => {
@@ -53,7 +56,6 @@ const ProductGrid = () => {
           }`;
           params = {};
         } else {
-          // Find the slug for the selected tab
           const selectedCategory = productTypes.find(cat => cat.title === selectedTab);
           const categorySlug = selectedCategory?.value || selectedTab.toLowerCase();
           
@@ -65,6 +67,12 @@ const ProductGrid = () => {
         
         const response = await client.fetch(query, params);
         setProducts(response);
+        setTotalSlides(Math.ceil(response.length / 2) || 0);
+        
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollLeft = 0;
+          setScrollProgress(0);
+        }
       } catch (error) {
         console.log("Product fetching Error", error);
         setProducts([]);
@@ -75,32 +83,119 @@ const ProductGrid = () => {
     fetchData();
   }, [selectedTab, productTypes]);
 
+  // Check scroll position
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      const progress = scrollWidth > clientWidth ? scrollLeft / (scrollWidth - clientWidth) : 0;
+      setScrollProgress(progress);
+    }
+  };
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      window.addEventListener('resize', handleScroll);
+      return () => {
+        container.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', handleScroll);
+      };
+    }
+  }, [products]);
+
+  const scrollProducts = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 300;
+      const newScrollLeft = scrollContainerRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <Container className="flex flex-col lg:px-0 my-10">
       <HomeTabbar selectedTab={selectedTab} onTabSelect={setSelectedTab} productTypes={productTypes} />
+      
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-10 min-h-80 space-y-4 text-center bg-gray-100 rounded-lg w-full mt-10">
-          <motion.div className="flex items-center space-x-2 text-blue-600">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Product is loading...</span>
+        <div className="flex flex-col items-center justify-center py-10 min-h-80 space-y-4 text-center bg-gradient-to-br from-rose-50/30 to-pink-50/30 rounded-xl w-full mt-10">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center gap-4"
+          >
+            <div className="relative">
+              <div className="w-12 h-12 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-4 h-4 bg-rose-500 rounded-full animate-pulse" />
+              </div>
+            </div>
+            <p className="text-sm font-medium text-gray-500">Loading products...</p>
           </motion.div>
         </div>
       ) : products?.length ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 mt-10">
-          <>
-            {products?.map((product) => (
-              <AnimatePresence key={product?._id}>
-                <motion.div
-                  layout
-                  initial={{ opacity: 0.2 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <ProductCard key={product?._id} product={product} />
-                </motion.div>
-              </AnimatePresence>
+        <div className="relative mt-10">
+          {/* Subtle Gradient Fades - Much softer */}
+          <div className={`absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white/90 via-white/50 to-transparent pointer-events-none z-10 transition-opacity duration-500 ${scrollProgress > 0.02 ? 'opacity-100' : 'opacity-0'}`} />
+          <div className={`absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/90 via-white/50 to-transparent pointer-events-none z-10 transition-opacity duration-500 ${scrollProgress < 0.98 ? 'opacity-100' : 'opacity-0'}`} />
+
+          {/* Scroll Container */}
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-4 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          >
+            {products.map((product, index) => (
+              <motion.div
+                key={product?._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(index * 0.03, 0.5) }}
+                className="min-w-[160px] sm:min-w-[180px] md:min-w-[200px] lg:min-w-[220px] xl:min-w-[240px] snap-start"
+              >
+                <ProductCard product={product} />
+              </motion.div>
             ))}
-          </>
+          </div>
+
+          {/* Navigation Arrows - With subtle shadow */}
+          <button
+            onClick={() => scrollProducts('left')}
+            className={`absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm shadow-md border border-rose-100/50 flex items-center justify-center hover:bg-rose-50 hover:border-rose-200 transition-all duration-200 z-20 ${
+              scrollProgress > 0.02 ? 'opacity-100 visible' : 'opacity-0 invisible'
+            }`}
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-500 hover:text-rose-500 transition-colors" />
+          </button>
+
+          <button
+            onClick={() => scrollProducts('right')}
+            className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm shadow-md border border-rose-100/50 flex items-center justify-center hover:bg-rose-50 hover:border-rose-200 transition-all duration-200 z-20 ${
+              scrollProgress < 0.98 ? 'opacity-100 visible' : 'opacity-0 invisible'
+            }`}
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-500 hover:text-rose-500 transition-colors" />
+          </button>
+
+          {/* Progress Bar */}
+          <div className="flex items-center gap-3 mt-4 px-1">
+            <p className="text-xs text-gray-400 flex-shrink-0">
+              <span className="font-medium text-gray-600">{products.length}</span> products
+            </p>
+            <div className="flex-1 h-0.5 bg-rose-100 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-rose-300 to-pink-300 rounded-full"
+                style={{ width: `${scrollProgress * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+            <p className="text-xs text-gray-400 flex-shrink-0">
+              {Math.round(scrollProgress * 100)}%
+            </p>
+          </div>
         </div>
       ) : (
         <NoProductAvailable selectedTab={selectedTab} />

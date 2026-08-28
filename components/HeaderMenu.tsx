@@ -95,8 +95,8 @@ const HeaderMenu = ({
           onClick={handleSortimentClick}
           className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 ${
             showSortiment
-              ? "bg-gray-100 text-gray-900"
-              : "hover:bg-gray-50 hover:text-gray-900"
+              ? "bg-rose-50 text-rose-600"
+              : "hover:bg-rose-50 hover:text-rose-600"
           }`}
         >
           {/* Hamburger icon */}
@@ -110,8 +110,8 @@ const HeaderMenu = ({
 
         {/* Dropdown Menu */}
         {showSortiment && (
-          <div className="absolute left-0 top-full mt-0 w-[400px] bg-white rounded-b-lg shadow-xl border border-gray-100 py-2 z-50 max-h-[80vh] overflow-y-auto">
-            <div className="px-4 py-2 border-b border-gray-100 sticky top-0 bg-white">
+          <div className="absolute left-0 top-full mt-0 w-[400px] bg-white rounded-b-lg shadow-xl border border-rose-100 py-2 z-50 max-h-[80vh] overflow-y-auto">
+            <div className="px-4 py-2 border-b border-rose-100 sticky top-0 bg-white">
               <p className="text-base font-bold text-gray-900">Sortiment</p>
             </div>
             
@@ -120,15 +120,15 @@ const HeaderMenu = ({
               <li>
                 <Link
                   href="/sortiment"
-                  className="block px-4 py-2.5 text-sm font-medium text-gray-800 hover:bg-green-50 hover:text-shop_light_green transition-colors"
+                  className="block px-4 py-2.5 text-sm font-medium text-gray-800 hover:bg-rose-50 hover:text-rose-500 transition-colors"
                 >
                   Alle anzeigen
                 </Link>
               </li>
               
-              <li className="border-t border-gray-100 my-1"></li>
+              <li className="border-t border-rose-100 my-1"></li>
               
-              {/* Top-Level Categories ONLY (no children shown separately) */}
+              {/* Top-Level Categories ONLY */}
               {isLoading ? (
                 <li className="px-4 py-3 text-sm text-gray-500">Loading...</li>
               ) : topLevelCategories.length === 0 ? (
@@ -144,7 +144,7 @@ const HeaderMenu = ({
                         <>
                           <button
                             onClick={() => handleCategoryClick(category._id)}
-                            className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-shop_light_green transition-colors"
+                            className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-500 transition-colors"
                           >
                             <span>{category.title}</span>
                             <ChevronDown 
@@ -155,7 +155,7 @@ const HeaderMenu = ({
                           </button>
                           
                           {isExpanded && (
-                            <ul className="bg-gray-50 py-1">
+                            <ul className="bg-rose-50/30 py-1">
                               {category.children.map((child: any) => (
                                 <li key={child._id}>
                                   <Link
@@ -164,7 +164,7 @@ const HeaderMenu = ({
                                       setShowSortiment(false);
                                       setExpandedCategory(null);
                                     }}
-                                    className="block pl-10 pr-4 py-2.5 text-sm text-gray-600 hover:bg-green-50 hover:text-shop_light_green transition-colors"
+                                    className="block pl-10 pr-4 py-2.5 text-sm text-gray-600 hover:bg-rose-50 hover:text-rose-500 transition-colors"
                                   >
                                     {child.title}
                                   </Link>
@@ -180,7 +180,7 @@ const HeaderMenu = ({
                             setShowSortiment(false);
                             setExpandedCategory(null);
                           }}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-shop_light_green transition-colors"
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-500 transition-colors"
                         >
                           {category.title}
                         </Link>
@@ -204,8 +204,8 @@ const HeaderMenu = ({
             href={item.url}
             className={`px-4 py-3 text-base font-medium transition-all duration-200 ${
               isActive
-                ? "text-shop_light_green bg-green-50"
-                : "text-gray-700 hover:text-shop_light_green hover:bg-gray-50"
+                ? "text-rose-500 bg-rose-50"
+                : "text-gray-700 hover:text-rose-500 hover:bg-rose-50"
             }`}
           >
             {item.label}

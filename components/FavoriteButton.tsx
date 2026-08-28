@@ -37,24 +37,28 @@ const FavoriteButton = ({
   return (
     <>
       {!showProduct ? (
-        <Link href={"/wishlist"} className="group relative">
-          <Heart className="w-5 h-5 hover:text-shop_light_green hoverEffect" />
-          <span className="absolute -top-1 -right-1 bg-shop_dark_green text-white h-3.5 w-3.5 rounded-full text-xs font-semibold flex items-center justify-center">
+        <Link href={"/wishlist"} className="group relative inline-flex items-center">
+          <Heart className="w-5 h-5 text-gray-600 group-hover:text-rose-500 hoverEffect transition-colors" />
+          <span className="absolute -top-1 -right-1 bg-gradient-to-r from-rose-500 to-pink-500 text-white h-3.5 w-3.5 rounded-full text-[10px] font-semibold flex items-center justify-center shadow-sm">
             {favoriteProduct?.length ? favoriteProduct?.length : 0}
           </span>
         </Link>
       ) : (
         <button
           onClick={handleFavorite}
-          className="group relative hover:text-shop_light_green hoverEffect border border-shop_light_green/80 hover:border-shop_light_green p-1.5 rounded-sm"
+          className={`group relative hover:text-rose-500 hoverEffect border p-1.5 rounded-sm transition-all duration-200 ${
+            existingProduct 
+              ? "border-rose-400 bg-rose-50/50" 
+              : "border-rose-200/80 hover:border-rose-400"
+          }`}
         >
           {existingProduct ? (
             <Heart
-              fill="#3b9c3c"
-              className="text-shop_light_green/80 group-hover:text-shop_light_green hoverEffect mt-.5 w-5 h-5"
+              fill="#f43f5e"
+              className="text-rose-500 group-hover:text-rose-600 hoverEffect w-5 h-5"
             />
           ) : (
-            <Heart className="text-shop_light_green/80 group-hover:text-shop_light_green hoverEffect mt-.5 w-5 h-5" />
+            <Heart className="text-gray-400 group-hover:text-rose-500 hoverEffect w-5 h-5" />
           )}
         </button>
       )}

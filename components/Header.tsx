@@ -89,15 +89,15 @@ const Header = async () => {
       <header className="bg-white shadow-sm">
         {/* Top Bar - Desktop only */}
         {topBarEnabled && (
-          <div className="hidden lg:block bg-gray-50 border-b border-gray-100">
+          <div className="hidden lg:block bg-gradient-to-r from-rose-50 via-pink-50 to-blue-50 border-b border-rose-100">
             <Container className="flex items-center justify-between py-2 text-xs text-gray-600">
               {/* Left side - Trust badges */}
               <div className="flex items-center gap-8">
                 {trustBadges.map((badge, index) => {
                   const IconComponent = iconMap[badge.icon as keyof typeof iconMap];
                   return (
-                    <div key={index} className="flex items-center gap-2 text-gray-500">
-                      {IconComponent && <IconComponent className="w-4 h-4" />}
+                    <div key={index} className="flex items-center gap-2 text-gray-600">
+                      {IconComponent && <IconComponent className="w-4 h-4 text-rose-500" />}
                       <span>{badge.text}</span>
                     </div>
                   );
@@ -114,7 +114,7 @@ const Header = async () => {
                     <Link 
                       key={index} 
                       href={link.url} 
-                      className="hover:text-shop_light_green hoverEffect"
+                      className="hover:text-rose-500 hoverEffect"
                     >
                       {link.label}
                     </Link>
@@ -148,8 +148,8 @@ const Header = async () => {
             {/* Wishlist */}
             {showWishlist && (
               <Link href="/wishlist" className="flex flex-col items-center gap-1 group">
-                <Heart className="w-6 h-6 text-gray-600 group-hover:text-shop_light_green transition-colors" />
-                <span className="text-xs text-gray-500 group-hover:text-shop_light_green">Einkaufsliste</span>
+                <Heart className="w-6 h-6 text-gray-600 group-hover:text-rose-500 transition-colors" />
+                <span className="text-xs text-gray-500 group-hover:text-rose-500">Einkaufsliste</span>
               </Link>
             )}
             
@@ -157,10 +157,10 @@ const Header = async () => {
             {showCart && (
               <Link href="/cart" className="flex flex-col items-center gap-1 group">
                 <div className="relative">
-                  <ShoppingCart className="w-6 h-6 text-gray-600 group-hover:text-shop_light_green transition-colors" />
-                  <span className="absolute -top-2 -right-2 bg-shop_dark_green text-white h-4 w-4 rounded-full text-[10px] font-semibold flex items-center justify-center">0</span>
+                  <ShoppingCart className="w-6 h-6 text-gray-600 group-hover:text-rose-500 transition-colors" />
+                  <span className="absolute -top-2 -right-2 bg-rose-500 text-white h-4 w-4 rounded-full text-[10px] font-semibold flex items-center justify-center">0</span>
                 </div>
-                <span className="text-xs text-gray-500 group-hover:text-shop_light_green">Warenkorb</span>
+                <span className="text-xs text-gray-500 group-hover:text-rose-500">Warenkorb</span>
               </Link>
             )}
             
@@ -173,8 +173,8 @@ const Header = async () => {
                 {!user && (
                   <SignInButton mode="modal">
                     <button className="flex flex-col items-center gap-1 group focus:outline-none">
-                      <User className="w-6 h-6 text-gray-600 group-hover:text-shop_light_green transition-colors" />
-                      <span className="text-xs text-gray-500 group-hover:text-shop_light_green">Mein Konto</span>
+                      <User className="w-6 h-6 text-gray-600 group-hover:text-rose-500 transition-colors" />
+                      <span className="text-xs text-gray-500 group-hover:text-rose-500">Mein Konto</span>
                     </button>
                   </SignInButton>
                 )}
@@ -201,7 +201,7 @@ const Header = async () => {
       </header>
 
       {/* Sticky Bottom Navigation - Desktop Only */}
-      <div className="sticky top-0 z-50 hidden lg:block bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-50 hidden lg:block bg-white border-b border-rose-100 shadow-sm">
         <Container className="flex items-center justify-between">
           {/* Left: Sortiment Hamburger + Nav Items (Desktop) */}
           <HeaderMenu 
@@ -216,14 +216,14 @@ const Header = async () => {
             <StoreLocator 
               trigger="link"
               settings={storeLocatorSettings}
-              className="text-shop_light_green hover:text-shop_btn_dark_green hoverEffect rounded-md px-4 py-3 flex items-center gap-2"
+              className="text-rose-500 hover:text-rose-600 hoverEffect rounded-md px-4 py-3 flex items-center gap-2"
             />
           </div>
         </Container>
       </div>
 
-      {/* Sticky Mobile Search Bar - Mobile ONLY (This is the only search bar on mobile) */}
-      <div className="sticky top-0 z-50 lg:hidden bg-white border-b border-gray-100 shadow-sm py-2 px-4">
+      {/* Sticky Mobile Search Bar - Mobile ONLY */}
+      <div className="sticky top-0 z-50 lg:hidden bg-white border-b border-rose-100 shadow-sm py-2 px-4">
         <SearchBar isMobile isFullWidth />
       </div>
     </>

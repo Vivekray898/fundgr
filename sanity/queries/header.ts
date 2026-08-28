@@ -97,8 +97,7 @@ export interface HeaderData {
       email: string;
       openingHours: string;
       image?: string;
-      latitude?: number;
-      longitude?: number;
+      googleMapsLink?: string; // Changed from latitude/longitude
       distance?: string;
       isDefault?: boolean;
     }>;
@@ -172,8 +171,7 @@ export const headerQuery = `*[_type == "header"][0]{
       email,
       openingHours,
       "image": image.asset->url,
-      latitude,
-      longitude,
+      googleMapsLink,
       distance,
       isDefault
     }
@@ -190,7 +188,6 @@ export async function getHeaderData(): Promise<HeaderData | null> {
   }
 }
 
-// FIXED: Only fetch TOP-LEVEL categories (no parent) and include children
 export const categoriesForNavQuery = `*[_type == "category" && showInNavigation == true && !defined(parent)] | order(order asc) {
   _id,
   title,

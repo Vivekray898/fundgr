@@ -1,3 +1,4 @@
+// sanity/queries/query.ts
 import { defineQuery } from "next-sanity";
 
 const BRANDS_QUERY = defineQuery(`*[_type=='brand'] | order(name asc) `);
@@ -18,7 +19,19 @@ const DEAL_PRODUCTS = defineQuery(
 );
 
 const PRODUCT_BY_SLUG_QUERY = defineQuery(
-  `*[_type == "product" && slug.current == $slug] | order(name asc) [0]`
+  `*[_type == "product" && slug.current == $slug] | order(name asc) [0]{
+    ...,
+    "categories": categories[]->{
+      _id,
+      title,
+      "slug": slug.current,
+      isSeasonal,
+      seasonalMessage,
+      seasonalStart,
+      seasonalEnd,
+      seasonalIcon
+    }
+  }`
 );
 
 const BRAND_QUERY = defineQuery(`*[_type == "product" && slug.current == $slug]{

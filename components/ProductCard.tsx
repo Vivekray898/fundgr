@@ -12,8 +12,8 @@ import AddToCartButton from "./AddToCartButton";
 
 const ProductCard = ({ product }: { product: Product }) => {
   return (
-    <div className="text-sm border-[1px] rounded-md border-darkBlue/20 group bg-white">
-      <div className="relative group overflow-hidden bg-shop_light_bg">
+    <div className="text-xs sm:text-sm border-[1px] rounded-lg sm:rounded-md border-rose-200/50 group bg-white hover:border-rose-300 transition-colors h-full flex flex-col">
+      <div className="relative group overflow-hidden bg-gradient-to-br from-rose-50/30 to-pink-50/30 flex-shrink-0">
         {product?.images && (
           <Link href={`/product/${product?.slug?.current}`}>
             <Image
@@ -22,55 +22,61 @@ const ProductCard = ({ product }: { product: Product }) => {
               width={500}
               height={500}
               priority
-              className={`w-full h-64 object-contain overflow-hidden transition-transform bg-shop_light_bg duration-500 
+              className={`w-full h-48 sm:h-56 md:h-64 object-contain overflow-hidden transition-transform bg-gradient-to-br from-rose-50/30 to-pink-50/30 duration-500 
               ${product?.stock !== 0 ? "group-hover:scale-105" : "opacity-50"}`}
             />
           </Link>
         )}
         <ProductSideMenu product={product} />
         {product?.status === "sale" ? (
-          <p className="absolute top-2 left-2 z-10 text-xs border border-darkColor/50 px-2 rounded-full group-hover:border-lightGreen hover:text-shop_dark_green hoverEffect">
+          <p className="absolute top-2 left-2 z-10 text-[10px] sm:text-xs border border-rose-300/50 px-1.5 sm:px-2 py-0.5 rounded-full group-hover:border-rose-500 hover:text-rose-600 hoverEffect">
             Sale!
           </p>
         ) : (
           <Link
             href={"/deal"}
-            className="absolute top-2 left-2 z-10 border border-shop_orange/50 p-1 rounded-full group-hover:border-shop_orange hover:text-shop_dark_green hoverEffect"
+            className="absolute top-2 left-2 z-10 border border-rose-300/50 p-1 rounded-full group-hover:border-rose-500 hover:text-rose-600 hoverEffect"
           >
             <Flame
-              size={18}
+              size={14}
               fill="#fb6c08"
-              className="text-shop_orange/50 group-hover:text-shop_orange hoverEffect"
+              className="text-rose-400/50 group-hover:text-rose-500 hoverEffect"
             />
           </Link>
         )}
       </div>
-      <div className="p-3 flex flex-col gap-2">
+      
+      <div className="p-2 sm:p-3 flex flex-col gap-1.5 sm:gap-2 flex-1">
         {product?.categories && (
-          <p className="uppercase line-clamp-1 text-xs font-medium text-lightText">
+          <p className="uppercase line-clamp-1 text-[10px] sm:text-xs font-medium text-rose-400">
             {product.categories.map((cat) => cat).join(", ")}
           </p>
         )}
-        <Title className="text-sm line-clamp-1">{product?.name}</Title>
-        <div className="flex items-center gap-2">
+        <Title className="text-xs sm:text-sm line-clamp-2 text-gray-800 font-semibold">
+          {product?.name}
+        </Title>
+        
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <div className="flex items-center">
             {[...Array(5)].map((_, index) => (
               <StarIcon
                 key={index}
-                className={
-                  index < 4 ? "text-shop_light_green" : " text-lightText"
-                }
-                fill={index < 4 ? "#93D991" : "#ababab"}
+                className={`w-3 h-3 sm:w-4 sm:h-4 ${
+                  index < 4 ? "text-rose-400" : "text-gray-300"
+                }`}
+                fill={index < 4 ? "#f43f5e" : "#d1d5db"}
               />
             ))}
           </div>
-          <p className="text-lightText text-xs tracking-wide">5 Reviews</p>
+          <p className="text-gray-400 text-[10px] sm:text-xs tracking-wide">5 Reviews</p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <p className="font-medium">In Stock</p>
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <p className="font-medium text-gray-600 text-[10px] sm:text-xs">In Stock</p>
           <p
-            className={`${product?.stock === 0 ? "text-red-600" : "text-shop_dark_green/80 font-semibold"}`}
+            className={`text-[10px] sm:text-xs ${
+              product?.stock === 0 ? "text-red-500" : "text-rose-500 font-semibold"
+            }`}
           >
             {(product?.stock as number) > 0 ? product?.stock : "unavailable"}
           </p>
@@ -79,9 +85,12 @@ const ProductCard = ({ product }: { product: Product }) => {
         <PriceView
           price={product?.price}
           discount={product?.discount}
-          className="text-sm"
+          className="text-xs sm:text-sm"
         />
-        <AddToCartButton product={product} className="w-36 rounded-full" />
+        
+        <div className="mt-auto pt-1">
+          <AddToCartButton product={product} className="w-full sm:w-36 rounded-full text-xs sm:text-sm" />
+        </div>
       </div>
     </div>
   );

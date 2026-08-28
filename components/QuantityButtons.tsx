@@ -1,7 +1,6 @@
 import { Product } from "@/sanity.types";
 import useStore from "@/store";
 import React from "react";
-import { Button } from "./ui/button";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
@@ -10,10 +9,12 @@ interface Props {
   product: Product;
   className?: string;
 }
+
 const QuantityButtons = ({ product, className }: Props) => {
   const { addItem, removeItem, getItemCount } = useStore();
   const itemCount = getItemCount(product?._id);
   const isOutOfStock = product?.stock === 0;
+  const isMaxStock = itemCount === (product?.stock as number);
 
   const handleRemoveProduct = () => {
     removeItem(product?._id);
@@ -34,28 +35,38 @@ const QuantityButtons = ({ product, className }: Props) => {
   };
 
   return (
-    <div className={cn("flex items-center gap-1 pb-1 text-base", className)}>
-      <Button
+    <div className={cn("flex items-center gap-1.5 sm:gap-2", className)}>
+      <button
         onClick={handleRemoveProduct}
-        variant="outline"
-        size="icon"
         disabled={itemCount === 0 || isOutOfStock}
-        className="w-6 h-6 border-[1px] hover:bg-shop_dark_green/20 hoverEffect"
+        className={cn(
+          "flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-200",
+          itemCount === 0 || isOutOfStock
+            ? "border-gray-200 text-gray-300 cursor-not-allowed"
+            : "border-rose-200 text-gray-600 hover:bg-rose-50 hover:border-rose-400 hover:text-rose-500 active:scale-95"
+        )}
+        aria-label="Decrease quantity"
       >
-        <Minus />
-      </Button>
-      <span className="font-semibold text-sm w-6 text-center text-darkColor">
+        <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+      </button>
+      
+      <span className="font-semibold text-sm sm:text-base w-6 sm:w-8 text-center text-gray-700 tabular-nums">
         {itemCount}
       </span>
-      <Button
+      
+      <button
         onClick={handleAddToCart}
-        variant="outline"
-        size="icon"
-        disabled={isOutOfStock}
-        className="w-6 h-6 border-[1px] hover:bg-shop_dark_green/20 hoverEffect"
+        disabled={isOutOfStock || isMaxStock}
+        className={cn(
+          "flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-200",
+          isOutOfStock || isMaxStock
+            ? "border-gray-200 text-gray-300 cursor-not-allowed"
+            : "border-rose-200 text-gray-600 hover:bg-rose-50 hover:border-rose-400 hover:text-rose-500 active:scale-95"
+        )}
+        aria-label="Increase quantity"
       >
-        <Plus />
-      </Button>
+        <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+      </button>
     </div>
   );
 };

@@ -157,7 +157,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-br from-rose-50 via-pink-50 to-blue-50 text-gray-800 border-t border-pink-100">
+    <footer className="bg-gradient-to-br from-rose-50 via-pink-50 to-blue-50 text-gray-800 border-t border-pink-100 mt-12 md:mt-16 lg:mt-20">
       {/* Main Footer Content */}
       <Container className="py-12">
         {/* Logo + About Section */}
