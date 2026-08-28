@@ -10,6 +10,7 @@ import { authorType } from "./authorType";
 import { addressType } from "./addressType";
 import { headerType } from "./headerType";
 import { footerType } from "./footerType";
+import { settingsType } from './settings';
 
 
 export const schema: { types: SchemaTypeDefinition[] } = {
@@ -25,5 +26,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     addressType,
     headerType,
     footerType,
+    settingsType,
+
   ],
 };

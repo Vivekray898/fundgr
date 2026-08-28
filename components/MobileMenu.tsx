@@ -1,10 +1,13 @@
+// components/MobileMenu.tsx
 "use client";
-import { AlignLeft, X, Search, MapPin, CheckCircle, User, ChevronRight, ChevronDown, ArrowLeft } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { AlignLeft, X, MapPin, CheckCircle, ChevronRight, ChevronDown, ArrowLeft, Search, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import StoreLocator from "./StoreLocator";
 import { getCategoriesForNav } from "@/sanity/queries/header";
+import { client } from "@/sanity/lib/client";
+import Image from "next/image";
 
 interface MenuItem {
   label: string;
@@ -22,6 +25,16 @@ interface MobileMenuProps {
   useCategories?: boolean;
 }
 
+interface ProductSuggestion {
+  _id: string;
+  name: string;
+  slug: {
+    current: string;
+  };
+  images?: any[];
+  price: number;
+}
+
 const MobileMenu = ({ 
   menuItems,
   searchPlaceholder = "Wonach suchen Sie?",
@@ -32,7 +45,13 @@ const MobileMenu = ({
   const [showSortimentPage, setShowSortimentPage] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [productSuggestions, setProductSuggestions] = useState<ProductSuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch categories ALWAYS
   useEffect(() => {
@@ -47,6 +66,41 @@ const MobileMenu = ({
       });
   }, []);
 
+  // Fetch live product suggestions
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length < 2) {
+        setProductSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const data = await client.fetch(
+          `*[_type == 'product' && (name match $searchTerm || description match $searchTerm)] | order(name asc) [0...6] {
+            _id,
+            name,
+            slug,
+            price,
+            "image": images[0].asset->url
+          }`,
+          { searchTerm: `${searchQuery}*` }
+        );
+        setProductSuggestions(data || []);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+        setProductSuggestions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
   // Prevent body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
@@ -58,6 +112,17 @@ const MobileMenu = ({
       document.body.style.overflow = "";
     };
   }, [isOpen]);
+
+  // Close suggestions on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const toggleCategory = (id: string) => {
     setExpandedCategory(expandedCategory === id ? null : id);
@@ -77,6 +142,30 @@ const MobileMenu = ({
     setIsOpen(false);
     setShowSortimentPage(false);
     setExpandedCategory(null);
+    setSearchQuery("");
+    setShowSuggestions(false);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      handleClose();
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    setTimeout(() => {
+      router.push(`/search?q=${encodeURIComponent(suggestion)}`);
+      handleClose();
+    }, 100);
+  };
+
+  const handleProductClick = (product: ProductSuggestion) => {
+    router.push(`/product/${product.slug.current}`);
+    handleClose();
   };
 
   // Use provided menuItems or default
@@ -121,19 +210,100 @@ const MobileMenu = ({
             <div className="flex items-center justify-between p-3">
               <button
                 onClick={handleClose}
-                className="p-2 -ml-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                className="p-2 -ml-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors flex-shrink-0"
               >
                 <X className="w-5 h-5 text-gray-600" />
               </button>
               
-              {/* Search */}
-              <div className="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2 ml-2">
-                <Search className="w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={searchPlaceholder}
-                  className="flex-1 bg-transparent border-none outline-none text-sm px-2 py-0.5"
-                />
+              {/* Compact Search with Suggestions */}
+              <div className="flex-1 min-w-0 ml-2 relative" ref={searchContainerRef}>
+                <form onSubmit={handleSearchSubmit}>
+                  <div className="flex items-center bg-gray-100 rounded-full px-3 py-1.5 focus-within:ring-2 focus-within:ring-rose-400 focus-within:bg-white transition-all">
+                    <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={searchPlaceholder}
+                      className="flex-1 min-w-0 bg-transparent border-none outline-none text-sm px-2 py-0.5 placeholder:text-gray-400 truncate"
+                      autoFocus={isOpen}
+                    />
+                    {loading && (
+                      <Loader2 className="w-3.5 h-3.5 text-rose-400 animate-spin flex-shrink-0" />
+                    )}
+                    {searchQuery && !loading && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery("")}
+                        className="flex-shrink-0 p-0.5 rounded-full hover:bg-gray-200 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5 text-gray-400" />
+                      </button>
+                    )}
+                  </div>
+                </form>
+
+                {/* Live Product Suggestions */}
+                {showSuggestions && searchQuery.trim().length >= 2 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 z-[9999] max-h-[400px] overflow-y-auto">
+                    {productSuggestions.length > 0 ? (
+                      <div className="p-2">
+                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-2 px-2">
+                          Produkte
+                        </p>
+                        <div className="space-y-1">
+                          {productSuggestions.map((product) => (
+                            <button
+                              key={product._id}
+                              onClick={() => handleProductClick(product)}
+                              className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-rose-50 transition-colors"
+                            >
+                              {product.image ? (
+                                <Image
+                                  src={product.image}
+                                  alt={product.name}
+                                  width={40}
+                                  height={40}
+                                  className="w-10 h-10 object-cover rounded-lg"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                                  <Search className="w-4 h-4 text-gray-400" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-800 truncate">
+                                  {product.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  €{product.price?.toFixed(2)}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                        <div className="border-t border-gray-100 mt-2 pt-2">
+                          <button
+                            onClick={() => handleSuggestionClick(searchQuery)}
+                            className="w-full text-center text-sm text-rose-500 hover:text-rose-600 font-medium py-2"
+                          >
+                            Alle Ergebnisse anzeigen für "{searchQuery}"
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center">
+                        <p className="text-sm text-gray-500">Keine Produkte gefunden</p>
+                        <button
+                          onClick={() => handleSuggestionClick(searchQuery)}
+                          className="mt-2 text-sm text-rose-500 hover:text-rose-600 font-medium"
+                        >
+                          Alle Ergebnisse anzeigen für "{searchQuery}"
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,63 +1,73 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion } from "motion/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Package, ArrowRight } from "lucide-react";
+import Link from "next/link";
+
+interface NoProductAvailableProps {
+  selectedTab?: string;
+  className?: string;
+  compact?: boolean;
+}
 
 const NoProductAvailable = ({
   selectedTab,
   className,
-}: {
-  selectedTab?: string;
-  className?: string;
-}) => {
+  compact = false,
+}: NoProductAvailableProps) => {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center py-10 min-h-80 space-y-4 text-center bg-gray-100 rounded-lg w-full mt-10",
+        "flex flex-col items-center justify-center w-full",
+        compact ? "py-8 sm:py-10" : "py-12 sm:py-16",
         className
       )}
     >
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className="text-2xl font-bold text-gray-800">
-          No Product Available
+      <div className="text-center px-4 max-w-md">
+        {/* Icon */}
+        <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+          <Package className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+        </div>
+
+        <h2 className={cn(
+          "font-semibold text-gray-800",
+          compact ? "text-xl" : "text-2xl sm:text-3xl"
+        )}>
+          Keine Produkte verfügbar
         </h2>
-      </motion.div>
 
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-        className="text-gray-600"
-      >
-        We&apos;re sorry, but there are no products matching on{" "}
-        <span className="text-base font-semibold text-darkColor">
-          {selectedTab}
-        </span>{" "}
-        criteria at the moment.
-      </motion.p>
+        <p className={cn(
+          "text-gray-600 mt-2",
+          compact ? "text-sm" : "text-base"
+        )}>
+          Es tut uns leid, aber es gibt derzeit keine Produkte in der Kategorie{" "}
+          <span className="font-medium text-rose-500">
+            {selectedTab || "ausgewählten"}
+          </span>
+        </p>
 
-      <motion.div
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ repeat: Infinity, duration: 1.5 }}
-        className="flex items-center space-x-2 text-shop_dark_green"
-      >
-        <Loader2 className="w-5 h-5 animate-spin" />
-        <span>We&apos;re restocking shortly</span>
-      </motion.div>
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <Loader2 className="w-4 h-4 text-rose-400 animate-spin" />
+          <span className="text-rose-500 font-medium text-sm">
+            Wir füllen bald wieder auf
+          </span>
+        </div>
 
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-        className="text-sm text-gray-500"
-      >
-        Please check back later or explore our other product categories.
-      </motion.p>
+        <p className="text-gray-400 text-sm mt-3">
+          Schauen Sie später wieder vorbei oder entdecken Sie unsere anderen Kategorien.
+        </p>
+
+        <Link
+          href="/sortiment"
+          className={cn(
+            "inline-flex items-center gap-2 mt-5 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors",
+            compact ? "px-4 py-2 text-sm" : "px-6 py-2.5 text-base"
+          )}
+        >
+          <span>Alle Kategorien entdecken</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
     </div>
   );
 };

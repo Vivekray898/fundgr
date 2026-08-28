@@ -1,3 +1,5 @@
+// components/ProductCard.tsx
+"use client";
 import { Product } from "@/sanity.types";
 import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
@@ -9,8 +11,26 @@ import PriceView from "./PriceView";
 import Title from "./Title";
 import ProductSideMenu from "./ProductSideMenu";
 import AddToCartButton from "./AddToCartButton";
+import CatalogueButton from "./CatalogueButton";
+import { useCatalogueMode } from "@/components/providers/CatalogueSettingsProvider";
 
 const ProductCard = ({ product }: { product: Product }) => {
+  const { enabled, pricePlaceholder, productCardCta, loading } = useCatalogueMode();
+
+  // Show loading state or fallback
+  if (loading) {
+    return (
+      <div className="text-xs sm:text-sm border-[1px] rounded-lg sm:rounded-md border-rose-200/50 group bg-white hover:border-rose-300 transition-colors h-full flex flex-col animate-pulse">
+        <div className="h-48 sm:h-56 md:h-64 bg-gray-200"></div>
+        <div className="p-2 sm:p-3 space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-8 bg-gray-200 rounded w-full"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="text-xs sm:text-sm border-[1px] rounded-lg sm:rounded-md border-rose-200/50 group bg-white hover:border-rose-300 transition-colors h-full flex flex-col">
       <div className="relative group overflow-hidden bg-gradient-to-br from-rose-50/30 to-pink-50/30 flex-shrink-0">
@@ -82,14 +102,30 @@ const ProductCard = ({ product }: { product: Product }) => {
           </p>
         </div>
 
-        <PriceView
-          price={product?.price}
-          discount={product?.discount}
-          className="text-xs sm:text-sm"
-        />
+        {/* Price - Conditional rendering */}
+        {!enabled ? (
+          <PriceView
+            price={product?.price}
+            discount={product?.discount}
+            className="text-xs sm:text-sm"
+          />
+        ) : (
+          <p className="text-xs sm:text-sm text-gray-500 font-medium">
+            {pricePlaceholder}
+          </p>
+        )}
         
         <div className="mt-auto pt-1">
-          <AddToCartButton product={product} className="w-full sm:w-36 rounded-full text-xs sm:text-sm" />
+          {/* Conditional Button - Catalogue Mode vs Normal Mode */}
+          {!enabled ? (
+            <AddToCartButton product={product} className="w-full sm:w-36 rounded-full text-xs sm:text-sm" />
+          ) : (
+            <CatalogueButton 
+              productSlug={product.slug?.current || ""} 
+              label={productCardCta}
+              variant="card"
+            />
+          )}
         </div>
       </div>
     </div>

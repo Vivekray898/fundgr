@@ -1,3 +1,4 @@
+// sanity/schemas/product.ts
 import { TrolleyIcon } from "@sanity/icons";
 import { defineField, defineType } from "sanity";
 
@@ -34,6 +35,26 @@ export const productType = defineType({
       title: "Description",
       type: "string",
     }),
+    // ✅ Simple deal flag
+    defineField({
+      name: "isDeal",
+      title: "Is Deal?",
+      type: "boolean",
+      initialValue: false,
+      description: "Show this product in the deals page",
+    }),
+    defineField({
+      name: "dealEndDate",
+      title: "Deal End Date",
+      type: "datetime",
+      description: "When does this deal end? (Optional)",
+    }),
+    defineField({
+      name: "originalPrice",
+      title: "Original Price (UVP)",
+      type: "number",
+      description: "The original price before discount",
+    }),
     defineField({
       name: "price",
       title: "Price",
@@ -64,7 +85,6 @@ export const productType = defineType({
       type: "reference",
       to: { type: "brand" },
     }),
-
     defineField({
       name: "status",
       title: "Product Status",
@@ -79,14 +99,36 @@ export const productType = defineType({
     }),
     defineField({
       name: "variant",
-      title: "Product Type",
+      title: "Product Type / Category",
       type: "string",
+      description: "The main product category for filtering and display",
       options: {
         list: [
-          { title: "Gadget", value: "gadget" },
-          { title: "Appliances", value: "appliances" },
-          { title: "Refrigerators", value: "refrigerators" },
-          { title: "Others", value: "others" },
+          { title: "📱 Handy-Zubehör", value: "handy-zubehoer" },
+          { title: "⚡ Elektronikartikel", value: "elektronikartikel" },
+          { title: "🔋 Batterien", value: "batterien" },
+          { title: "🧴 Plastikartikel", value: "plastikartikel" },
+          { title: "🎨 Malerzubehör", value: "malerzubehoer" },
+          { title: "🌈 Farben", value: "farben" },
+          { title: "🔩 Schrauben & Befestigung", value: "schrauben-befestigung" },
+          { title: "🔧 Werkzeuge", value: "werkzeuge" },
+          { title: "🚲 Fahrradzubehör", value: "fahrradzubehoer" },
+          { title: "🚗 Autozubehör", value: "autozubehoer" },
+          { title: "🌸 Saisonale Artikel", value: "saisonale-artikel" },
+          { title: "🧳 Reisebedarf", value: "reisebedarf" },
+          { title: "🍎 Lebensmittel & Getränke", value: "lebensmittel-getraenke" },
+          { title: "🧸 Spielzeug", value: "spielzeug" },
+          { title: "✏️ Schreibwaren & Geschenke", value: "schreibwaren-geschenke" },
+          { title: "🏠 Wohnen & Haushalt", value: "wohnen-haushalt" },
+          { title: "👗 Mode & Accessoires", value: "mode-accessoires" },
+          { title: "💊 Gesundheit & Drogerie", value: "gesundheit-drogerie" },
+          { title: "💻 Elektronik", value: "elektronik" },
+          { title: "🏗️ Baumarkt & Werkzeuge", value: "baumarkt-werkzeuge" },
+          { title: "🛻 Automotive", value: "automotive" },
+          { title: "🪨 Ziersteine", value: "ziersteine" },
+          { title: "🌲 Rindenmulch", value: "rindenmulch" },
+          { title: "🌿 Gartenwerkzeuge", value: "gartenwerkzeuge" },
+          { title: "🏺 Blumentöpfe", value: "blumentoepfe" },
         ],
       },
     }),

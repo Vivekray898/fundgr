@@ -10,9 +10,8 @@ import BrandList from "./shop/BrandList";
 import PriceList from "./shop/PriceList";
 import { client } from "@/sanity/lib/client";
 import { Loader2, SlidersHorizontal, X, Filter, ChevronDown } from "lucide-react";
-import NoProductAvailable from "./NoProductAvailable";
+import SeasonalNoProductAvailable from "./SeasonalNoProductAvailable";
 import ProductCard from "./ProductCard";
-import SeasonalNotice from "./SeasonalNotice";
 import { motion, AnimatePresence } from "motion/react";
 
 interface Props {
@@ -60,17 +59,56 @@ const Shop = ({ categories, brands }: Props) => {
     };
   }, [isFilterOpen, isDesktop]);
 
-  // Find selected seasonal category - LOOK DEEPER
-  const selectedCategoryData = categories?.find(
-    (cat) => cat.slug?.current === selectedCategory
-  );
-  
-  // Check if category is seasonal - check both direct and nested
-  const isSeasonalSelected = selectedCategoryData?.isSeasonal === true || 
-    (selectedCategoryData as any)?.isSeasonal === true;
+  // Find selected category (including children)
+  const findSelectedCategory = (catSlug: string | null) => {
+    if (!catSlug) return { category: null, parent: null };
 
-  console.log("Selected Category Data:", selectedCategoryData);
-  console.log("Is Seasonal:", isSeasonalSelected);
+    // Search in top-level categories
+    const topLevel = categories?.find(
+      (cat: any) => cat.slug?.current === catSlug || cat.slug === catSlug
+    );
+    
+    if (topLevel) return { category: topLevel, parent: null };
+
+    // Search in children of all top-level categories
+    for (const parentCat of categories || []) {
+      const child = parentCat.children?.find(
+        (child: any) => child.slug?.current === catSlug || child.slug === catSlug
+      );
+      if (child) {
+        return { category: child, parent: parentCat };
+      }
+    }
+
+    // Also search in the full categories list (for safety)
+    const fullCategory = categories?.find(
+      (cat: any) => cat.slug?.current === catSlug || cat.slug === catSlug
+    );
+    
+    if (fullCategory) {
+      // Find parent if exists
+      const parent = categories?.find(
+        (cat: any) => cat._id === fullCategory.parent?._ref
+      );
+      return { category: fullCategory, parent: parent || null };
+    }
+
+    return { category: null, parent: null };
+  };
+
+  const { category: selectedCategoryData, parent: selectedParentData } = findSelectedCategory(selectedCategory);
+
+  const isSeasonalSelected = selectedCategoryData?.isSeasonal === true || 
+    selectedParentData?.isSeasonal === true;
+
+  const seasonalMessage = selectedCategoryData?.seasonalMessage || 
+    selectedParentData?.seasonalMessage;
+  const seasonalStart = selectedCategoryData?.seasonalStart || 
+    selectedParentData?.seasonalStart;
+  const seasonalEnd = selectedCategoryData?.seasonalEnd || 
+    selectedParentData?.seasonalEnd;
+  const seasonalIcon = selectedCategoryData?.seasonalIcon || 
+    selectedParentData?.seasonalIcon || "flower";
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -155,16 +193,6 @@ const Shop = ({ categories, brands }: Props) => {
     setIsFilterOpen(false);
   };
 
-  // Get seasonal message from category (handle both direct and nested)
-  const seasonalMessage = selectedCategoryData?.seasonalMessage || 
-    (selectedCategoryData as any)?.seasonalMessage;
-  const seasonalStart = selectedCategoryData?.seasonalStart || 
-    (selectedCategoryData as any)?.seasonalStart;
-  const seasonalEnd = selectedCategoryData?.seasonalEnd || 
-    (selectedCategoryData as any)?.seasonalEnd;
-  const seasonalIcon = selectedCategoryData?.seasonalIcon || 
-    (selectedCategoryData as any)?.seasonalIcon || "flower";
-
   return (
     <div className="border-t">
       <Container className="mt-5">
@@ -202,12 +230,15 @@ const Shop = ({ categories, brands }: Props) => {
         
         {/* Seasonal Banner - Shows when seasonal category is selected */}
         {isSeasonalSelected && seasonalMessage && (
-          <SeasonalNotice
-            message={seasonalMessage}
-            startDate={seasonalStart}
-            endDate={seasonalEnd}
-            icon={seasonalIcon || "flower"}
-            variant="banner"
+          <SeasonalNoProductAvailable
+            selectedTab={selectedCategory || ""}
+            isSeasonal={true}
+            seasonalMessage={seasonalMessage}
+            seasonalStart={seasonalStart}
+            seasonalEnd={seasonalEnd}
+            seasonalIcon={seasonalIcon}
+            className="py-4"
+            compact
           />
         )}
 
@@ -231,145 +262,127 @@ const Shop = ({ categories, brands }: Props) => {
           </div>
 
           {/* Mobile Filter - Bottom Sheet */}
-          <AnimatePresence>
-            {isFilterOpen && !isDesktop && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="fixed inset-0 bg-black/50 z-[100]"
-                  onClick={() => setIsFilterOpen(false)}
-                />
+          {isFilterOpen && !isDesktop && (
+            <>
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 bg-black/50 z-[100]"
+                onClick={() => setIsFilterOpen(false)}
+              />
 
-                <motion.div
-                  ref={filterRef}
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "100%" }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col"
-                  style={{ maxHeight: "92vh" }}
-                >
-                  {/* Drag Handle */}
-                  <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
-                    <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              {/* Bottom Sheet */}
+              <motion.div
+                ref={filterRef}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl shadow-2xl flex flex-col"
+                style={{ maxHeight: "92vh" }}
+              >
+                {/* Drag Handle */}
+                <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
+                  <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+                </div>
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pb-3 border-b border-gray-100 flex-shrink-0">
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-bold text-gray-800">Filters</h2>
+                    {activeFilterCount > 0 && (
+                      <span className="bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {activeFilterCount}
+                      </span>
+                    )}
                   </div>
-
-                  {/* Header */}
-                  <div className="flex items-center justify-between px-5 pb-3 border-b border-gray-100 flex-shrink-0">
-                    <div className="flex items-center gap-3">
-                      <h2 className="text-lg font-bold text-gray-800">Filters</h2>
-                      {activeFilterCount > 0 && (
-                        <span className="bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          {activeFilterCount}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {hasActiveFilters && (
-                        <button
-                          onClick={resetFilters}
-                          className="text-sm text-rose-500 hover:text-rose-600 font-medium"
-                        >
-                          Reset All
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setIsFilterOpen(false)}
-                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                      >
-                        <X className="w-5 h-5 text-gray-600" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Tab Navigation */}
-                  <div className="flex border-b border-gray-100 flex-shrink-0 px-1">
-                    {[
-                      { id: "categories", label: "Categories" },
-                      { id: "brands", label: "Brands" },
-                      { id: "price", label: "Price" },
-                    ].map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`
-                          flex-1 py-3 text-sm font-medium transition-all relative
-                          ${activeTab === tab.id ? "text-rose-500" : "text-gray-500"}
-                        `}
-                      >
-                        {tab.label}
-                        {activeTab === tab.id && (
-                          <motion.div
-                            layoutId="activeTab"
-                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-rose-500"
-                          />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 overflow-y-auto p-4 pb-24">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {activeTab === "categories" && (
-                          <CategoryList
-                            categories={topLevelCategories}
-                            selectedCategory={selectedCategory}
-                            setSelectedCategory={setSelectedCategory}
-                            isMobile
-                          />
-                        )}
-                        {activeTab === "brands" && (
-                          <BrandList
-                            brands={brands}
-                            setSelectedBrand={setSelectedBrand}
-                            selectedBrand={selectedBrand}
-                            isMobile
-                          />
-                        )}
-                        {activeTab === "price" && (
-                          <PriceList
-                            setSelectedPrice={setSelectedPrice}
-                            selectedPrice={selectedPrice}
-                            isMobile
-                          />
-                        )}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Footer Actions */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 rounded-b-3xl flex-shrink-0">
-                    <div className="flex gap-3">
+                  <div className="flex items-center gap-2">
+                    {hasActiveFilters && (
                       <button
                         onClick={resetFilters}
-                        className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                        className="text-sm text-rose-500 hover:text-rose-600 font-medium"
                       >
                         Reset All
                       </button>
-                      <button
-                        onClick={applyFilters}
-                        className="flex-1 px-4 py-3 text-sm font-medium text-white bg-rose-500 rounded-xl hover:bg-rose-600 active:scale-95 transition-all"
-                      >
-                        Apply Filters
-                        {activeFilterCount > 0 && ` (${activeFilterCount})`}
-                      </button>
-                    </div>
+                    )}
+                    <button
+                      onClick={() => setIsFilterOpen(false)}
+                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      <X className="w-5 h-5 text-gray-600" />
+                    </button>
                   </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+                </div>
+
+                {/* Tab Navigation */}
+                <div className="flex border-b border-gray-100 flex-shrink-0 px-1">
+                  {[
+                    { id: "categories", label: "Categories" },
+                    { id: "brands", label: "Brands" },
+                    { id: "price", label: "Price" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`flex-1 py-3 text-sm font-medium transition-all relative ${
+                        activeTab === tab.id ? "text-rose-500" : "text-gray-500"
+                      }`}
+                    >
+                      {tab.label}
+                      {activeTab === tab.id && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-rose-500" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-4 pb-24">
+                  {activeTab === "categories" && (
+                    <CategoryList
+                      categories={topLevelCategories}
+                      selectedCategory={selectedCategory}
+                      setSelectedCategory={setSelectedCategory}
+                      isMobile
+                    />
+                  )}
+                  {activeTab === "brands" && (
+                    <BrandList
+                      brands={brands}
+                      setSelectedBrand={setSelectedBrand}
+                      selectedBrand={selectedBrand}
+                      isMobile
+                    />
+                  )}
+                  {activeTab === "price" && (
+                    <PriceList
+                      setSelectedPrice={setSelectedPrice}
+                      selectedPrice={selectedPrice}
+                      isMobile
+                    />
+                  )}
+                </div>
+
+                {/* Footer Actions */}
+                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 rounded-b-3xl flex-shrink-0">
+                  <div className="flex gap-3">
+                    <button
+                      onClick={resetFilters}
+                      className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                    >
+                      Reset All
+                    </button>
+                    <button
+                      onClick={applyFilters}
+                      className="flex-1 px-4 py-3 text-sm font-medium text-white bg-rose-500 rounded-xl hover:bg-rose-600 active:scale-95 transition-all"
+                    >
+                      Apply Filters
+                      {activeFilterCount > 0 && ` (${activeFilterCount})`}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
 
           {/* Product Grid */}
           <div className="flex-1 pt-5">
@@ -388,7 +401,15 @@ const Shop = ({ categories, brands }: Props) => {
                   ))}
                 </div>
               ) : (
-                <NoProductAvailable className="bg-white mt-0" />
+                <SeasonalNoProductAvailable
+                  selectedTab={selectedCategory || "all products"}
+                  isSeasonal={isSeasonalSelected}
+                  seasonalMessage={seasonalMessage}
+                  seasonalStart={seasonalStart}
+                  seasonalEnd={seasonalEnd}
+                  seasonalIcon={seasonalIcon}
+                  className="bg-white mt-0"
+                />
               )}
             </div>
           </div>

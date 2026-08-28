@@ -86,15 +86,42 @@ const CategoryProducts = ({ categories, slug }: Props) => {
     (category: any) => !category.parent
   );
 
-  // Find current category data (including parent)
-  const currentCategory = categories?.find(
-    (cat: any) => cat.slug?.current === currentSlug || cat.slug === currentSlug
-  );
+  // 🔥 FIXED: Find current category data (including children)
+  const findCategory = (catSlug: string) => {
+    // Search in top-level categories
+    const topLevel = topLevelCategories?.find(
+      (cat: any) => cat.slug?.current === catSlug || cat.slug === catSlug
+    );
+    
+    if (topLevel) return { category: topLevel, parent: null };
 
-  // Find parent category if current is a child
-  const parentCategory = currentCategory?.parent
-    ? categories?.find((cat: any) => cat._id === currentCategory.parent?._ref)
-    : null;
+    // Search in children of all top-level categories
+    for (const parentCat of topLevelCategories || []) {
+      const child = parentCat.children?.find(
+        (child: any) => child.slug?.current === catSlug || child.slug === catSlug
+      );
+      if (child) {
+        return { category: child, parent: parentCat };
+      }
+    }
+
+    // Also search in the full categories list (for safety)
+    const fullCategory = categories?.find(
+      (cat: any) => cat.slug?.current === catSlug || cat.slug === catSlug
+    );
+    
+    if (fullCategory) {
+      // Find parent if exists
+      const parent = categories?.find(
+        (cat: any) => cat._id === fullCategory.parent?._ref
+      );
+      return { category: fullCategory, parent: parent || null };
+    }
+
+    return { category: null, parent: null };
+  };
+
+  const { category: currentCategory, parent: parentCategory } = findCategory(currentSlug);
 
   const isSeasonal = currentCategory?.isSeasonal || parentCategory?.isSeasonal;
   const seasonalMessage = currentCategory?.seasonalMessage || parentCategory?.seasonalMessage;
@@ -503,6 +530,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                 seasonalEnd={seasonalEnd}
                 seasonalIcon={seasonalIcon}
                 className="py-3 sm:py-4"
+                compact
               />
             </div>
           )}

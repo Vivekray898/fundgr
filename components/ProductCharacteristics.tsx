@@ -1,27 +1,47 @@
+// components/ProductCharacteristics.tsx
+"use client";
 import { Product } from "@/sanity.types";
-import { getBrand } from "@/sanity/queries";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "./ui/accordion";
-import { ChevronDown, Package, Tag, Calendar, Box } from "lucide-react";
+import { Package, Tag, Calendar, Box } from "lucide-react";
 
-const ProductCharacteristics = async ({
-  product,
-}: {
+interface ProductCharacteristicsProps {
   product: Product | null | undefined;
-}) => {
-  const brand = await getBrand(product?.slug?.current as string);
-  const brandName = brand && brand.length > 0 ? brand[0]?.brandName : "Unknown";
+}
+
+const ProductCharacteristics = ({ product }: ProductCharacteristicsProps) => {
+  const [brandName, setBrandName] = useState<string>("Unknown");
+
+  useEffect(() => {
+    const fetchBrand = async () => {
+      if (product?.brand) {
+        try {
+          // If brand is a reference object with a title
+          if (typeof product.brand === 'object' && product.brand !== null) {
+            const brand = product.brand as any;
+            setBrandName(brand.title || brand.name || "Unknown");
+          } else {
+            setBrandName("Unknown");
+          }
+        } catch (error) {
+          console.error("Error fetching brand:", error);
+          setBrandName("Unknown");
+        }
+      }
+    };
+    fetchBrand();
+  }, [product]);
 
   const characteristics = [
     { label: "Brand", value: brandName, icon: Tag },
     { label: "Collection", value: "2025", icon: Calendar },
     { label: "Type", value: product?.variant || "Standard", icon: Box },
-    { label: "Stock", value: product?.stock ? "Available" : "Out of Stock", icon: Package },
+    { label: "Stock", value: product?.stock ? `${product.stock} available` : "Out of Stock", icon: Package },
   ];
 
   return (
