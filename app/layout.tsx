@@ -8,10 +8,10 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s - FundGrube-Bestpreis online store",
-    default: "FundGrube-Bestpreis online store",
+    template: "%s - FundGrube BestPreis - Markenprodukte günstig kaufen",
+    default: "FundGrube BestPreis - Markenprodukte günstig kaufen",
   },
-  description: "FundGrube-Bestpreis online store, Your one stop shop for all your needs",
+  description: "Ihr zuverlässiger Partner für zertifizierte Originalmarken. Maßgeschneiderte Bestellungen in Blieskastel & Zweibrücken.",
 };
 
 export default async function RootLayout({

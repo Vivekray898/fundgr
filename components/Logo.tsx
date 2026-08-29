@@ -35,8 +35,8 @@ const Logo = ({ logoData }: LogoProps) => {
         />
       ) : (
         <div className="flex items-center gap-2">
-          <Store className="w-8 h-8 text-shop_light_green" />
-          <span className="text-xl font-bold text-gray-800">Shop</span>
+          <Store className="w-8 h-8 text-rose-600" />
+          <span className="text-xl font-bold text-rose-700">Fundgrube</span>
         </div>
       )}
     </Link>
