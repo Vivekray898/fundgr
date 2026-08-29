@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [categories, brands, blogs] = await Promise.all([
     getCategories(),
     getAllBrands(),
-    getAllBlogs(),
+    getAllBlogs(100), // Add the required quantity parameter
   ]);
 
   // Static routes

@@ -17,14 +17,13 @@ interface Category {
 }
 
 const CategoryGrid = ({ categories }: { categories: Category[] }) => {
-  // Filter to only categories with images
-  const categoriesWithImages = categories?.filter(
-    (category) => category.image
-  );
+  // Show ALL categories - don't filter out those without images
+  // Categories without images will show the icon fallback
+  const categoriesToShow = categories || [];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-      {categoriesWithImages?.map((category, index) => (
+      {categoriesToShow?.map((category, index) => (
         <CategoryCard key={category._id} category={category} index={index} />
       ))}
     </div>

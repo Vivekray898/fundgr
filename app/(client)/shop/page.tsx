@@ -7,7 +7,7 @@ const ShopPage = async () => {
   const brands = await getAllBrands();
   return (
     <div className="bg-white">
-      <Suspense fallback={<div className="p-8 text-center">Loading shop...</div>}>
+      <Suspense fallback={<div className="p-8 text-center">Shop wird geladen …</div>}>
         <Shop categories={categories} brands={brands} />
       </Suspense>
     </div>
