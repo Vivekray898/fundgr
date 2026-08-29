@@ -20,13 +20,13 @@ import {
   Sparkles
 } from "lucide-react";
 
+// Define interface for category with flexible slug
 interface Category {
   _id: string;
   title: string;
   slug?: {
     current: string;
-  };
-  slug?: string;
+  } | string;
   image?: string;
   teaserSubtitle?: string;
   description?: string;
@@ -34,6 +34,13 @@ interface Category {
   isSeasonal?: boolean;
   productCount?: number;
 }
+
+// Helper function to safely get slug string
+const getSlugString = (slug: any): string => {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current || "";
+};
 
 const iconMap: Record<string, any> = {
   garden: Flower2,
@@ -51,8 +58,8 @@ const iconMap: Record<string, any> = {
 };
 
 const CategoryCard = ({ category, index = 0 }: { category: Category; index?: number }) => {
-  const slug = category.slug?.current || category.slug;
-  const Icon = iconMap[category.categoryIcon] || iconMap.default;
+  const slug = getSlugString(category.slug);
+  const Icon = iconMap[category.categoryIcon || "default"] || iconMap.default;
 
   const getGradient = (idx: number) => {
     const gradients = [

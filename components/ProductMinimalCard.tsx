@@ -26,7 +26,7 @@ const ProductMinimalCard = ({
 }: ProductMinimalCardProps) => {
   const { enabled, pricePlaceholder } = useCatalogueMode();
   const firstImage = product?.images?.[0];
-  const hasDiscount = product?.discount > 0;
+  const hasDiscount = (product?.discount || 0) > 0;
 
   return (
     <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2'} rounded-lg border border-rose-100/50 hover:border-rose-200 hover:shadow-sm transition-all ${className}`}>
@@ -54,10 +54,10 @@ const ProductMinimalCard = ({
         {/* Category */}
         {showCategory && product?.categories && (
           <Link
-            href={`/category/${product.categories[0]}`}
+            href={`/category/${(product.categories[0] as any)?.slug?.current || product.categories[0]}`}
             className="text-[8px] sm:text-[10px] text-rose-400 font-medium uppercase tracking-wide hover:text-rose-600 transition-colors"
           >
-            {product.categories[0]}
+            {(product.categories[0] as any)?.title || product.categories[0]}
           </Link>
         )}
 

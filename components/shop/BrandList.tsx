@@ -1,5 +1,5 @@
 // components/shop/BrandList.tsx
-import { BRANDS_QUERYResult } from "@/sanity.types";
+import { BRANDS_QUERY_RESULT } from "@/sanity.types";
 import React, { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
@@ -9,23 +9,40 @@ import { urlFor } from "@/sanity/lib/image";
 import { cn } from "@/lib/utils";
 
 interface Props {
-  brands: BRANDS_QUERYResult;
+  brands: BRANDS_QUERY_RESULT;
   selectedBrand?: string | null;
   setSelectedBrand: React.Dispatch<React.SetStateAction<string | null>>;
   isMobile?: boolean;
 }
 
+// Define interface for brand type
+interface BrandItem {
+  _id: string;
+  name?: string;
+  slug?: {
+    current: string;
+  };
+  logo?: any;
+  description?: string;
+  featured?: boolean;
+  order?: number;
+  marketLocation?: boolean;
+}
+
 const BrandList = ({ brands, selectedBrand, setSelectedBrand, isMobile = false }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filter brands by search term - using 'name' instead of 'title'
-  const filteredBrands = brands?.filter(brand =>
+  // Cast brands to BrandItem[]
+  const typedBrands = brands as unknown as BrandItem[];
+
+  // Filter brands by search term
+  const filteredBrands = typedBrands?.filter((brand: BrandItem) =>
     brand?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     brand?.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Sort brands: featured first, then by order, then alphabetically
-  const sortedBrands = filteredBrands?.sort((a, b) => {
+  const sortedBrands = filteredBrands?.sort((a: BrandItem, b: BrandItem) => {
     if (a?.featured && !b?.featured) return -1;
     if (!a?.featured && b?.featured) return 1;
     if ((a?.order || 0) !== (b?.order || 0)) {
@@ -35,8 +52,8 @@ const BrandList = ({ brands, selectedBrand, setSelectedBrand, isMobile = false }
   });
 
   // Get selected brand for display
-  const selectedBrandData = brands?.find(
-    (brand) => brand?.slug?.current === selectedBrand
+  const selectedBrandData = typedBrands?.find(
+    (brand: BrandItem) => brand?.slug?.current === selectedBrand
   );
 
   if (isMobile) {
@@ -93,7 +110,7 @@ const BrandList = ({ brands, selectedBrand, setSelectedBrand, isMobile = false }
               {searchTerm ? "Keine Marken gefunden" : "Keine Marken verfügbar"}
             </div>
           ) : (
-            sortedBrands?.map((brand) => (
+            sortedBrands?.map((brand: BrandItem) => (
               <div
                 key={brand?._id}
                 onClick={() => setSelectedBrand(brand?.slug?.current as string)}
@@ -162,9 +179,9 @@ const BrandList = ({ brands, selectedBrand, setSelectedBrand, isMobile = false }
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-rose-500" />
             <h3 className="text-sm font-bold text-gray-800">Marken</h3>
-            {brands && brands.length > 0 && (
+            {typedBrands && typedBrands.length > 0 && (
               <span className="text-xs text-gray-400 bg-white/70 px-2 py-0.5 rounded-full">
-                {brands.length}
+                {typedBrands.length}
               </span>
             )}
           </div>
@@ -233,7 +250,7 @@ const BrandList = ({ brands, selectedBrand, setSelectedBrand, isMobile = false }
               {searchTerm ? "Keine Marken gefunden" : "Keine Marken verfügbar"}
             </div>
           ) : (
-            sortedBrands?.map((brand) => (
+            sortedBrands?.map((brand: BrandItem) => (
               <div
                 key={brand?._id}
                 onClick={() => setSelectedBrand(brand?.slug?.current as string)}

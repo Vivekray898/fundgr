@@ -3,15 +3,22 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
+// Define interface for category with flexible slug
 interface Category {
   _id: string;
   title: string;
   slug?: {
     current: string;
-  };
-  slug?: string;
+  } | string;
   productCount?: number;
 }
+
+// Helper function to safely get slug string
+const getSlugString = (slug: any): string => {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current || "";
+};
 
 const PopularCategories = ({ categories }: { categories: Category[] }) => {
   const popularCategories = categories?.slice(0, 12);
@@ -30,7 +37,7 @@ const PopularCategories = ({ categories }: { categories: Category[] }) => {
       </div>
       <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
         {popularCategories?.map((category) => {
-          const slug = category.slug?.current || category.slug;
+          const slug = getSlugString(category.slug);
           return (
             <Link
               key={category._id}

@@ -1,4 +1,5 @@
-import { MY_ORDERS_QUERYResult } from "@/sanity.types";
+// components/OrderDetailDialog.tsx
+import { MY_ORDERS_QUERY_RESULT } from "@/sanity.types";
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -15,8 +16,19 @@ import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import PriceFormatter from "./PriceFormatter";
 
+// Define interfaces for type safety
+interface OrderProduct {
+  quantity?: number;
+  product?: {
+    _id?: string;
+    images?: any[];
+    name?: string;
+    price?: number;
+  } | null;
+}
+
 interface OrderDetailsDialogProps {
-  order: MY_ORDERS_QUERYResult[number] | null;
+  order: MY_ORDERS_QUERY_RESULT[number] | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -72,7 +84,7 @@ const OrderDetailDialog: React.FC<OrderDetailsDialogProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {order.products?.map((product, index) => (
+            {order.products?.map((product: OrderProduct, index: number) => (
               <TableRow key={index}>
                 <TableCell className="flex items-center gap-2">
                   {product?.product?.images && (

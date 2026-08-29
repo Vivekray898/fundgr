@@ -20,7 +20,7 @@ interface SeasonalProductNoticeProps {
 
 const SeasonalProductNotice = ({ 
   categories, 
-  variant = "banner", // Default to banner (more visible)
+  variant = "banner",
   className,
   onViewCategories
 }: SeasonalProductNoticeProps) => {
@@ -34,6 +34,12 @@ const SeasonalProductNotice = ({
 
   if (!seasonalCategory || !showNotice) return null;
 
+  // Use default message if seasonalMessage is undefined
+  const message = seasonalCategory.seasonalMessage || "Saisonale Produkte verfügbar!";
+  const startDate = seasonalCategory.seasonalStart;
+  const endDate = seasonalCategory.seasonalEnd;
+  const icon = seasonalCategory.seasonalIcon || "flower";
+
   const handleViewCategories = () => {
     if (onViewCategories) {
       onViewCategories();
@@ -44,10 +50,10 @@ const SeasonalProductNotice = ({
 
   return (
     <SeasonalNotice
-      message={seasonalCategory.seasonalMessage}
-      startDate={seasonalCategory.seasonalStart}
-      endDate={seasonalCategory.seasonalEnd}
-      icon={seasonalCategory.seasonalIcon || "flower"}
+      message={message}
+      startDate={startDate}
+      endDate={endDate}
+      icon={icon}
       variant={variant}
       className={className}
       onClose={() => setShowNotice(false)}

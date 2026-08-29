@@ -20,6 +20,7 @@ interface ProductSuggestion {
     current: string;
   };
   images?: any[];
+  image?: string;
   price: number;
 }
 
@@ -184,9 +185,9 @@ const SearchBar = ({
                   onClick={() => handleProductClick(product)}
                   className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-rose-50 transition-colors"
                 >
-                  {product.image ? (
+                  {product.image || product.images?.[0]?.asset?.url ? (
                     <Image
-                      src={product.image}
+                      src={product.image || product.images?.[0]?.asset?.url}
                       alt={product.name}
                       width={40}
                       height={40}
@@ -331,9 +332,9 @@ const SearchBar = ({
                         onClick={() => handleProductClick(product)}
                         className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-rose-50 transition-colors"
                       >
-                        {product.image ? (
+                        {product.image || product.images?.[0]?.asset?.url ? (
                           <Image
-                            src={product.image}
+                            src={product.image || product.images?.[0]?.asset?.url}
                             alt={product.name}
                             width={50}
                             height={50}

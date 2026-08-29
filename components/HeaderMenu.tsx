@@ -21,7 +21,9 @@ interface HeaderMenuProps {
   categoryParent?: {
     _id: string;
     title: string;
-  };
+  } | {
+    _ref: string;
+  } | null | undefined;
   storeLocatorSettings?: any;
 }
 

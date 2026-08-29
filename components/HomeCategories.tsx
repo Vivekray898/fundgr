@@ -6,7 +6,15 @@ import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import Link from "next/link";
 
+// Define interface for categories with optional productCount
+interface CategoryWithCount extends Category {
+  productCount?: number;
+}
+
 const HomeCategories = ({ categories }: { categories: Category[] }) => {
+  // Cast categories to include optional productCount
+  const categoriesWithCount = categories as CategoryWithCount[];
+
   return (
     <div className="bg-white border border-rose-100 my-6 md:my-20 p-3 sm:p-5 lg:p-7 rounded-xl overflow-hidden">
       <div className="flex items-center justify-between mb-4 sm:mb-5">
@@ -22,7 +30,7 @@ const HomeCategories = ({ categories }: { categories: Category[] }) => {
       {/* Mobile: Horizontal Scroll */}
       <div className="lg:hidden overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="flex gap-2 sm:gap-3">
-          {categories?.map((category) => (
+          {categoriesWithCount?.map((category) => (
             <div
               key={category?._id}
               className="bg-rose-50/30 p-2.5 sm:p-3 flex items-center gap-2.5 group rounded-lg hover:shadow-md hover:bg-rose-50/50 transition-all min-w-[140px] sm:min-w-[160px] snap-start flex-shrink-0"
@@ -57,7 +65,7 @@ const HomeCategories = ({ categories }: { categories: Category[] }) => {
 
       {/* Desktop: Grid */}
       <div className="hidden lg:grid grid-cols-3 gap-4 lg:gap-5">
-        {categories?.map((category) => (
+        {categoriesWithCount?.map((category) => (
           <div
             key={category?._id}
             className="bg-rose-50/30 p-4 lg:p-5 flex items-center gap-3 group rounded-lg hover:shadow-md hover:bg-rose-50/50 transition-all"

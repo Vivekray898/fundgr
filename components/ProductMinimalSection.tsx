@@ -3,20 +3,7 @@ import React from "react";
 import Link from "next/link";
 import ProductMinimalCard from "./ProductMinimalCard";
 import { ArrowRight } from "lucide-react";
-
-interface Product {
-  _id: string;
-  name: string;
-  slug: {
-    current: string;
-  };
-  images?: any[];
-  price: number;
-  discount: number;
-  originalPrice?: number;
-  isDeal?: boolean;
-  dealEndDate?: string;
-}
+import { Product } from "@/sanity.types";
 
 interface ProductMinimalSectionProps {
   products: Product[];
@@ -66,7 +53,7 @@ const ProductMinimalSection = ({
       {/* Product Grid - Mobile: 2 columns, Desktop: 3-4 columns */}
       {products.length > 0 ? (
         <div className={`grid ${gridCols} gap-2 sm:gap-4`}>
-          {products.map((product) => (
+          {products.map((product: Product) => (
             <ProductMinimalCard key={product._id} product={product} />
           ))}
         </div>

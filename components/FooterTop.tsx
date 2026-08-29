@@ -9,6 +9,12 @@ interface ContactItemData {
   icon: React.ReactNode;
 }
 
+interface ContactItem {
+  icon: string;
+  title: string;
+  subtitle: string;
+}
+
 const iconMap = {
   mapPin: MapPin,
   phone: Phone,
@@ -43,9 +49,12 @@ const defaultData: ContactItemData[] = [
 const FooterTop = async () => {
   const footerData = await getFooterData();
   
+  // Safely extract contact items
+  const contactItems = footerData?.contactInfo?.items || [];
+  
   // Map Sanity data to component data
-  const data: ContactItemData[] = footerData?.contactInfo?.items?.length > 0
-    ? footerData.contactInfo.items.map((item) => {
+  const data: ContactItemData[] = contactItems.length > 0
+    ? contactItems.map((item: ContactItem) => {
         const IconComponent = iconMap[item.icon as keyof typeof iconMap] || MapPin;
         return {
           title: item.title,

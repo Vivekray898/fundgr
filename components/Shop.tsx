@@ -1,6 +1,6 @@
 // components/Shop.tsx
 "use client";
-import { BRANDS_QUERYResult, Category, Product } from "@/sanity.types";
+import { BRANDS_QUERY_RESULT, Category, Product } from "@/sanity.types";
 import React, { useEffect, useState, useRef } from "react";
 import Container from "./Container";
 import Title from "./Title";
@@ -14,9 +14,38 @@ import SeasonalNoProductAvailable from "./SeasonalNoProductAvailable";
 import ProductCard from "./ProductCard";
 import { motion, AnimatePresence } from "motion/react";
 
+// Define interface for categories with children
+interface CategoryWithChildren extends Omit<Category, 'parent' | 'slug'> {
+  children?: Array<{
+    _id: string;
+    title: string;
+    slug?: {
+      current: string;
+    } | string;
+    isSeasonal?: boolean;
+    seasonalMessage?: string;
+    seasonalStart?: string;
+    seasonalEnd?: string;
+    seasonalIcon?: string;
+  }>;
+  parent?: {
+    _ref: string;
+  } | null;
+  slug?: {
+    current: string;
+  } | string;
+}
+
+// Helper function to safely get slug string
+const getSlugString = (slug: any): string => {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current || "";
+};
+
 interface Props {
   categories: Category[];
-  brands: BRANDS_QUERYResult;
+  brands: BRANDS_QUERY_RESULT;
 }
 
 const Shop = ({ categories, brands }: Props) => {
@@ -59,21 +88,24 @@ const Shop = ({ categories, brands }: Props) => {
     };
   }, [isFilterOpen, isDesktop]);
 
+  // Cast categories to CategoryWithChildren[]
+  const typedCategories = categories as unknown as CategoryWithChildren[];
+
   // Find selected category (including children)
   const findSelectedCategory = (catSlug: string | null) => {
     if (!catSlug) return { category: null, parent: null };
 
     // Search in top-level categories
-    const topLevel = categories?.find(
-      (cat: any) => cat.slug?.current === catSlug || cat.slug === catSlug
+    const topLevel = typedCategories?.find(
+      (cat) => getSlugString(cat.slug) === catSlug
     );
     
     if (topLevel) return { category: topLevel, parent: null };
 
     // Search in children of all top-level categories
-    for (const parentCat of categories || []) {
+    for (const parentCat of typedCategories || []) {
       const child = parentCat.children?.find(
-        (child: any) => child.slug?.current === catSlug || child.slug === catSlug
+        (child) => getSlugString(child.slug) === catSlug
       );
       if (child) {
         return { category: child, parent: parentCat };
@@ -81,14 +113,14 @@ const Shop = ({ categories, brands }: Props) => {
     }
 
     // Also search in the full categories list (for safety)
-    const fullCategory = categories?.find(
-      (cat: any) => cat.slug?.current === catSlug || cat.slug === catSlug
+    const fullCategory = typedCategories?.find(
+      (cat) => getSlugString(cat.slug) === catSlug
     );
     
     if (fullCategory) {
       // Find parent if exists
-      const parent = categories?.find(
-        (cat: any) => cat._id === fullCategory.parent?._ref
+      const parent = typedCategories?.find(
+        (cat) => cat._id === fullCategory.parent?._ref
       );
       return { category: fullCategory, parent: parent || null };
     }
@@ -172,7 +204,7 @@ const Shop = ({ categories, brands }: Props) => {
     fetchProducts();
   }, [selectedCategory, selectedBrand, selectedPrice]);
 
-  const topLevelCategories = categories?.filter(
+  const topLevelCategories = typedCategories?.filter(
     (category) => !category.parent
   );
 
@@ -246,7 +278,7 @@ const Shop = ({ categories, brands }: Props) => {
           {/* Desktop Filter Sidebar */}
           <div className="hidden lg:block lg:sticky lg:top-20 lg:self-start lg:h-[calc(100vh-160px)] lg:overflow-y-auto lg:min-w-64 pb-5 lg:border-r border-rose-100/50 scrollbar-hide">
             <CategoryList
-              categories={topLevelCategories}
+              categories={topLevelCategories as any}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
             />
@@ -339,7 +371,7 @@ const Shop = ({ categories, brands }: Props) => {
                 <div className="flex-1 overflow-y-auto p-4 pb-24">
                   {activeTab === "categories" && (
                     <CategoryList
-                      categories={topLevelCategories}
+                      categories={topLevelCategories as any}
                       selectedCategory={selectedCategory}
                       setSelectedCategory={setSelectedCategory}
                       isMobile

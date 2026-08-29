@@ -7,20 +7,30 @@ import CategoryGrid from "./sortiment/CategoryGrid";
 import PopularCategories from "./sortiment/PopularCategories";
 import { Search, X } from "lucide-react";
 
+// Define interface for category with flexible slug
 interface Category {
   _id: string;
   title: string;
   slug?: {
     current: string;
-  };
-  slug?: string;
+  } | string;
   image?: string;
   teaserSubtitle?: string;
   description?: string;
   categoryIcon?: string;
   isSeasonal?: boolean;
   productCount?: number;
+  parent?: {
+    _ref: string;
+  } | null;
 }
+
+// Helper function to safely get slug string
+const getSlugString = (slug: any): string => {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current || "";
+};
 
 interface SortimentPageProps {
   categories: Category[];
@@ -31,10 +41,10 @@ const SortimentPage = ({ categories }: SortimentPageProps) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const topLevelCategories = categories?.filter(
-    (category: any) => !category.parent
+    (category) => !category.parent
   );
 
-  const filteredCategories = topLevelCategories?.filter((category: any) =>
+  const filteredCategories = topLevelCategories?.filter((category) =>
     category.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

@@ -32,6 +32,7 @@ interface ProductSuggestion {
     current: string;
   };
   images?: any[];
+  image?: string;
   price: number;
 }
 
@@ -258,9 +259,9 @@ const MobileMenu = ({
                               onClick={() => handleProductClick(product)}
                               className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-rose-50 transition-colors"
                             >
-                              {product.image ? (
+                              {product.image || product.images?.[0]?.asset?.url ? (
                                 <Image
-                                  src={product.image}
+                                  src={product.image || product.images?.[0]?.asset?.url}
                                   alt={product.name}
                                   width={40}
                                   height={40}
@@ -346,7 +347,7 @@ const MobileMenu = ({
                               }`}
                             />
                           </button>
-                          {isExpanded && (
+                          {isExpanded && item.children && (
                             <ul className="bg-rose-50/30">
                               {item.children.map((child) => (
                                 <li key={child.url}>
@@ -443,7 +444,7 @@ const MobileMenu = ({
                                 />
                               </button>
                               
-                              {isExpanded && (
+                              {isExpanded && category.children && (
                                 <ul className="bg-rose-50/30">
                                   {category.children.map((child: any) => (
                                     <li key={child._id}>

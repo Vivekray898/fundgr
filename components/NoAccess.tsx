@@ -1,3 +1,4 @@
+// components/NoAccess.tsx
 import React from "react";
 import {
   Card,
@@ -26,7 +27,7 @@ const NoAccess = ({
               <Lock className="w-8 h-8 text-rose-500" />
             </div>
           </div>
-          <Logo className="text-gray-800" />
+          <Logo />
           <div className="text-center">
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
               Willkommen zurück!

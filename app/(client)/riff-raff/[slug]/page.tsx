@@ -1,7 +1,7 @@
 // app/(client)/riff-raff/[slug]/page.tsx
 import Container from "@/components/Container";
 import Title from "@/components/Title";
-import { SINGLE_BLOG_QUERYResult } from "@/sanity.types";
+import { SINGLE_BLOG_QUERY_RESULT } from "@/sanity.types";
 import { urlFor } from "@/sanity/lib/image";
 import {
   getBlogCategories,
@@ -20,13 +20,19 @@ import React from "react";
 // Set German locale for dayjs
 dayjs.locale("de");
 
+// Define interface for blog categories
+interface BlogCategory {
+  title: string | null;
+  slug: string | null;
+}
+
 const SingleBlogPage = async ({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) => {
   const { slug } = await params;
-  const blog: SINGLE_BLOG_QUERYResult = await getSingleBlog(slug);
+  const blog: SINGLE_BLOG_QUERY_RESULT = await getSingleBlog(slug);
   if (!blog) return notFound();
 
   return (
@@ -61,10 +67,10 @@ const SingleBlogPage = async ({
             {blog?.blogcategories && blog.blogcategories.length > 0 && (
               <div className="flex items-center gap-1">
                 <Tag className="w-4 h-4 text-rose-400" />
-                {blog.blogcategories.map((item: { title: string }, index: number) => (
+                {blog.blogcategories.map((item: BlogCategory, index: number) => (
                   <span key={index} className="font-medium text-rose-600">
-                    {item?.title}
-                    {index < blog.blogcategories.length - 1 && ", "}
+                    {item?.title || "Uncategorized"}
+                    {index < (blog.blogcategories?.length || 1) - 1 && ", "}
                   </span>
                 ))}
               </div>
@@ -87,13 +93,6 @@ const SingleBlogPage = async ({
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
             {blog?.title}
           </h1>
-
-          {/* Excerpt */}
-          {blog?.excerpt && (
-            <div className="text-base sm:text-lg text-gray-600 bg-rose-50/50 border border-rose-100 rounded-xl p-4 mb-6 italic">
-              {blog.excerpt}
-            </div>
-          )}
 
           {/* Body Content */}
           <div className="prose prose-rose max-w-none prose-headings:text-gray-800 prose-p:text-gray-600 prose-a:text-rose-500 hover:prose-a:text-rose-600 prose-strong:text-gray-800 prose-li:text-gray-600">
@@ -129,7 +128,7 @@ const SingleBlogPage = async ({
                     ),
                   },
                   types: {
-                    image: ({ value }) => (
+                    image: ({ value }: any) => (
                       <div className="my-6 rounded-xl overflow-hidden">
                         <Image
                           alt={value.alt || "Blog image"}

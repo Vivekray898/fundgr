@@ -33,6 +33,35 @@ interface Props {
   slug: string;
 }
 
+// ✅ Define interface for categories with children
+interface CategoryWithChildren extends Omit<Category, 'parent' | 'slug'> {
+  children?: Array<{
+    _id: string;
+    title: string;
+    slug?: {
+      current: string;
+    } | string;
+    isSeasonal?: boolean;
+    seasonalMessage?: string;
+    seasonalStart?: string;
+    seasonalEnd?: string;
+    seasonalIcon?: string;
+  }>;
+  parent?: {
+    _ref: string;
+  } | null;
+  slug?: {
+    current: string;
+  } | string;
+}
+
+// ✅ Helper function to safely get slug string
+const getSlugString = (slug: any): string => {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current || "";
+};
+
 const iconMap = {
   flower: Flower2,
   sun: Sun,
@@ -81,16 +110,19 @@ const CategoryProducts = ({ categories, slug }: Props) => {
     };
   }, [isMobileFilterOpen, isDesktop]);
 
+  // ✅ Cast categories to CategoryWithChildren[]
+  const typedCategories = categories as unknown as CategoryWithChildren[];
+
   // Filter to only TOP-LEVEL categories (no parent)
-  const topLevelCategories = categories?.filter(
-    (category: any) => !category.parent
+  const topLevelCategories = typedCategories?.filter(
+    (category) => !category.parent
   );
 
   // 🔥 FIXED: Find current category data (including children)
   const findCategory = (catSlug: string) => {
     // Search in top-level categories
     const topLevel = topLevelCategories?.find(
-      (cat: any) => cat.slug?.current === catSlug || cat.slug === catSlug
+      (cat) => getSlugString(cat.slug) === catSlug
     );
     
     if (topLevel) return { category: topLevel, parent: null };
@@ -98,7 +130,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
     // Search in children of all top-level categories
     for (const parentCat of topLevelCategories || []) {
       const child = parentCat.children?.find(
-        (child: any) => child.slug?.current === catSlug || child.slug === catSlug
+        (child) => getSlugString(child.slug) === catSlug
       );
       if (child) {
         return { category: child, parent: parentCat };
@@ -106,14 +138,14 @@ const CategoryProducts = ({ categories, slug }: Props) => {
     }
 
     // Also search in the full categories list (for safety)
-    const fullCategory = categories?.find(
-      (cat: any) => cat.slug?.current === catSlug || cat.slug === catSlug
+    const fullCategory = typedCategories?.find(
+      (cat) => getSlugString(cat.slug) === catSlug
     );
     
     if (fullCategory) {
       // Find parent if exists
-      const parent = categories?.find(
-        (cat: any) => cat._id === fullCategory.parent?._ref
+      const parent = typedCategories?.find(
+        (cat) => cat._id === fullCategory.parent?._ref
       );
       return { category: fullCategory, parent: parent || null };
     }
@@ -130,13 +162,13 @@ const CategoryProducts = ({ categories, slug }: Props) => {
   const seasonalIcon = currentCategory?.seasonalIcon || parentCategory?.seasonalIcon;
 
   // Filter categories based on search
-  const filterCategories = (cats: Category[], term: string): Category[] => {
+  const filterCategories = (cats: CategoryWithChildren[], term: string): CategoryWithChildren[] => {
     if (!term) return cats;
     
     return cats.filter(category => {
       const matchesTitle = category.title?.toLowerCase().includes(term.toLowerCase());
       const hasMatchingChildren = category.children?.some(
-        (child: any) => child.title?.toLowerCase().includes(term.toLowerCase())
+        (child) => child.title?.toLowerCase().includes(term.toLowerCase())
       );
       return matchesTitle || hasMatchingChildren;
     });
@@ -161,13 +193,13 @@ const CategoryProducts = ({ categories, slug }: Props) => {
       let query;
       let params: any = { categorySlug };
 
-      const selectedCat = categories?.find(
-        (cat: any) => cat.slug?.current === categorySlug || cat.slug === categorySlug
+      const selectedCat = typedCategories?.find(
+        (cat) => getSlugString(cat.slug) === categorySlug
       );
 
       if (selectedCat?.children && selectedCat.children.length > 0) {
-        const childSlugs = selectedCat.children.map((child: any) => 
-          child.slug?.current || child.slug
+        const childSlugs = selectedCat.children.map((child) => 
+          getSlugString(child.slug)
         );
         
         query = `
@@ -206,7 +238,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
 
   // Get selected category name
   const selectedName = currentCategory?.title || 
-    categories?.find(c => (c.slug?.current || c.slug) === currentSlug)?.title;
+    typedCategories?.find(c => getSlugString(c.slug) === currentSlug)?.title;
 
   const hasActiveFilters = currentSlug !== slug;
 
@@ -228,7 +260,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
               onClick={() => handleCategoryChange(slug)}
               className="text-rose-500 underline text-xs sm:text-sm font-medium hover:text-rose-600"
             >
-              Zurück zu {categories?.find(c => (c.slug?.current || c.slug) === slug)?.title || slug}
+              Zurück zu {typedCategories?.find(c => getSlugString(c.slug) === slug)?.title || slug}
             </button>
           )}
           
@@ -265,19 +297,19 @@ const CategoryProducts = ({ categories, slug }: Props) => {
 
             {/* Categories List */}
             <div className="space-y-1">
-              {filteredCategories?.map((item: any) => {
+              {filteredCategories?.map((item: CategoryWithChildren) => {
                 const hasChildren = item.children && item.children.length > 0;
                 const isExpanded = expandedCategory === item._id;
-                const slug = item.slug?.current || item.slug;
-                const isActive = slug === currentSlug;
+                const slugString = getSlugString(item.slug);
+                const isActive = slugString === currentSlug;
                 const childActive = item.children?.some(
-                  (child: any) => (child.slug?.current || child.slug) === currentSlug
+                  (child) => getSlugString(child.slug) === currentSlug
                 );
                 
                 return (
                   <div key={item?._id} className="border-b border-pink-50 last:border-0">
                     <button
-                      onClick={() => handleCategoryChange(slug)}
+                      onClick={() => handleCategoryChange(slugString)}
                       className={cn(
                         "w-full text-left px-3 py-2.5 rounded-lg transition-all text-sm flex items-center justify-between group",
                         isActive || childActive
@@ -312,8 +344,8 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                     {/* Children */}
                     {hasChildren && isExpanded && (
                       <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-pink-100 pl-3">
-                        {item.children?.map((child: any) => {
-                          const childSlug = child.slug?.current || child.slug;
+                        {item.children?.map((child) => {
+                          const childSlug = getSlugString(child.slug);
                           const isChildActive = childSlug === currentSlug;
                           return (
                             <button
@@ -422,19 +454,19 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto px-5 pb-24">
                   <div className="space-y-1">
-                    {filteredCategories?.map((item: any) => {
+                    {filteredCategories?.map((item: CategoryWithChildren) => {
                       const hasChildren = item.children && item.children.length > 0;
                       const isExpanded = expandedCategory === item._id;
-                      const slug = item.slug?.current || item.slug;
-                      const isActive = slug === currentSlug;
+                      const slugString = getSlugString(item.slug);
+                      const isActive = slugString === currentSlug;
                       const childActive = item.children?.some(
-                        (child: any) => (child.slug?.current || child.slug) === currentSlug
+                        (child) => getSlugString(child.slug) === currentSlug
                       );
                       
                       return (
                         <div key={item?._id} className="border-b border-pink-50 last:border-0">
                           <button
-                            onClick={() => handleCategoryChange(slug)}
+                            onClick={() => handleCategoryChange(slugString)}
                             className={cn(
                               "w-full text-left px-3 py-3.5 rounded-xl transition-all text-sm flex items-center justify-between group",
                               isActive || childActive
@@ -468,8 +500,8 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                           
                           {hasChildren && isExpanded && (
                             <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-pink-100 pl-3">
-                              {item.children?.map((child: any) => {
-                                const childSlug = child.slug?.current || child.slug;
+                              {item.children?.map((child) => {
+                                const childSlug = getSlugString(child.slug);
                                 const isChildActive = childSlug === currentSlug;
                                 return (
                                   <button

@@ -26,7 +26,6 @@ export const categoryType = defineType({
       name: "description",
       type: "text",
     }),
-    // 🔥 NEW: Teaser subtitle for sortiment page
     defineField({
       name: "teaserSubtitle",
       title: "Teaser Subtitle",
@@ -52,7 +51,6 @@ export const categoryType = defineType({
         hotspot: true,
       },
     }),
-    // Parent category for subcategories
     defineField({
       name: "parent",
       title: "Parent Category",
@@ -60,7 +58,6 @@ export const categoryType = defineType({
       to: [{ type: "category" }],
       description: "Select a parent category if this is a subcategory",
     }),
-    // Order for sorting
     defineField({
       name: "order",
       title: "Order",
@@ -68,7 +65,6 @@ export const categoryType = defineType({
       initialValue: 0,
       description: "Order in which categories appear",
     }),
-    // Show in navigation
     defineField({
       name: "showInNavigation",
       title: "Show in Navigation",
@@ -76,7 +72,6 @@ export const categoryType = defineType({
       initialValue: true,
       description: "Show this category in the main navigation",
     }),
-    // 🔥 NEW: Category Icon for sortiment cards
     defineField({
       name: "categoryIcon",
       title: "Category Icon",
@@ -97,7 +92,6 @@ export const categoryType = defineType({
         ],
       },
     }),
-    // Existing icon field (for navigation)
     defineField({
       name: "icon",
       title: "Icon (Navigation)",
@@ -118,7 +112,6 @@ export const categoryType = defineType({
         ],
       },
     }),
-    // 🔥 NEW: Seasonal Fields
     defineField({
       name: "isSeasonal",
       title: "Is Seasonal?",
@@ -134,7 +127,8 @@ export const categoryType = defineType({
       hidden: ({ parent }) => !parent?.isSeasonal,
       validation: (Rule) =>
         Rule.custom((value, context) => {
-          if (context?.parent?.isSeasonal && !value) {
+          const parent = context?.parent as { isSeasonal?: boolean } | undefined;
+          if (parent?.isSeasonal && !value) {
             return "Seasonal message is required when 'Is Seasonal?' is enabled";
           }
           return true;

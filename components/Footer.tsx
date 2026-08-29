@@ -44,6 +44,18 @@ const socialIcons = {
   tiktok: Music2,
 };
 
+// Define interfaces for type safety
+interface LinkItem {
+  title: string;
+  href: string;
+}
+
+interface ContactItem {
+  icon: string;
+  title: string;
+  subtitle: string;
+}
+
 const Footer = () => {
   const [expandedColumns, setExpandedColumns] = useState<string[]>([]);
   const [footerData, setFooterData] = useState<any>(null);
@@ -98,7 +110,7 @@ const Footer = () => {
 
   // Service Links
   const serviceTitle = footerData?.serviceLinks?.title || "Service";
-  const serviceLinks = footerData?.serviceLinks?.links || [
+  const serviceLinks: LinkItem[] = footerData?.serviceLinks?.links || [
     { title: "Bonus Card", href: "/bonus" },
     { title: "Machine Rental", href: "/machine-rental" },
     { title: "Returns & Complaints", href: "/returns" },
@@ -108,7 +120,7 @@ const Footer = () => {
 
   // Company Links
   const companyTitle = footerData?.companyLinks?.title || "About Us";
-  const companyLinks = footerData?.companyLinks?.links || [
+  const companyLinks: LinkItem[] = footerData?.companyLinks?.links || [
     { title: "About Us", href: "/about" },
     { title: "Sustainability", href: "/sustainability" },
     { title: "Jobs", href: "/careers" },
@@ -118,7 +130,7 @@ const Footer = () => {
 
   // Contact Info
   const contactTitle = footerData?.contactInfo?.title || "Do You Have Questions?";
-  const contactItems = footerData?.contactInfo?.items || [
+  const contactItems: ContactItem[] = footerData?.contactInfo?.items || [
     { icon: "mapPin", title: "Visit Us", subtitle: "123 Main Street, Berlin, Germany" },
     { icon: "phone", title: "Call Us", subtitle: "+49 123 456 789" },
     { icon: "clock", title: "Working Hours", subtitle: "Mon - Sat: 9:00 AM - 8:00 PM" },
@@ -127,7 +139,7 @@ const Footer = () => {
 
   // Payment Methods
   const paymentTitle = footerData?.paymentMethods?.title || "Pay Conveniently!";
-  const paymentMethodsList = footerData?.paymentMethods?.methods || [
+  const paymentMethodsList: string[] = footerData?.paymentMethods?.methods || [
     "paypal",
     "wero",
     "invoice",
@@ -140,7 +152,7 @@ const Footer = () => {
 
   // Bottom Bar
   const copyrightText = footerData?.bottomBar?.copyrightText || "©2026 FundGrube GmbH & Co. KG";
-  const bottomLinks = footerData?.bottomBar?.bottomLinks || [
+  const bottomLinks: LinkItem[] = footerData?.bottomBar?.bottomLinks || [
     { title: "Terms & Conditions", href: "/terms" },
     { title: "Right of Withdrawal", href: "/withdrawal" },
     { title: "Imprint", href: "/imprint" },
@@ -163,7 +175,7 @@ const Footer = () => {
         {/* Logo + About Section */}
         <div className="mb-10">
           <div className="mb-4">
-            <Logo logoData={footerData?.logo} className="text-gray-800" />
+            <Logo logoData={footerData?.logo} />
           </div>
           <p className="text-gray-600 text-sm max-w-md">
             {aboutDescription}
@@ -219,7 +231,7 @@ const Footer = () => {
               {serviceTitle}
             </h3>
             <ul className="space-y-2">
-              {serviceLinks?.map((link) => (
+              {serviceLinks?.map((link: LinkItem) => (
                 <li key={link?.title}>
                   <Link
                     href={link?.href}
@@ -239,7 +251,7 @@ const Footer = () => {
               {companyTitle}
             </h3>
             <ul className="space-y-2">
-              {companyLinks?.map((link) => (
+              {companyLinks?.map((link: LinkItem) => (
                 <li key={link?.title}>
                   <Link
                     href={link?.href}
@@ -259,7 +271,7 @@ const Footer = () => {
               {contactTitle}
             </h3>
             <ul className="space-y-3">
-              {contactItems?.map((item) => {
+              {contactItems?.map((item: ContactItem) => {
                 const Icon = iconMap[item?.icon as keyof typeof iconMap] || MapPin;
                 return (
                   <li key={item?.title} className="flex items-start gap-3 group">
@@ -286,7 +298,7 @@ const Footer = () => {
               {paymentTitle}
             </h3>
             <div className="flex flex-wrap justify-center gap-2">
-              {paymentMethodsList?.map((method) => (
+              {paymentMethodsList?.map((method: string) => (
                 <span
                   key={method}
                   className="px-4 py-2 bg-white/70 backdrop-blur-sm border border-pink-200 rounded-lg text-sm text-gray-700 hover:bg-rose-50 hover:border-rose-300 transition-all duration-300 shadow-sm hover:shadow-md"
@@ -307,7 +319,7 @@ const Footer = () => {
               {copyrightText}
             </p>
             <nav className="flex flex-wrap justify-center gap-4">
-              {bottomLinks?.map((link) => (
+              {bottomLinks?.map((link: LinkItem) => (
                 <Link
                   key={link?.title}
                   href={link?.href}

@@ -4,6 +4,35 @@ import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, Tag, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Define interface for categories with children
+interface CategoryWithChildren extends Omit<Category, 'parent' | 'slug'> {
+  children?: Array<{
+    _id: string;
+    title: string;
+    slug?: {
+      current: string;
+    } | string;
+    isSeasonal?: boolean;
+    seasonalMessage?: string;
+    seasonalStart?: string;
+    seasonalEnd?: string;
+    seasonalIcon?: string;
+  }>;
+  parent?: {
+    _ref: string;
+  } | null;
+  slug?: {
+    current: string;
+  } | string;
+}
+
+// Helper function to safely get slug string
+const getSlugString = (slug: any): string => {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current || "";
+};
+
 interface Props {
   categories?: Category[];
   selectedCategory?: string | null;
@@ -18,12 +47,12 @@ const CategoryList = ({
   isMobile = false,
 }: Props) => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (propCategories && propCategories.length > 0) {
-      setCategories(propCategories);
+      setCategories(propCategories as unknown as CategoryWithChildren[]);
     }
   }, [propCategories]);
 
@@ -49,10 +78,10 @@ const CategoryList = ({
     setSearchTerm("");
   };
 
-  const filterCategories = (categories: Category[], term: string): Category[] => {
-    if (!term) return categories;
+  const filterCategories = (cats: CategoryWithChildren[], term: string): CategoryWithChildren[] => {
+    if (!term) return cats;
     
-    return categories.filter(category => {
+    return cats.filter(category => {
       const matchesTitle = category.title?.toLowerCase().includes(term.toLowerCase());
       const hasMatchingChildren = category.children?.some(
         (child: any) => child.title?.toLowerCase().includes(term.toLowerCase())
@@ -66,7 +95,7 @@ const CategoryList = ({
   );
 
   const filteredCategories = filterCategories(topLevelCategories || [], searchTerm);
-  const selectedName = categories?.find(c => (c.slug?.current || c.slug) === selectedCategory)?.title;
+  const selectedName = categories?.find(c => getSlugString(c.slug) === selectedCategory)?.title;
 
   // Mobile: Show as simple list without card wrapper
   if (isMobile) {
@@ -120,7 +149,7 @@ const CategoryList = ({
             filteredCategories?.map((category) => {
               const hasChildren = category.children && category.children.length > 0;
               const isExpanded = expandedCategories.includes(category?._id);
-              const isSelected = selectedCategory === (category?.slug?.current || category?.slug);
+              const isSelected = selectedCategory === getSlugString(category.slug);
 
               return (
                 <li key={category?._id}>
@@ -152,7 +181,7 @@ const CategoryList = ({
                     
                     {hasChildren && (
                       <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                        {category.children.length}
+                        {category.children?.length || 0}
                       </span>
                     )}
                     
@@ -164,7 +193,7 @@ const CategoryList = ({
                   {hasChildren && isExpanded && (
                     <ul className="ml-4 mt-1 space-y-1 border-l-2 border-pink-100 pl-3">
                       {category.children?.map((child: any) => {
-                        const childSlug = child?.slug?.current || child?.slug;
+                        const childSlug = getSlugString(child.slug);
                         const isChildSelected = selectedCategory === childSlug;
 
                         return (
@@ -268,7 +297,7 @@ const CategoryList = ({
             filteredCategories?.map((category) => {
               const hasChildren = category.children && category.children.length > 0;
               const isExpanded = expandedCategories.includes(category?._id);
-              const isSelected = selectedCategory === (category?.slug?.current || category?.slug);
+              const isSelected = selectedCategory === getSlugString(category.slug);
 
               return (
                 <li key={category?._id}>
@@ -300,7 +329,7 @@ const CategoryList = ({
                     
                     {hasChildren && (
                       <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
-                        {category.children.length}
+                        {category.children?.length || 0}
                       </span>
                     )}
                     
@@ -312,7 +341,7 @@ const CategoryList = ({
                   {hasChildren && isExpanded && (
                     <ul className="ml-6 mt-0.5 space-y-0.5 border-l-2 border-pink-100 pl-2">
                       {category.children?.map((child: any) => {
-                        const childSlug = child?.slug?.current || child?.slug;
+                        const childSlug = getSlugString(child.slug);
                         const isChildSelected = selectedCategory === childSlug;
 
                         return (

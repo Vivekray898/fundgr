@@ -1,3 +1,4 @@
+// components/Header.tsx
 import React from "react";
 import Container from "./Container";
 import Logo from "./Logo";
@@ -82,6 +83,9 @@ const Header = async () => {
     backLabel: headerData?.storeLocator?.backLabel || "Zurück",
     stores: headerData?.storeLocator?.stores || [],
   };
+
+  // Cast categoryParent to the expected type
+  const categoryParent = headerData?.navigation?.categoryParent as { _id: string; title: string } | undefined;
 
   return (
     <>
@@ -207,7 +211,7 @@ const Header = async () => {
           <HeaderMenu 
             menuItems={headerData?.navigation?.items}
             useCategories={useCategories}
-            categoryParent={headerData?.navigation?.categoryParent}
+            categoryParent={categoryParent}
             storeLocatorSettings={storeLocatorSettings}
           />
           

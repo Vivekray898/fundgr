@@ -13,8 +13,25 @@ import React from "react";
 // Set German locale for dayjs
 dayjs.locale("de");
 
+interface BlogPost {
+  _id: string;
+  title?: string;
+  slug?: {
+    current: string;
+  };
+  mainImage?: any;
+  excerpt?: string;
+  publishedAt?: string;
+  blogcategories?: Array<{
+    title: string;
+  }>;
+  author?: {
+    name: string;
+  };
+}
+
 const BlogPage = async () => {
-  const blogs = await getAllBlogs(12);
+  const blogs: BlogPost[] = await getAllBlogs(12);
 
   return (
     <div className="py-6 sm:py-10 bg-white">
@@ -36,7 +53,7 @@ const BlogPage = async () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
-            {blogs?.map((blog) => (
+            {blogs?.map((blog: BlogPost) => (
               <article 
                 key={blog?._id} 
                 className="group rounded-xl overflow-hidden border border-rose-100 bg-white hover:shadow-lg hover:shadow-rose-100/50 transition-all duration-300 hover:-translate-y-1"

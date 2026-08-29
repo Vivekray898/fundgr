@@ -31,11 +31,28 @@ const storeServices = [
   },
 ];
 
+// Define interface for brand type
+interface BrandItem {
+  _id: string;
+  name?: string;
+  slug?: {
+    current: string;
+  };
+  logo?: any;
+  description?: string;
+  featured?: boolean;
+  order?: number;
+  marketLocation?: boolean;
+}
+
 const ShopByBrands = async () => {
   const brands = await getAllBrands();
   
+  // Cast brands to BrandItem[]
+  const typedBrands = (brands || []) as BrandItem[];
+  
   // Marken sortieren: Featured zuerst, dann nach Reihenfolge, dann nach Name
-  const sortedBrands = brands?.sort((a, b) => {
+  const sortedBrands = typedBrands?.sort((a: BrandItem, b: BrandItem) => {
     if (a?.featured && !b?.featured) return -1;
     if (!a?.featured && b?.featured) return 1;
     if ((a?.order || 0) !== (b?.order || 0)) {
@@ -58,7 +75,7 @@ const ShopByBrands = async () => {
             </span>
           </Title>
           <p className="text-[9px] sm:text-xs lg:text-sm text-gray-500 mt-1">
-            {brands?.length || 0} Marken in unserem Sortiment
+            {typedBrands?.length || 0} Marken in unserem Sortiment
           </p>
         </div>
         <Link
@@ -72,7 +89,7 @@ const ShopByBrands = async () => {
       {/* Brands Grid - Horizontal Scroll on Mobile, Grid on Desktop */}
       <div className="lg:hidden overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="flex gap-2 sm:gap-3">
-          {displayBrands?.map((brand) => (
+          {displayBrands?.map((brand: BrandItem) => (
             <Link
               key={brand?._id}
               href={{ pathname: "/shop", query: { brand: brand?.slug?.current } }}
@@ -108,7 +125,7 @@ const ShopByBrands = async () => {
 
       {/* Desktop Grid - Hidden on Mobile */}
       <div className="hidden lg:grid grid-cols-8 gap-3">
-        {displayBrands?.map((brand) => (
+        {displayBrands?.map((brand: BrandItem) => (
           <Link
             key={brand?._id}
             href={{ pathname: "/shop", query: { brand: brand?.slug?.current } }}
