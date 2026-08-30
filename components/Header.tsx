@@ -13,7 +13,6 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { ClerkLoaded, SignedIn, UserButton, SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { 
-  Logs, 
   Truck, 
   CheckCircle, 
   Store, 
@@ -23,7 +22,6 @@ import {
   User,
   ShoppingCart
 } from "lucide-react";
-import { getMyOrders } from "@/sanity/queries";
 import { getHeaderData } from "@/sanity/queries/header";
 
 // Icon mapping
@@ -40,13 +38,8 @@ const Header = async () => {
   const user = await currentUser();
   const { userId } = await auth();
   const headerData = await getHeaderData();
-  
-  let orders = null;
-  if (userId) {
-    orders = await getMyOrders(userId);
-  }
 
-  // Defaults
+  // Defaults with memoized values
   const topBarEnabled = headerData?.topBar?.enabled !== false;
   const trustBadges = headerData?.topBar?.trustBadges || [
     { icon: "truck", text: "Kostenlose Rücksendung" },
@@ -65,7 +58,6 @@ const Header = async () => {
   const showLogin = headerData?.actions?.showLogin !== false;
   const showStoreLocator = headerData?.actions?.showStoreLocator !== false;
   const searchPlaceholder = headerData?.searchBar?.placeholder || "Wonach suchen Sie?";
-  const showMobileSearchRow = headerData?.mobile?.showSearchRow !== false;
   const useCategories = headerData?.navigation?.useCategories || false;
 
   // Store locator settings
@@ -84,32 +76,31 @@ const Header = async () => {
     stores: headerData?.storeLocator?.stores || [],
   };
 
-  // Cast categoryParent to the expected type
   const categoryParent = headerData?.navigation?.categoryParent as { _id: string; title: string } | undefined;
 
   return (
     <>
-      {/* Non-sticky Header */}
+      {/* Header */}
       <header className="bg-white shadow-sm">
         {/* Top Bar - Desktop only */}
         {topBarEnabled && (
           <div className="hidden lg:block bg-gradient-to-r from-rose-50 via-pink-50 to-blue-50 border-b border-rose-100">
-            <Container className="flex items-center justify-between py-2 text-xs text-gray-600">
-              {/* Left side - Trust badges */}
-              <div className="flex items-center gap-8">
+            <Container className="flex items-center justify-between py-1.5 text-xs text-gray-600">
+              {/* Trust badges - Compact */}
+              <div className="flex items-center gap-6">
                 {trustBadges.map((badge, index) => {
                   const IconComponent = iconMap[badge.icon as keyof typeof iconMap];
                   return (
-                    <div key={index} className="flex items-center gap-2 text-gray-600">
-                      {IconComponent && <IconComponent className="w-4 h-4 text-rose-500" />}
+                    <div key={index} className="flex items-center gap-1.5 text-gray-600">
+                      {IconComponent && <IconComponent className="w-3.5 h-3.5 text-rose-500" />}
                       <span>{badge.text}</span>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Right side - Service links */}
-              <nav className="flex items-center gap-6">
+              {/* Service links */}
+              <nav className="flex items-center gap-5">
                 {serviceLinks.map((link, index) => {
                   if (link.isStoreLocator && showStoreLocator) {
                     return <StoreLocator key={index} trigger="link" settings={storeLocatorSettings} />;
@@ -118,7 +109,7 @@ const Header = async () => {
                     <Link 
                       key={index} 
                       href={link.url} 
-                      className="hover:text-rose-500 hoverEffect"
+                      className="hover:text-rose-500 transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -129,10 +120,10 @@ const Header = async () => {
           </div>
         )}
 
-        {/* Main Header - Logo Left, Search Center (Desktop), Actions Right */}
-        <Container className="flex items-center justify-between py-3 lg:py-4">
+        {/* Main Header - Mobile optimized */}
+        <Container className="flex items-center justify-between py-2 lg:py-3">
           {/* Left: Mobile Menu + Logo */}
-          <div className="flex items-center gap-3 lg:gap-4">
+          <div className="flex items-center gap-2 lg:gap-4">
             <MobileMenu 
               menuItems={headerData?.mobile?.menuItems || headerData?.navigation?.items}
               searchPlaceholder={searchPlaceholder}
@@ -142,92 +133,85 @@ const Header = async () => {
             <Logo logoData={headerData?.logo} />
           </div>
 
-          {/* Center: Search Bar (Desktop ONLY - NOT mobile) */}
-          <div className="hidden lg:block flex-1 max-w-[500px] mx-8">
+          {/* Center: Search Bar (Desktop only) */}
+          <div className="hidden lg:block flex-1 max-w-[500px] mx-6">
             <SearchBar isFullWidth />
           </div>
 
-          {/* Right: Actions (Desktop) */}
-          <div className="hidden lg:flex items-center gap-6">
-            {/* Wishlist */}
-            {showWishlist && (
-              <Link href="/wishlist" className="flex flex-col items-center gap-1 group">
-                <Heart className="w-6 h-6 text-gray-600 group-hover:text-rose-500 transition-colors" />
-                <span className="text-xs text-gray-500 group-hover:text-rose-500">Einkaufsliste</span>
-              </Link>
-            )}
-            
-            {/* Cart */}
-            {showCart && (
-              <Link href="/cart" className="flex flex-col items-center gap-1 group">
-                <div className="relative">
-                  <ShoppingCart className="w-6 h-6 text-gray-600 group-hover:text-rose-500 transition-colors" />
-                  <span className="absolute -top-2 -right-2 bg-rose-500 text-white h-4 w-4 rounded-full text-[10px] font-semibold flex items-center justify-center">0</span>
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3 lg:gap-5">
+            {/* Desktop Actions */}
+            <div className="hidden lg:flex items-center gap-5">
+              {showWishlist && (
+                <div className="flex flex-col items-center gap-0.5 group">
+                  <FavoriteButton showProduct={false} />
+                  <span className="text-[10px] text-gray-500 group-hover:text-rose-500">Merkliste</span>
                 </div>
-                <span className="text-xs text-gray-500 group-hover:text-rose-500">Warenkorb</span>
-              </Link>
-            )}
-            
-            {/* Account - Using Clerk's SignInButton for popup */}
-            {showLogin && (
-              <ClerkLoaded>
-                <SignedIn>
-                  <UserButton />
-                </SignedIn>
-                {!user && (
-                  <SignInButton mode="modal">
-                    <button className="flex flex-col items-center gap-1 group focus:outline-none">
-                      <User className="w-6 h-6 text-gray-600 group-hover:text-rose-500 transition-colors" />
-                      <span className="text-xs text-gray-500 group-hover:text-rose-500">Mein Konto</span>
-                    </button>
-                  </SignInButton>
-                )}
-              </ClerkLoaded>
-            )}
-          </div>
+              )}
+              
+              {showCart && (
+                <Link href="/cart" className="flex flex-col items-center gap-0.5 group">
+                  <div className="relative">
+                    <ShoppingCart className="w-5 h-5 text-gray-600 group-hover:text-rose-500 transition-colors" />
+                    <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white h-4 w-4 rounded-full text-[9px] font-semibold flex items-center justify-center">0</span>
+                  </div>
+                  <span className="text-[10px] text-gray-500 group-hover:text-rose-500">Warenkorb</span>
+                </Link>
+              )}
+              
+              {showLogin && (
+                <ClerkLoaded>
+                  <SignedIn>
+                    <UserButton />
+                  </SignedIn>
+                  {!user && (
+                    <SignInButton mode="modal">
+                      <button className="flex flex-col items-center gap-0.5 group focus:outline-none">
+                        <User className="w-5 h-5 text-gray-600 group-hover:text-rose-500 transition-colors" />
+                        <span className="text-[10px] text-gray-500 group-hover:text-rose-500">Konto</span>
+                      </button>
+                    </SignInButton>
+                  )}
+                </ClerkLoaded>
+              )}
+            </div>
 
-          {/* Right: Actions (Mobile - Icons only) */}
-          <div className="flex lg:hidden items-center gap-4">
-            {showWishlist && <FavoriteButton />}
-            {showCart && <CartIcon />}
-            {showLogin && (
-              <ClerkLoaded>
-                <SignedIn>
-                  <UserButton />
-                </SignedIn>
-                {!user && <SignIn />}
-              </ClerkLoaded>
-            )}
+            {/* Mobile Actions - Icons only */}
+            <div className="flex lg:hidden items-center gap-2">
+              {showWishlist && <FavoriteButton />}
+              {showCart && <CartIcon />}
+              {showLogin && (
+                <ClerkLoaded>
+                  <SignedIn>
+                    <UserButton />
+                  </SignedIn>
+                  {!user && <SignIn />}
+                </ClerkLoaded>
+              )}
+            </div>
           </div>
         </Container>
-
-        {/* REMOVED: Mobile Search Bar from here - it was causing duplicates */}
       </header>
 
-      {/* Sticky Bottom Navigation - Desktop Only */}
-      <div className="sticky top-0 z-50 hidden lg:block bg-white border-b border-rose-100 shadow-sm">
+      {/* Sticky Navigation - Desktop */}
+      <div className="sticky top-0 z-40 hidden lg:block bg-white border-b border-rose-100 shadow-sm">
         <Container className="flex items-center justify-between">
-          {/* Left: Sortiment Hamburger + Nav Items (Desktop) */}
           <HeaderMenu 
             menuItems={headerData?.navigation?.items}
             useCategories={useCategories}
             categoryParent={categoryParent}
             storeLocatorSettings={storeLocatorSettings}
           />
-          
-          {/* Right: Mein Markt (Store Locator) - Desktop */}
-          <div className="flex items-center">
-            <StoreLocator 
-              trigger="link"
-              settings={storeLocatorSettings}
-              className="text-rose-500 hover:text-rose-600 hoverEffect rounded-md px-4 py-3 flex items-center gap-2"
-            />
-          </div>
+          <StoreLocator 
+            trigger="link"
+            settings={storeLocatorSettings}
+            className="text-rose-500 hover:text-rose-600 px-3 py-2.5 flex items-center gap-1.5 text-sm font-medium"
+          />
         </Container>
       </div>
 
-      {/* Sticky Mobile Search Bar - Mobile ONLY */}
-      <div className="sticky top-0 z-50 lg:hidden bg-white border-b border-rose-100 shadow-sm py-2 px-4">
+      {/* Mobile Search Bar - Sticky */}
+      <div className="sticky top-0 z-40 lg:hidden bg-white border-b border-rose-100 py-2 px-4">
         <SearchBar isMobile isFullWidth />
       </div>
     </>
