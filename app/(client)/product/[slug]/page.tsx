@@ -17,7 +17,10 @@ import {
   Share2, 
   MessageCircle, 
   Scale, 
-  Package
+  Package,
+  Store,
+  Clock,
+  MapPin
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import React from "react";
@@ -202,7 +205,7 @@ const SingleProductPage = async ({
               {[
                 { icon: Scale, label: "Vergleichen" },
                 { icon: MessageCircle, label: "Fragen" },
-                { icon: Package, label: "Lieferung" },
+                { icon: Store, label: "Marktfinder" },
                 { icon: Share2, label: "Teilen" },
               ].map((item, index) => (
                 <button
@@ -215,20 +218,32 @@ const SingleProductPage = async ({
               ))}
             </div>
 
-            {/* Delivery Info */}
+            {/* Market Info */}
             <div className="space-y-2">
-              <div className="flex items-center gap-3 bg-gradient-to-r from-rose-50/50 to-pink-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
-                <Truck className="w-4 h-4 text-rose-500 flex-shrink-0" />
+              <div className="flex items-start gap-3 bg-gradient-to-r from-rose-50/50 to-pink-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
+                <Store className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Kostenloser Versand</p>
-                  <p className="text-xs text-gray-400">PLZ für Verfügbarkeit prüfen</p>
+                  <p className="text-sm font-medium text-gray-700">Im Markt verfügbar</p>
+                  <p className="text-xs text-gray-400">Jetzt in Ihrem fundgrube Markt vorrätig</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50/50 to-rose-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
-                <CornerDownLeft className="w-4 h-4 text-rose-500 flex-shrink-0" />
+              <div className="flex items-start gap-3 bg-gradient-to-r from-blue-50/50 to-rose-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
+                <Clock className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Kostenlose Retoure</p>
-                  <p className="text-xs text-gray-400">30 Tage Rückgaberecht</p>
+                  <p className="text-sm font-medium text-gray-700">Öffnungszeiten</p>
+                  <p className="text-xs text-gray-400">Mo - Sa: 08:00 - 20:00 Uhr</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-gradient-to-r from-amber-50/50 to-rose-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
+                <MapPin className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Markt finden</p>
+                  <Link 
+                    href="/store"
+                    className="text-xs text-rose-500 hover:text-rose-600 font-medium transition-colors"
+                  >
+                    Nächsten fundgrube Markt finden →
+                  </Link>
                 </div>
               </div>
             </div>
