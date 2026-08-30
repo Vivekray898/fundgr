@@ -1,3 +1,4 @@
+// components/StoreLocator.tsx
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { 
@@ -30,7 +31,34 @@ interface StoreData {
   googleMapsLink?: string;
   distance?: string;
   isDefault?: boolean;
+  slug?: string | { current: string };
 }
+
+// Helper to get slug string - FIXED
+const getStoreSlug = (store: StoreData): string => {
+  if (!store) return '';
+  
+  // If slug is a string, use it directly
+  if (typeof store.slug === 'string') {
+    return store.slug;
+  }
+  
+  // If slug is an object with current property
+  if (store.slug && typeof store.slug === 'object' && 'current' in store.slug) {
+    return store.slug.current;
+  }
+  
+  // Fallback: generate slug from name
+  if (store.name) {
+    return store.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+  
+  // Ultimate fallback to _id
+  return store._id || '';
+};
 
 interface StoreLocatorSettings {
   title?: string;
@@ -62,6 +90,7 @@ interface StoreLocatorProps {
   children?: React.ReactNode;
   onStoreChange?: (store: StoreData) => void;
   settings?: StoreLocatorSettings;
+  storageKey?: string; // Optional custom storage key
 }
 
 const StoreLocator = ({ 
@@ -69,7 +98,8 @@ const StoreLocator = ({
   className = "", 
   children,
   onStoreChange,
-  settings = {}
+  settings = {},
+  storageKey = "selectedStore"
 }: StoreLocatorProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStore, setSelectedStore] = useState<StoreData | null>(null);
@@ -77,6 +107,7 @@ const StoreLocator = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [isDesktop, setIsDesktop] = useState(false);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
+  const [isInitialized, setIsInitialized] = useState(false);
   const offcanvasRef = useRef<HTMLDivElement>(null);
 
   const stores = settings?.stores || [];
@@ -95,12 +126,46 @@ const StoreLocator = ({
     backLabel = "Zurück",
   } = settings;
 
+  // Load selected store from localStorage on mount
   useEffect(() => {
-    if (stores.length > 0 && !selectedStore) {
+    if (stores.length > 0 && !isInitialized) {
+      // Try to load from localStorage
+      const savedStoreId = localStorage.getItem(storageKey);
+      
+      if (savedStoreId) {
+        // Find store by _id or name
+        const savedStore = stores.find(s => 
+          s._id === savedStoreId || s.name === savedStoreId
+        );
+        
+        if (savedStore) {
+          setSelectedStore(savedStore);
+          setIsInitialized(true);
+          return;
+        }
+      }
+      
+      // If no saved store or not found, use default
       const defaultStore = stores.find(s => s.isDefault) || stores[0];
       setSelectedStore(defaultStore);
+      setIsInitialized(true);
     }
-  }, [stores, selectedStore]);
+  }, [stores, storageKey, isInitialized]);
+
+  // Save selected store to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedStore && isInitialized) {
+      const storeId = selectedStore._id || selectedStore.name;
+      if (storeId) {
+        localStorage.setItem(storageKey, storeId);
+      }
+      
+      // Also trigger the onStoreChange callback
+      if (onStoreChange) {
+        onStoreChange(selectedStore);
+      }
+    }
+  }, [selectedStore, storageKey, isInitialized, onStoreChange]);
 
   useEffect(() => {
     const checkDesktop = () => {
@@ -158,9 +223,6 @@ const StoreLocator = ({
     setSelectedStore(store);
     setShowStoreList(false);
     setSearchTerm("");
-    if (onStoreChange) {
-      onStoreChange(store);
-    }
   };
 
   const handleChangeStore = () => {
@@ -185,6 +247,21 @@ const StoreLocator = ({
     store.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     store.address?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Get the store page URL - FIXED: Use proper slug
+  const getStoreUrl = (store: StoreData) => {
+    const slug = getStoreSlug(store);
+    // Clean the slug to ensure it's URL-safe
+    const cleanSlug = slug
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    
+    // If cleanSlug is empty, use a fallback
+    const finalSlug = cleanSlug || store._id || store.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'store';
+    
+    return `/store/${finalSlug}`;
+  };
 
   const renderTrigger = () => {
     if (children) {
@@ -240,58 +317,64 @@ const StoreLocator = ({
       );
     }
 
-    return filteredStores.map((store) => (
-      <button
-        key={store.name}
-        onClick={() => handleStoreSelect(store)}
-        className={`w-full text-left p-3 rounded-xl border transition-all active:scale-[0.98] ${
-          selectedStore?.name === store.name
-            ? "border-rose-400 bg-rose-50"
-            : "border-gray-200 hover:border-rose-300 active:bg-rose-50"
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-            {store.image && !imageError[store.name] ? (
-              <Image
-                src={store.image}
-                alt={store.name}
-                width={56}
-                height={56}
-                className="w-full h-full object-cover"
-                onError={() => handleImageError(store.name)}
-              />
-            ) : (
-              <StorePlaceholder name={store.name} />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm font-semibold text-gray-800 truncate">
-                {store.name}
-              </p>
-              {store.distance && (
-                <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
-                  {store.distance}
-                </span>
+    return filteredStores.map((store) => {
+      const storeKey = store._id || store.name;
+      const selectedKey = selectedStore?._id || selectedStore?.name;
+      const isSelected = selectedKey === storeKey;
+      
+      return (
+        <button
+          key={storeKey}
+          onClick={() => handleStoreSelect(store)}
+          className={`w-full text-left p-3 rounded-xl border transition-all active:scale-[0.98] ${
+            isSelected
+              ? "border-rose-400 bg-rose-50"
+              : "border-gray-200 hover:border-rose-300 active:bg-rose-50"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+              {store.image && !imageError[store.name] ? (
+                <Image
+                  src={store.image}
+                  alt={store.name}
+                  width={56}
+                  height={56}
+                  className="w-full h-full object-cover"
+                  onError={() => handleImageError(store.name)}
+                />
+              ) : (
+                <StorePlaceholder name={store.name} />
               )}
             </div>
-            <p className="text-xs text-gray-500 truncate">
-              {store.address}, {store.city}
-            </p>
-            <div className="flex items-center gap-2 mt-1">
-              <Clock className="w-3 h-3 text-gray-400" />
-              <span className="text-xs text-gray-400">
-                {store.openingHours}
-              </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold text-gray-800 truncate">
+                  {store.name}
+                </p>
+                {store.distance && (
+                  <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+                    {store.distance}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 truncate">
+                {store.address}, {store.city}
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <Clock className="w-3 h-3 text-gray-400" />
+                <span className="text-xs text-gray-400">
+                  {store.openingHours}
+                </span>
+              </div>
             </div>
+            {isSelected && (
+              <CheckCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
+            )}
           </div>
-          {selectedStore?.name === store.name && (
-            <CheckCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
-          )}
-        </div>
-      </button>
-    ));
+        </button>
+      );
+    });
   };
 
   return (
@@ -512,7 +595,7 @@ const StoreLocator = ({
                   {changeStoreText}
                 </button>
                 <Link
-                  href={`/store/${selectedStore._id || selectedStore.name}`}
+                  href={getStoreUrl(selectedStore)}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-rose-500 rounded-xl hover:bg-rose-600 active:scale-[0.98] transition-all"
                 >
                   <Store className="w-4 h-4" />
