@@ -2,7 +2,7 @@
 import { client } from "@/sanity/lib/client";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Phone, Clock, Store } from "lucide-react";
+import { MapPin, Phone, Clock, Store, FileText } from "lucide-react";
 
 export default async function StoresPage() {
   const stores = await client.fetch(`
@@ -15,7 +15,9 @@ export default async function StoresPage() {
       zip,
       phone,
       "image": image.asset->url,
-      openingHours
+      openingHours,
+      "hasActiveProspect": defined(prospect.pdf) && prospect.isActive != false,
+      "prospectPreview": prospect.previewImage.asset->url
     }
   `);
 
@@ -42,6 +44,13 @@ export default async function StoresPage() {
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-rose-50 to-pink-50">
                   <Store className="w-16 h-16 text-rose-300" />
+                </div>
+              )}
+              {/* Active prospect badge */}
+              {store.hasActiveProspect && (
+                <div className="absolute top-3 right-3 bg-rose-500 text-white text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                  <FileText className="w-3 h-3" />
+                  Prospekt
                 </div>
               )}
             </div>

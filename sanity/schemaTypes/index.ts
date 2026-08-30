@@ -11,6 +11,7 @@ import { addressType } from "./addressType";
 import { headerType } from "./headerType";
 import { footerType } from "./footerType";
 import { settingsType } from './settings';
+import store from "./store";
 
 
 export const schema: { types: SchemaTypeDefinition[] } = {
@@ -24,6 +25,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     blogCategoryType,
     authorType,
     addressType,
+    store,
     headerType,
     footerType,
     settingsType,

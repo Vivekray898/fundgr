@@ -13,7 +13,9 @@ export default defineType({
     { name: 'seo', title: 'SEO' },
   ],
   fields: [
-    // General Information
+    // =============================================
+    // GENERAL INFORMATION
+    // =============================================
     defineField({
       name: 'name',
       title: 'Store Name',
@@ -67,7 +69,9 @@ export default defineType({
       },
     }),
 
-    // Contact & Location
+    // =============================================
+    // CONTACT & LOCATION
+    // =============================================
     defineField({
       name: 'address',
       title: 'Address',
@@ -126,51 +130,67 @@ export default defineType({
       description: 'Google Maps embed URL or place ID',
     }),
 
-    // Content
+    // =============================================
+    // CONTENT
+    // =============================================
     defineField({
       name: 'description',
       title: 'Description',
       type: 'text',
       group: 'content',
     }),
+    
+    // --- Prospekt (PDF Flipbook) ---
     defineField({
-      name: 'gastronomy',
-      title: 'Gastronomy',
+      name: 'prospect',
+      title: 'Prospekt (PDF Flipbook)',
       type: 'object',
       group: 'content',
       fields: [
-        { name: 'name', title: 'Restaurant Name', type: 'string' },
-        { name: 'description', title: 'Description', type: 'text' },
-        { name: 'image', title: 'Image', type: 'image' },
-        { name: 'menuLink', title: 'Menu Link', type: 'url' },
+        {
+          name: 'pdf',
+          title: 'PDF File',
+          type: 'file',
+          description: 'Upload the PDF file for the interactive flipbook',
+          options: {
+            accept: '.pdf',
+          },
+        },
+        {
+          name: 'title',
+          title: 'Title',
+          type: 'string',
+          description: 'Title of the prospect (e.g., "KW 36 2026")',
+        },
+        {
+          name: 'startDate',
+          title: 'Start Date',
+          type: 'date',
+        },
+        {
+          name: 'endDate',
+          title: 'End Date',
+          type: 'date',
+        },
+        {
+          name: 'previewImage',
+          title: 'Preview Image',
+          type: 'image',
+          description: 'Cover image shown before the PDF loads',
+          options: {
+            hotspot: true,
+          },
+        },
+        {
+          name: 'isActive',
+          title: 'Active',
+          type: 'boolean',
+          initialValue: true,
+        },
       ],
     }),
-    defineField({
-      name: 'prospectImage',
-      title: 'Current Prospekt Image',
-      type: 'image',
-      group: 'content',
-      description: 'Image of the current weekly flyer',
-    }),
-    defineField({
-      name: 'prospectUrl',
-      title: 'Prospekt URL',
-      type: 'url',
-      group: 'content',
-      description: 'Link to the interactive prospect or PDF',
-    }),
-    defineField({
-      name: 'prospectStartDate',
-      title: 'Prospekt Start Date',
-      type: 'date',
-      group: 'content',
-    }),
-    defineField({
-      name: 'prospectEndDate',
-      title: 'Prospekt End Date',
-      type: 'date',
-      group: 'content',
-    }),
+    
+    // --- Other Content Fields ---
     defineField({
       name: 'localServices',
       title: 'Local Services',
@@ -180,7 +200,9 @@ export default defineType({
       description: 'Services available on-site (e.g., "Gastronomie Trefferia")',
     }),
 
-    // Services
+    // =============================================
+    // SERVICES
+    // =============================================
     defineField({
       name: 'services',
       title: 'Services',
@@ -209,7 +231,9 @@ export default defineType({
       of: [{ type: 'string' }],
     }),
 
+    // =============================================
     // SEO
+    // =============================================
     defineField({
       name: 'seo',
       title: 'SEO',

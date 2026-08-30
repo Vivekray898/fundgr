@@ -33,6 +33,7 @@ import {
   Briefcase,
   Home
 } from "lucide-react";
+import PDFFlipbook from "./PDFFlipbook";
 
 // Types
 interface StoreService {
@@ -43,6 +44,15 @@ interface StoreService {
   image?: string;
   isActive?: boolean;
   order?: number;
+}
+
+interface ProspectData {
+  pdf?: string;
+  title?: string;
+  startDate?: string;
+  endDate?: string;
+  previewImage?: string;
+  isActive?: boolean;
 }
 
 interface StoreData {
@@ -59,16 +69,7 @@ interface StoreData {
   image?: string;
   heroImage?: string;
   description?: string;
-  gastronomy?: {
-    name: string;
-    description: string;
-    image?: { asset: { url: string } };
-    menuLink?: string;
-  };
-  prospectImage?: string;
-  prospectUrl?: string;
-  prospectStartDate?: string;
-  prospectEndDate?: string;
+  prospect?: ProspectData;
   localServices?: string[];
   services?: StoreService[];
   additionalServices?: string[];
@@ -76,6 +77,10 @@ interface StoreData {
   coordinates?: { lat: number; lng: number };
   seo?: { title: string; description: string; keywords: string };
   timezone?: string;
+  // Flags to indicate if pages exist
+  hasJobsPage?: boolean;
+  hasContactPage?: boolean;
+  hasMaschinenvermietungPage?: boolean;
 }
 
 interface StorePageProps {
@@ -106,7 +111,6 @@ const serviceIcons: Record<string, any> = {
 const getCurrentTimeInTimezone = (timezone: string = 'Europe/Berlin'): Date | null => {
   try {
     const now = new Date();
-    // Use Intl.DateTimeFormat to get time in the specified timezone
     const formatter = new Intl.DateTimeFormat('de-DE', {
       timeZone: timezone,
       year: 'numeric',
@@ -118,7 +122,6 @@ const getCurrentTimeInTimezone = (timezone: string = 'Europe/Berlin'): Date | nu
       hour12: false
     });
     
-    // Parse the formatted string back to a Date object
     const parts = formatter.formatToParts(now);
     const dateObj: any = {};
     parts.forEach(part => {
@@ -127,7 +130,6 @@ const getCurrentTimeInTimezone = (timezone: string = 'Europe/Berlin'): Date | nu
       }
     });
     
-    // Create a date object with the timezone-adjusted time
     const adjustedDate = new Date(
       parseInt(dateObj.year),
       parseInt(dateObj.month) - 1,
@@ -175,14 +177,10 @@ const StorePage = ({ store }: StorePageProps) => {
   const [timezone, setTimezone] = useState<string>('Europe/Berlin');
 
   useEffect(() => {
-    // Set the timezone from store data or use default
     const tz = store?.timezone || 'Europe/Berlin';
     setTimezone(tz);
-    
-    // Initial time fetch
     setCurrentTime(getCurrentTimeInTimezone(tz));
 
-    // Update every minute
     const interval = setInterval(() => {
       setCurrentTime(getCurrentTimeInTimezone(tz));
     }, 60000);
@@ -202,36 +200,30 @@ const StorePage = ({ store }: StorePageProps) => {
 
   // Check if store is currently open
   const getStoreStatus = () => {
-    // If time isn't initialized yet, default to closed
     if (!currentTime || isNaN(currentTime.getTime())) {
       return { isOpen: false, closingTime: null, openingTime: null };
     }
 
     const now = currentTime;
     const day = getGermanWeekday(now);
-    
-    // Find opening hours for today
     const hours = store.openingHours?.find(h => h.day === day);
     
     if (!hours || hours.isClosed) {
       return { isOpen: false, closingTime: null, openingTime: null };
     }
     
-    // Parse opening hours (e.g., "08:00 - 20:00")
     const [openTime, closeTime] = hours.hours.split(' - ').map(t => t.trim());
     if (!openTime || !closeTime) return { isOpen: false, closingTime: null, openingTime: null };
     
     const [openHour, openMinute] = openTime.split(':').map(Number);
     const [closeHour, closeMinute] = closeTime.split(':').map(Number);
     
-    // Create date objects for opening and closing times
     const open = new Date(now);
     open.setHours(openHour, openMinute, 0, 0);
     
     const close = new Date(now);
     close.setHours(closeHour, closeMinute, 0, 0);
     
-    // Handle cases where closing time is past midnight
     if (closeHour < openHour) {
       close.setDate(close.getDate() + 1);
     }
@@ -258,7 +250,6 @@ const StorePage = ({ store }: StorePageProps) => {
       return <p className="text-sm text-gray-600">Keine Öffnungszeiten angegeben</p>;
     }
     
-    // If time isn't initialized yet, show without highlighting
     if (!currentTime || isNaN(currentTime.getTime())) {
       return store.openingHours.map((entry, index) => (
         <div key={index} className="flex justify-between text-sm py-0.5">
@@ -291,18 +282,25 @@ const StorePage = ({ store }: StorePageProps) => {
 
   // Format date range for prospect
   const formatDateRange = () => {
-    if (!store.prospectStartDate || !store.prospectEndDate) return '';
+    const start = store.prospect?.startDate;
+    const end = store.prospect?.endDate;
+    if (!start && !end) return '';
     try {
-      const start = new Date(store.prospectStartDate);
-      const end = new Date(store.prospectEndDate);
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) return '';
-      return `${start.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })} - ${end.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+      const startDate = start ? new Date(start) : null;
+      const endDate = end ? new Date(end) : null;
+      let result = '';
+      if (startDate && !isNaN(startDate.getTime())) {
+        result += startDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      }
+      if (endDate && !isNaN(endDate.getTime())) {
+        result += (result ? ' - ' : '') + endDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      }
+      return result;
     } catch {
       return '';
     }
   };
 
-  // Get formatted current time for display - FIXED: returns only if valid
   const getFormattedCurrentTime = (): string => {
     if (!currentTime || isNaN(currentTime.getTime())) {
       return '';
@@ -311,6 +309,21 @@ const StorePage = ({ store }: StorePageProps) => {
   };
 
   const formattedTime = getFormattedCurrentTime();
+  
+  // Check if prospect is available
+  const hasProspect = store.prospect?.pdf && store.prospect.isActive !== false;
+  
+  // Check if maschinenvermietung exists in services
+  const hasMaschinenvermietung = store.services?.some(
+    s => s.title.toLowerCase().includes('maschinenvermietung')
+  ) || false;
+
+  // Check if there are any jobs (you can add logic here based on your data)
+  // For now, we'll check if there's a jobs field in the store data
+  const hasJobs = store.hasJobsPage || false;
+  
+  // Check if contact page exists (you can add logic here)
+  const hasContact = store.hasContactPage || false;
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -357,7 +370,7 @@ const StorePage = ({ store }: StorePageProps) => {
                     Marktübersicht
                   </Link>
                 </li>
-                {store.prospectUrl && (
+                {hasProspect && (
                   <li>
                     <Link
                       href={`/store/${store.slug.current}/prospekt`}
@@ -368,18 +381,7 @@ const StorePage = ({ store }: StorePageProps) => {
                     </Link>
                   </li>
                 )}
-                {store.gastronomy && (
-                  <li>
-                    <Link
-                      href={`/store/${store.slug.current}/gastronomie`}
-                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm transition-colors"
-                    >
-                      <Utensils className="w-4 h-4" />
-                      Gastronomie
-                    </Link>
-                  </li>
-                )}
-                {store.services?.some(s => s.title.toLowerCase().includes('maschinenvermietung')) && (
+                {hasMaschinenvermietung && (
                   <li>
                     <Link
                       href={`/store/${store.slug.current}/maschinenvermietung`}
@@ -390,24 +392,28 @@ const StorePage = ({ store }: StorePageProps) => {
                     </Link>
                   </li>
                 )}
-                <li>
-                  <Link
-                    href={`/store/${store.slug.current}/jobs`}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm transition-colors"
-                  >
-                    <Briefcase className="w-4 h-4" />
-                    Offene Stellen
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href={`/store/${store.slug.current}/kontakt`}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm transition-colors"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    Kontaktformular
-                  </Link>
-                </li>
+                {hasJobs && (
+                  <li>
+                    <Link
+                      href={`/store/${store.slug.current}/jobs`}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm transition-colors"
+                    >
+                      <Briefcase className="w-4 h-4" />
+                      Offene Stellen
+                    </Link>
+                  </li>
+                )}
+                {hasContact && (
+                  <li>
+                    <Link
+                      href={`/store/${store.slug.current}/kontakt`}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm transition-colors"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Kontaktformular
+                    </Link>
+                  </li>
+                )}
               </ul>
             </nav>
           </aside>
@@ -550,89 +556,69 @@ const StorePage = ({ store }: StorePageProps) => {
               </div>
             </div>
 
-            {/* Prospekt & Gastronomie Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Prospekt Card */}
-              {store.prospectImage && (
-                <Link
-                  href={store.prospectUrl || `/store/${store.slug.current}/prospekt`}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group"
-                >
-                  <div className="p-4">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-2">Prospekt</h3>
-                    <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
-                      <Image
-                        src={store.prospectImage}
-                        alt={`${store.name} Prospekt`}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    {store.prospectStartDate && store.prospectEndDate && (
-                      <p className="text-xs text-gray-500 mt-2">
-                        Gültig von {formatDateRange()}
-                      </p>
-                    )}
-                  </div>
-                </Link>
-              )}
-
-              {/* Gastronomie Card */}
-              {store.gastronomy && (
-                <Link
-                  href={store.gastronomy.menuLink || `/store/${store.slug.current}/gastronomie`}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group"
-                >
-                  <div className="p-4">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-2">Speiseplan</h3>
-                    <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
-                      {store.gastronomy.image ? (
-                        <Image
-                          src={store.gastronomy.image.asset.url}
-                          alt={store.gastronomy.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-rose-50 to-pink-50">
-                          <Utensils className="w-12 h-12 text-rose-300" />
-                        </div>
-                      )}
-                    </div>
+            {/* Prospekt Card */}
+            {hasProspect && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-2">Prospekt</h3>
+                  <PDFFlipbook
+                    prospect={store.prospect}
+                    storeName={store.name}
+                    height="300px"
+                  />
+                  {store.prospect?.title && (
                     <p className="text-xs text-gray-500 mt-2">
-                      {store.gastronomy.name}
+                      {store.prospect.title}
                     </p>
-                  </div>
-                </Link>
-              )}
-            </div>
-
-            {/* Service Icons */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Service
-              </h3>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                <Link
-                  href={`/store/${store.slug.current}/kontakt`}
-                  className="text-center group"
-                >
-                  <div className="w-14 h-14 mx-auto rounded-full bg-rose-50 group-hover:bg-rose-100 transition-colors flex items-center justify-center">
-                    <MessageSquare className="w-6 h-6 text-rose-500" />
-                  </div>
-                  <p className="text-xs text-gray-600 mt-2">Kontaktformular</p>
-                </Link>
-                <Link
-                  href={`/store/${store.slug.current}/jobs`}
-                  className="text-center group"
-                >
-                  <div className="w-14 h-14 mx-auto rounded-full bg-rose-50 group-hover:bg-rose-100 transition-colors flex items-center justify-center">
-                    <Briefcase className="w-6 h-6 text-rose-500" />
-                  </div>
-                  <p className="text-xs text-gray-600 mt-2">Offene Stellen</p>
-                </Link>
+                  )}
+                  {formatDateRange() && (
+                    <p className="text-xs text-gray-500">
+                      Gültig von {formatDateRange()}
+                    </p>
+                  )}
+                  <Link
+                    href={`/store/${store.slug.current}/prospekt`}
+                    className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors"
+                  >
+                    Vollbild öffnen
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Service Icons - Only show if there are services */}
+            {(hasContact || hasJobs) && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                  Service
+                </h3>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                  {hasContact && (
+                    <Link
+                      href={`/store/${store.slug.current}/kontakt`}
+                      className="text-center group"
+                    >
+                      <div className="w-14 h-14 mx-auto rounded-full bg-rose-50 group-hover:bg-rose-100 transition-colors flex items-center justify-center">
+                        <MessageSquare className="w-6 h-6 text-rose-500" />
+                      </div>
+                      <p className="text-xs text-gray-600 mt-2">Kontaktformular</p>
+                    </Link>
+                  )}
+                  {hasJobs && (
+                    <Link
+                      href={`/store/${store.slug.current}/jobs`}
+                      className="text-center group"
+                    >
+                      <div className="w-14 h-14 mx-auto rounded-full bg-rose-50 group-hover:bg-rose-100 transition-colors flex items-center justify-center">
+                        <Briefcase className="w-6 h-6 text-rose-500" />
+                      </div>
+                      <p className="text-xs text-gray-600 mt-2">Offene Stellen</p>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Local Services Section */}
             {store.localServices && store.localServices.length > 0 && (

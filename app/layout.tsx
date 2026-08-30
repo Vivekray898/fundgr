@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { CatalogueProvider } from "@/components/providers/CatalogueSettingsProvider";
 import { getSettings } from "@/sanity/queries/settings";
 import type { Metadata } from "next";
+import OptimonkScript from "@/components/OptimonkScript";
 
 export const metadata: Metadata = {
   title: {
@@ -39,6 +40,9 @@ export default async function RootLayout({
             />
           </CatalogueProvider>
         </ClerkProvider>
+        
+        {/* OptiMonk Script - Placed outside providers for better performance */}
+        <OptimonkScript />
       </body>
     </html>
   );
