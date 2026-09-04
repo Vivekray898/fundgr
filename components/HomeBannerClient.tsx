@@ -232,12 +232,10 @@ const HomeBannerClient = ({
         modules={[Autoplay, Pagination, Navigation, EffectFade]}
         effect="fade"
         fadeEffect={{ crossFade: true }}
-        // Navigation configuration - This enables the Navigation module
         navigation={{
           prevEl: prevRef.current,
           nextEl: nextRef.current,
         }}
-        // onBeforeInit runs BEFORE Navigation module initializes
         onBeforeInit={(swiper) => {
           // @ts-ignore - Setting navigation elements before init
           swiper.params.navigation.prevEl = prevRef.current;
@@ -297,18 +295,17 @@ const HomeBannerClient = ({
                     </div>
                   </div>
                 ) : (
-                  // Thumbnail or Banner
+                  // Thumbnail or Banner - NO BLACK OVERLAY
                   <>
                     <Image
                       src={slide.image}
                       alt={slide.alt || "Banner"}
                       fill
                       draggable={false}
-                      className="object-cover select-none pointer-events-none"
+                      className="object-cover select-none"
                       priority={isActive}
                       sizes="(max-width: 768px) 100vw, 100vw"
                     />
-                    <div className="absolute inset-0 bg-black/30 pointer-events-none" />
                     
                     {/* YouTube Play Button Overlay */}
                     {isCurrentSlide && (
