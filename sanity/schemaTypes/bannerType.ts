@@ -105,6 +105,23 @@ export const bannerType = defineType({
       placeholder: "e.g., abc123xyz",
     }),
     defineField({
+      name: "youtubeThumbnail",
+      title: "Custom YouTube Thumbnail",
+      type: "image",
+      description: "Custom thumbnail for the YouTube video (recommended: 1920x600)",
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        {
+          name: "alt",
+          type: "string",
+          title: "Alt Text",
+          description: "Alternative text for the thumbnail",
+        },
+      ],
+    }),
+    defineField({
       name: "youtubeExpiryDays",
       title: "YouTube Video Expiry (Days)",
       type: "number",

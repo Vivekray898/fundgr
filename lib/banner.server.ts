@@ -1,7 +1,8 @@
-// lib/banner.ts
+// lib/banner.server.ts
+import "server-only";
 import { BANNER_QUERY } from "@/sanity/queries/bannerQuery";
 import { sanityFetch } from "@/sanity/lib/live";
-import { getLatestYouTubeVideo } from "./youtube";
+import { getLatestYouTubeVideoDirect } from "./youtube.server";
 
 export interface BannerData {
   _id: string;
@@ -18,6 +19,8 @@ export interface BannerData {
   youtubeEnabled: boolean;
   youtubeChannelId?: string;
   youtubeVideoId?: string;
+  youtubeThumbnail?: string;
+  youtubeThumbnailAlt?: string;
   youtubeExpiryDays: number;
   youtubeActivationDate?: string;
   youtubeExpiryDate?: string;
@@ -39,9 +42,9 @@ export interface ProcessedBannerData {
   youtube: {
     enabled: boolean;
     videoId?: string;
-    isExpired: boolean;
     thumbnail?: string;
-    title?: string;
+    thumbnailAlt?: string;
+    isExpired: boolean;
   };
   fallback: {
     image: string;
@@ -62,7 +65,6 @@ export function isExpired(expiryDate: Date | string | undefined): boolean {
   return new Date() > expiry;
 }
 
-// This function should only be called from Server Components
 export async function getBannerData(): Promise<ProcessedBannerData | null> {
   try {
     const { data } = await sanityFetch({ query: BANNER_QUERY });
@@ -73,7 +75,13 @@ export async function getBannerData(): Promise<ProcessedBannerData | null> {
     }
 
     const banner = data as BannerData;
-    const now = new Date();
+    console.log("Banner data loaded:", {
+      hasYouTubeVideoId: !!banner.youtubeVideoId,
+      youtubeEnabled: banner.youtubeEnabled,
+      youtubeChannelId: banner.youtubeChannelId,
+      youtubeExpiryDate: banner.youtubeExpiryDate,
+      hasCustomThumbnail: !!banner.youtubeThumbnail,
+    });
 
     // Process banner expiry
     const bannerActivationDate = banner.bannerActivationDate 
@@ -105,18 +113,22 @@ export async function getBannerData(): Promise<ProcessedBannerData | null> {
     // Get YouTube video ID (either override or auto-fetch latest)
     let youtubeVideoId = banner.youtubeVideoId || null;
 
-    if (!youtubeVideoId && banner.youtubeChannelId && banner.youtubeEnabled && !youtubeIsExpired) {
-      // Auto-fetch latest video from YouTube API
-      const apiKey = process.env.YOUTUBE_API_KEY;
-      if (apiKey) {
-        const video = await getLatestYouTubeVideo(banner.youtubeChannelId, apiKey);
-        if (video) {
-          youtubeVideoId = video.id;
-        }
+    if (!youtubeVideoId && banner.youtubeEnabled && banner.youtubeChannelId) {
+      console.log("Auto-fetching latest YouTube video for channel:", banner.youtubeChannelId);
+      try {
+        youtubeVideoId = await getLatestYouTubeVideoDirect(banner.youtubeChannelId);
+        console.log("Auto-fetched video ID:", youtubeVideoId);
+      } catch (error) {
+        console.error("Error auto-fetching YouTube video:", error);
+        youtubeVideoId = null;
       }
     }
 
-    return {
+    // Use custom thumbnail if available, otherwise use YouTube thumbnail
+    const youtubeThumbnail = banner.youtubeThumbnail || 
+      (youtubeVideoId ? `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg` : undefined);
+
+    const result = {
       banner: {
         image: bannerIsActive ? banner.desktopImage : banner.fallbackBanner,
         alt: bannerIsActive ? banner.desktopImageAlt : banner.fallbackBannerAlt,
@@ -125,8 +137,10 @@ export async function getBannerData(): Promise<ProcessedBannerData | null> {
         isExpired: bannerIsExpired,
       },
       youtube: {
-        enabled: banner.youtubeEnabled && !youtubeIsExpired && !!youtubeVideoId,
+        enabled: banner.youtubeEnabled && !!youtubeVideoId,
         videoId: youtubeVideoId || undefined,
+        thumbnail: youtubeThumbnail,
+        thumbnailAlt: banner.youtubeThumbnailAlt || "YouTube Video",
         isExpired: youtubeIsExpired,
       },
       fallback: {
@@ -135,6 +149,14 @@ export async function getBannerData(): Promise<ProcessedBannerData | null> {
         link: banner.fallbackBannerLink,
       },
     };
+
+    console.log("Final banner data:", {
+      hasVideo: !!result.youtube.videoId,
+      videoEnabled: result.youtube.enabled,
+      hasThumbnail: !!result.youtube.thumbnail,
+    });
+
+    return result;
   } catch (error) {
     console.error("Error fetching banner data:", error);
     return null;
