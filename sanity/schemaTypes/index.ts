@@ -12,6 +12,7 @@ import { headerType } from "./headerType";
 import { footerType } from "./footerType";
 import { settingsType } from './settings';
 import store from "./store";
+import { bannerType } from "./bannerType"; // Import the new banner type
 
 
 export const schema: { types: SchemaTypeDefinition[] } = {
@@ -26,6 +27,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     authorType,
     addressType,
     store,
+    bannerType, // Add the new banner type here
     headerType,
     footerType,
     settingsType,

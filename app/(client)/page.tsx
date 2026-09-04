@@ -1,6 +1,6 @@
 // app/(client)/page.tsx
 import Container from "@/components/Container";
-import HomeBanner from "@/components/HomeBanner";
+import HomeBannerWrapper from "@/components/HomeBannerWrapper";
 import HomeCategories from "@/components/HomeCategories";
 import LatestBlog from "@/components/LatestBlog";
 import ProductGrid from "@/components/ProductGrid";
@@ -16,7 +16,10 @@ const Home = async () => {
 
   return (
     <Container className="bg-shop-light-pink">
-      <HomeBanner />
+      <HomeBannerWrapper 
+        autoplay={true} 
+        autoplayInterval={5000} 
+      />
       <ProductGrid />
       <HomeCategories categories={categories} />
       
