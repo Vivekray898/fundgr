@@ -12,22 +12,22 @@ const storeServices = [
   {
     title: "Marktabholung",
     description: "Bestellen & im Markt abholen",
-    icon: <Store size={28} className="text-rose-500" />,
+    icon: <Store size={28} className="text-amber-700" />,
   },
   {
     title: "Persönliche Beratung",
     description: "Unser Team hilft Ihnen gerne weiter",
-    icon: <Headset size={28} className="text-rose-500" />,
+    icon: <Headset size={28} className="text-amber-700" />,
   },
   {
     title: "Parkplätze",
     description: "Kostenlose Parkplätze direkt vor Ort",
-    icon: <Car size={28} className="text-rose-500" />,
+    icon: <Car size={28} className="text-amber-700" />,
   },
   {
     title: "Marktöffnungszeiten",
     description: "Mo-Sa: 9:00-20:00 Uhr",
-    icon: <Clock size={28} className="text-rose-500" />,
+    icon: <Clock size={28} className="text-amber-700" />,
   },
 ];
 
@@ -65,12 +65,12 @@ const ShopByBrands = async () => {
   const displayBrands = sortedBrands?.slice(0, 8);
 
   return (
-    <div className="mb-10 lg:mb-20 bg-gradient-to-br from-rose-50/50 via-pink-50/50 to-blue-50/50 p-3 sm:p-5 lg:p-7 rounded-xl border border-pink-100">
+    <div className="mb-10 lg:mb-20 bg-gradient-to-br from-amber-50/40 via-orange-50/30 to-white p-3 sm:p-5 lg:p-7 rounded-xl border border-amber-200/40 shadow-sm hover:shadow-md transition-shadow">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div>
           <Title className="text-base sm:text-xl lg:text-2xl font-bold">
-            <span className="bg-gradient-to-r from-rose-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
+            <span className="text-gray-800">
               Marken entdecken
             </span>
           </Title>
@@ -80,7 +80,7 @@ const ShopByBrands = async () => {
         </div>
         <Link
           href={"/shop"}
-          className="text-[9px] sm:text-xs lg:text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors hover:underline flex-shrink-0"
+          className="text-[9px] sm:text-xs lg:text-sm font-medium text-amber-700 hover:text-amber-900 transition-colors hover:underline flex-shrink-0"
         >
           Alle Marken →
         </Link>
@@ -93,7 +93,7 @@ const ShopByBrands = async () => {
             <Link
               key={brand?._id}
               href={{ pathname: "/shop", query: { brand: brand?.slug?.current } }}
-              className="group bg-white rounded-xl border border-pink-100 w-[100px] sm:w-[140px] h-16 sm:h-24 flex flex-col items-center justify-center overflow-hidden hover:shadow-lg hover:shadow-rose-100/50 hover:border-rose-200 transition-all duration-300 relative snap-start flex-shrink-0"
+              className="group bg-white rounded-xl border border-amber-200/50 w-[100px] sm:w-[140px] h-16 sm:h-24 flex flex-col items-center justify-center overflow-hidden hover:shadow-lg hover:shadow-amber-100/50 hover:border-amber-300 transition-all duration-300 relative snap-start flex-shrink-0"
             >
               {brand?.logo ? (
                 <Image
@@ -110,12 +110,12 @@ const ShopByBrands = async () => {
               )}
               {brand?.featured && (
                 <div className="absolute top-1 right-1">
-                  <Star className="w-2 h-2 text-amber-400 fill-amber-400" />
+                  <Star className="w-2 h-2 text-amber-500 fill-amber-500" />
                 </div>
               )}
               {brand?.marketLocation && (
                 <div className="absolute bottom-1 right-1">
-                  <MapPin className="w-1.5 h-1.5 text-emerald-500" />
+                  <MapPin className="w-1.5 h-1.5 text-emerald-600" />
                 </div>
               )}
             </Link>
@@ -129,7 +129,7 @@ const ShopByBrands = async () => {
           <Link
             key={brand?._id}
             href={{ pathname: "/shop", query: { brand: brand?.slug?.current } }}
-            className="group bg-white rounded-xl border border-pink-100 h-24 flex flex-col items-center justify-center overflow-hidden hover:shadow-lg hover:shadow-rose-100/50 hover:border-rose-200 transition-all duration-300 relative"
+            className="group bg-white rounded-xl border border-amber-200/50 h-24 flex flex-col items-center justify-center overflow-hidden hover:shadow-lg hover:shadow-amber-100/50 hover:border-amber-300 transition-all duration-300 relative"
           >
             {brand?.logo ? (
               <Image
@@ -146,12 +146,12 @@ const ShopByBrands = async () => {
             )}
             {brand?.featured && (
               <div className="absolute top-1 right-1">
-                <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
               </div>
             )}
             {brand?.marketLocation && (
               <div className="absolute bottom-1 right-1">
-                <MapPin className="w-2.5 h-2.5 text-emerald-500" />
+                <MapPin className="w-2.5 h-2.5 text-emerald-600" />
               </div>
             )}
           </Link>
@@ -159,13 +159,13 @@ const ShopByBrands = async () => {
       </div>
 
       {/* Store Services - Mobile: Compact Horizontal Scroll, Desktop: Grid */}
-      <div className="mt-4 sm:mt-8 p-2 sm:p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-pink-100">
+      <div className="mt-4 sm:mt-8 p-2 sm:p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-amber-200/30">
         <div className="lg:hidden overflow-x-auto scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex gap-2">
             {storeServices?.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 group hover:bg-rose-50/50 p-2 rounded-lg transition-colors min-w-[120px] snap-start flex-shrink-0"
+                className="flex items-center gap-2 group hover:bg-amber-50/60 p-2 rounded-lg transition-colors min-w-[120px] snap-start flex-shrink-0"
               >
                 <span className="inline-flex scale-100 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                   {item?.icon}
@@ -185,7 +185,7 @@ const ShopByBrands = async () => {
           {storeServices?.map((item, index) => (
             <div
               key={index}
-              className="flex flex-col items-center text-center gap-2 group hover:bg-rose-50/50 p-4 rounded-lg transition-colors"
+              className="flex flex-col items-center text-center gap-2 group hover:bg-amber-50/60 p-4 rounded-lg transition-colors"
             >
               <span className="inline-flex scale-100 group-hover:scale-110 transition-transform duration-300">
                 {item?.icon}

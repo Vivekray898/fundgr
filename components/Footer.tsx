@@ -190,7 +190,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gradient-to-br from-rose-50 via-pink-50 to-blue-50 text-gray-800 border-t border-pink-100 mt-12 md:mt-16 lg:mt-20">
+    <footer className="bg-gradient-to-br from-amber-50/40 via-orange-50/30 to-white text-gray-800 border-t border-amber-200/40 mt-12 md:mt-16 lg:mt-20">
       {/* Main Footer Content */}
       <Container className="py-6 md:py-12">
         {/* Logo + About Section - Compact on mobile */}
@@ -211,7 +211,7 @@ const Footer = () => {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/80 border border-pink-200 text-gray-600 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300"
+                      className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/80 border border-amber-200/50 text-gray-600 hover:bg-amber-700 hover:text-white hover:border-amber-700 transition-all duration-300"
                     >
                       <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </a>
@@ -238,15 +238,15 @@ const Footer = () => {
                     <li key={category?._id}>
                       <Link
                         href={`/category/${category?.slug?.current}`}
-                        className="text-gray-600 hover:text-rose-600 text-sm flex items-center gap-2 py-1"
+                        className="text-gray-600 hover:text-amber-700 text-sm flex items-center gap-2 py-1"
                       >
-                        <ChevronRight className="w-3 h-3 text-rose-400" />
+                        <ChevronRight className="w-3 h-3 text-amber-600" />
                         {category?.title}
                       </Link>
                     </li>
                   ))}
                   {categories?.length > 6 && (
-                    <li className="text-xs text-rose-500 font-medium pt-1">
+                    <li className="text-xs text-amber-700 font-medium pt-1">
                       +{categories.length - 6} weitere Kategorien
                     </li>
                   )}
@@ -259,9 +259,9 @@ const Footer = () => {
                     <li key={link?.title}>
                       <Link
                         href={link?.href}
-                        className="text-gray-600 hover:text-rose-600 text-sm flex items-center gap-2 py-1"
+                        className="text-gray-600 hover:text-amber-700 text-sm flex items-center gap-2 py-1"
                       >
-                        <ChevronRight className="w-3 h-3 text-rose-400" />
+                        <ChevronRight className="w-3 h-3 text-amber-600" />
                         {link?.title}
                       </Link>
                     </li>
@@ -275,9 +275,9 @@ const Footer = () => {
                     <li key={link?.title}>
                       <Link
                         href={link?.href}
-                        className="text-gray-600 hover:text-rose-600 text-sm flex items-center gap-2 py-1"
+                        className="text-gray-600 hover:text-amber-700 text-sm flex items-center gap-2 py-1"
                       >
-                        <ChevronRight className="w-3 h-3 text-rose-400" />
+                        <ChevronRight className="w-3 h-3 text-amber-600" />
                         {link?.title}
                       </Link>
                     </li>
@@ -291,8 +291,8 @@ const Footer = () => {
                     const Icon = iconMap[item?.icon as keyof typeof iconMap] || MapPin;
                     return (
                       <li key={item?.title} className="flex items-start gap-3">
-                        <div className="p-1.5 rounded-full bg-white/80 border border-pink-200 flex-shrink-0">
-                          <Icon className="w-3.5 h-3.5 text-rose-500" />
+                        <div className="p-1.5 rounded-full bg-white/80 border border-amber-200/50 flex-shrink-0">
+                          <Icon className="w-3.5 h-3.5 text-amber-700" />
                         </div>
                         <div>
                           <p className="text-gray-800 text-sm font-medium">{item?.title}</p>
@@ -306,18 +306,18 @@ const Footer = () => {
             }
 
             return (
-              <div key={section.id} className="border-b border-pink-100/50 bg-white/50 backdrop-blur-sm rounded-lg mb-1 overflow-hidden">
+              <div key={section.id} className="border-b border-amber-200/30 bg-white/50 backdrop-blur-sm rounded-lg mb-1 overflow-hidden">
                 <button
                   onClick={() => toggleSection(section.id)}
                   className="w-full flex items-center justify-between py-3 px-3 text-left"
                 >
-                  <span className="text-sm font-semibold text-gray-800 bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+                  <span className="text-sm font-semibold text-gray-800">
                     {section.title}
                   </span>
                   {isSectionExpanded(section.id) ? (
-                    <ChevronUp className="w-4 h-4 text-rose-400" />
+                    <ChevronUp className="w-4 h-4 text-amber-600" />
                   ) : (
-                    <ChevronDown className="w-4 h-4 text-rose-400" />
+                    <ChevronDown className="w-4 h-4 text-amber-600" />
                   )}
                 </button>
                 {isSectionExpanded(section.id) && (
@@ -335,7 +335,7 @@ const Footer = () => {
           {/* Product Categories Column */}
           {showCategories && (
             <div>
-              <h3 className="text-gray-800 font-semibold mb-4 text-sm uppercase tracking-wider bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+              <h3 className="text-gray-800 font-semibold mb-4 text-sm uppercase tracking-wider">
                 {productCategoriesTitle}
               </h3>
               <ul className="space-y-2">
@@ -343,9 +343,9 @@ const Footer = () => {
                   <li key={category?._id}>
                     <Link
                       href={`/category/${category?.slug?.current}`}
-                      className="text-gray-600 hover:text-rose-600 text-sm flex items-center gap-2 group transition-colors"
+                      className="text-gray-600 hover:text-amber-700 text-sm flex items-center gap-2 group transition-colors"
                     >
-                      <ChevronRight className="w-3 h-3 text-rose-400 group-hover:text-rose-600 transition-colors" />
+                      <ChevronRight className="w-3 h-3 text-amber-600 group-hover:text-amber-700 transition-colors" />
                       {category?.title}
                     </Link>
                   </li>
@@ -356,7 +356,7 @@ const Footer = () => {
 
           {/* Service Column */}
           <div>
-            <h3 className="text-gray-800 font-semibold mb-4 text-sm uppercase tracking-wider bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            <h3 className="text-gray-800 font-semibold mb-4 text-sm uppercase tracking-wider">
               {serviceTitle}
             </h3>
             <ul className="space-y-2">
@@ -364,9 +364,9 @@ const Footer = () => {
                 <li key={link?.title}>
                   <Link
                     href={link?.href}
-                    className="text-gray-600 hover:text-rose-600 text-sm flex items-center gap-2 group transition-colors"
+                    className="text-gray-600 hover:text-amber-700 text-sm flex items-center gap-2 group transition-colors"
                   >
-                    <ChevronRight className="w-3 h-3 text-rose-400 group-hover:text-rose-600 transition-colors" />
+                    <ChevronRight className="w-3 h-3 text-amber-600 group-hover:text-amber-700 transition-colors" />
                     {link?.title}
                   </Link>
                 </li>
@@ -376,7 +376,7 @@ const Footer = () => {
 
           {/* Company Column */}
           <div>
-            <h3 className="text-gray-800 font-semibold mb-4 text-sm uppercase tracking-wider bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            <h3 className="text-gray-800 font-semibold mb-4 text-sm uppercase tracking-wider">
               {companyTitle}
             </h3>
             <ul className="space-y-2">
@@ -384,9 +384,9 @@ const Footer = () => {
                 <li key={link?.title}>
                   <Link
                     href={link?.href}
-                    className="text-gray-600 hover:text-rose-600 text-sm flex items-center gap-2 group transition-colors"
+                    className="text-gray-600 hover:text-amber-700 text-sm flex items-center gap-2 group transition-colors"
                   >
-                    <ChevronRight className="w-3 h-3 text-rose-400 group-hover:text-rose-600 transition-colors" />
+                    <ChevronRight className="w-3 h-3 text-amber-600 group-hover:text-amber-700 transition-colors" />
                     {link?.title}
                   </Link>
                 </li>
@@ -396,7 +396,7 @@ const Footer = () => {
 
           {/* Contact Column */}
           <div>
-            <h3 className="text-gray-800 font-semibold mb-4 text-sm uppercase tracking-wider bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            <h3 className="text-gray-800 font-semibold mb-4 text-sm uppercase tracking-wider">
               {contactTitle}
             </h3>
             <ul className="space-y-3">
@@ -404,8 +404,8 @@ const Footer = () => {
                 const Icon = iconMap[item?.icon as keyof typeof iconMap] || MapPin;
                 return (
                   <li key={item?.title} className="flex items-start gap-3 group">
-                    <div className="p-1.5 rounded-full bg-rose-100 group-hover:bg-rose-500 transition-all duration-300 flex-shrink-0">
-                      <Icon className="w-4 h-4 text-rose-500 group-hover:text-white transition-colors" />
+                    <div className="p-1.5 rounded-full bg-amber-100/60 group-hover:bg-amber-700 transition-all duration-300 flex-shrink-0">
+                      <Icon className="w-4 h-4 text-amber-700 group-hover:text-white transition-colors" />
                     </div>
                     <div>
                       <p className="text-gray-800 text-sm font-medium">{item?.title}</p>
@@ -420,17 +420,17 @@ const Footer = () => {
       </Container>
 
       {/* Payment Methods - Mobile Optimized */}
-      <div className="border-t border-pink-200/50 bg-gradient-to-r from-rose-50/50 via-pink-50/50 to-blue-50/50">
+      <div className="border-t border-amber-200/30 bg-gradient-to-r from-amber-50/40 via-orange-50/30 to-white">
         <Container className="py-4 md:py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
-            <h3 className="text-xs md:text-sm font-semibold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            <h3 className="text-xs md:text-sm font-semibold text-gray-800">
               {paymentTitle}
             </h3>
             <div className="flex flex-wrap justify-center gap-1.5 md:gap-2">
               {paymentMethodsList?.slice(0, isMobile ? 4 : 8).map((method: string) => (
                 <span
                   key={method}
-                  className="px-2.5 py-1 md:px-4 md:py-2 bg-white/80 backdrop-blur-sm border border-pink-200 rounded-lg text-[10px] md:text-sm text-gray-600 hover:border-rose-300 hover:bg-rose-50 transition-all duration-300"
+                  className="px-2.5 py-1 md:px-4 md:py-2 bg-white/80 backdrop-blur-sm border border-amber-200/50 rounded-lg text-[10px] md:text-sm text-gray-600 hover:border-amber-300 hover:bg-amber-50/60 transition-all duration-300"
                 >
                   {paymentMethods[method as keyof typeof paymentMethods] || method}
                 </span>
@@ -446,7 +446,7 @@ const Footer = () => {
       </div>
 
       {/* Bottom Bar - Mobile Optimized */}
-      <div className="border-t border-pink-200/50 bg-gradient-to-r from-rose-50/50 via-pink-50/50 to-blue-50/50">
+      <div className="border-t border-amber-200/30 bg-gradient-to-r from-amber-50/40 via-orange-50/30 to-white">
         <Container className="py-4 md:py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
             <p className="text-[10px] md:text-sm text-gray-500 order-2 md:order-1">
@@ -457,7 +457,7 @@ const Footer = () => {
                 <Link
                   key={link?.title}
                   href={link?.href}
-                  className="text-[9px] md:text-xs text-gray-400 hover:text-rose-500 transition-colors"
+                  className="text-[9px] md:text-xs text-gray-400 hover:text-amber-700 transition-colors"
                 >
                   {link?.title}
                 </Link>

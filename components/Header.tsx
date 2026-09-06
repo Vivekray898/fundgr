@@ -34,6 +34,15 @@ const iconMap = {
   heart: Heart,
 };
 
+// Client-side wrapper for Clerk components to avoid hydration issues
+const ClerkAuthWrapper = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <ClerkLoaded>
+      {children}
+    </ClerkLoaded>
+  );
+};
+
 const Header = async () => {
   const user = await currentUser();
   const { userId } = await auth();
@@ -84,7 +93,7 @@ const Header = async () => {
       <header className="bg-white shadow-sm">
         {/* Top Bar - Desktop only */}
         {topBarEnabled && (
-          <div className="hidden lg:block bg-gradient-to-r from-rose-50 via-pink-50 to-blue-50 border-b border-rose-100">
+          <div className="hidden lg:block bg-gradient-to-r from-amber-50/40 via-orange-50/30 to-white border-b border-amber-200/30">
             <Container className="flex items-center justify-between py-1.5 text-xs text-gray-600">
               {/* Trust badges - Compact */}
               <div className="flex items-center gap-6">
@@ -92,7 +101,7 @@ const Header = async () => {
                   const IconComponent = iconMap[badge.icon as keyof typeof iconMap];
                   return (
                     <div key={index} className="flex items-center gap-1.5 text-gray-600">
-                      {IconComponent && <IconComponent className="w-3.5 h-3.5 text-rose-500" />}
+                      {IconComponent && <IconComponent className="w-3.5 h-3.5 text-amber-700" />}
                       <span>{badge.text}</span>
                     </div>
                   );
@@ -109,7 +118,7 @@ const Header = async () => {
                     <Link 
                       key={index} 
                       href={link.url} 
-                      className="hover:text-rose-500 transition-colors"
+                      className="hover:text-amber-700 transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -145,17 +154,17 @@ const Header = async () => {
               {showWishlist && (
                 <div className="flex flex-col items-center gap-0.5 group">
                   <FavoriteButton showProduct={false} />
-                  <span className="text-[10px] text-gray-500 group-hover:text-rose-500">Merkliste</span>
+                  <span className="text-[10px] text-gray-500 group-hover:text-amber-700">Merkliste</span>
                 </div>
               )}
               
               {showCart && (
                 <Link href="/cart" className="flex flex-col items-center gap-0.5 group">
                   <div className="relative">
-                    <ShoppingCart className="w-5 h-5 text-gray-600 group-hover:text-rose-500 transition-colors" />
-                    <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white h-4 w-4 rounded-full text-[9px] font-semibold flex items-center justify-center">0</span>
+                    <ShoppingCart className="w-5 h-5 text-gray-600 group-hover:text-amber-700 transition-colors" />
+                    <span className="absolute -top-1.5 -right-1.5 bg-amber-700 text-white h-4 w-4 rounded-full text-[9px] font-semibold flex items-center justify-center">0</span>
                   </div>
-                  <span className="text-[10px] text-gray-500 group-hover:text-rose-500">Warenkorb</span>
+                  <span className="text-[10px] text-gray-500 group-hover:text-amber-700">Warenkorb</span>
                 </Link>
               )}
               
@@ -166,9 +175,12 @@ const Header = async () => {
                   </SignedIn>
                   {!user && (
                     <SignInButton mode="modal">
-                      <button className="flex flex-col items-center gap-0.5 group focus:outline-none">
-                        <User className="w-5 h-5 text-gray-600 group-hover:text-rose-500 transition-colors" />
-                        <span className="text-[10px] text-gray-500 group-hover:text-rose-500">Konto</span>
+                      <button 
+                        className="flex flex-col items-center gap-0.5 group focus:outline-none"
+                        type="button"
+                      >
+                        <User className="w-5 h-5 text-gray-600 group-hover:text-amber-700 transition-colors" />
+                        <span className="text-[10px] text-gray-500 group-hover:text-amber-700">Konto</span>
                       </button>
                     </SignInButton>
                   )}
@@ -194,7 +206,7 @@ const Header = async () => {
       </header>
 
       {/* Sticky Navigation - Desktop */}
-      <div className="sticky top-0 z-40 hidden lg:block bg-white border-b border-rose-100 shadow-sm">
+      <div className="sticky top-0 z-40 hidden lg:block bg-white border-b border-amber-200/30 shadow-sm">
         <Container className="flex items-center justify-between">
           <HeaderMenu 
             menuItems={headerData?.navigation?.items}
@@ -205,13 +217,13 @@ const Header = async () => {
           <StoreLocator 
             trigger="link"
             settings={storeLocatorSettings}
-            className="text-rose-500 hover:text-rose-600 px-3 py-2.5 flex items-center gap-1.5 text-sm font-medium"
+            className="text-amber-700 hover:text-amber-900 px-3 py-2.5 flex items-center gap-1.5 text-sm font-medium"
           />
         </Container>
       </div>
 
       {/* Mobile Search Bar - Sticky */}
-      <div className="sticky top-0 z-40 lg:hidden bg-white border-b border-rose-100 py-2 px-4">
+      <div className="sticky top-0 z-40 lg:hidden bg-white border-b border-amber-200/30 py-2 px-4">
         <SearchBar isMobile isFullWidth />
       </div>
     </>

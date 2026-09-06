@@ -10,7 +10,9 @@ export default function ClientLayout({
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 w-full max-w-[1530px] mx-auto px-4 sm:px-6 lg:px-8">
+        {children}
+      </main>
       <Footer />
     </div>
   );

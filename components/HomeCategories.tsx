@@ -16,12 +16,14 @@ const HomeCategories = ({ categories }: { categories: Category[] }) => {
   const categoriesWithCount = categories as CategoryWithCount[];
 
   return (
-    <div className="bg-white border border-rose-100 my-6 md:my-20 p-3 sm:p-5 lg:p-7 rounded-xl overflow-hidden">
+    <div className="bg-white border border-amber-200/50 my-6 md:my-20 p-3 sm:p-5 lg:p-7 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-4 sm:mb-5">
-        <Title className="border-b pb-2 text-base sm:text-xl">Beliebte Kategorien</Title>
+        <Title className="border-b border-amber-200 pb-2 text-base sm:text-xl text-gray-800">
+          Beliebte Kategorien
+        </Title>
         <Link
           href="/sortiment"
-          className="text-[10px] sm:text-xs lg:text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors hover:underline flex-shrink-0"
+          className="text-[10px] sm:text-xs lg:text-sm font-medium text-amber-700 hover:text-amber-900 transition-colors hover:underline flex-shrink-0"
         >
           Alle anzeigen →
         </Link>
@@ -33,10 +35,10 @@ const HomeCategories = ({ categories }: { categories: Category[] }) => {
           {categoriesWithCount?.map((category) => (
             <div
               key={category?._id}
-              className="bg-rose-50/30 p-2.5 sm:p-3 flex items-center gap-2.5 group rounded-lg hover:shadow-md hover:bg-rose-50/50 transition-all min-w-[140px] sm:min-w-[160px] snap-start flex-shrink-0"
+              className="bg-amber-50/40 p-2.5 sm:p-3 flex items-center gap-2.5 group rounded-lg hover:shadow-md hover:bg-amber-50/70 transition-all min-w-[140px] sm:min-w-[160px] snap-start flex-shrink-0 border border-amber-100/50 hover:border-amber-200"
             >
               {category?.image && (
-                <div className="overflow-hidden border border-rose-100 hover:border-rose-300 hoverEffect w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 p-1 rounded-lg">
+                <div className="overflow-hidden border border-amber-200/50 hover:border-amber-300 hoverEffect w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 p-1 rounded-lg bg-amber-50/30">
                   <Link href={`/category/${category?.slug?.current}`}>
                     <Image
                       src={urlFor(category?.image).url()}
@@ -49,11 +51,11 @@ const HomeCategories = ({ categories }: { categories: Category[] }) => {
                 </div>
               )}
               <div className="space-y-0.5 min-w-0 flex-1">
-                <h3 className="text-[10px] sm:text-xs font-semibold truncate">
+                <h3 className="text-[10px] sm:text-xs font-semibold truncate text-gray-800">
                   {category?.title}
                 </h3>
                 <p className="text-[9px] sm:text-[10px] text-gray-500 truncate">
-                  <span className="font-bold text-rose-500">{`(${category?.productCount || 0})`}</span>{" "}
+                  <span className="font-bold text-amber-700">{`(${category?.productCount || 0})`}</span>{" "}
                   <span className="hidden xs:inline">Artikel</span>
                   <span className="xs:hidden">Art.</span>
                 </p>
@@ -68,10 +70,10 @@ const HomeCategories = ({ categories }: { categories: Category[] }) => {
         {categoriesWithCount?.map((category) => (
           <div
             key={category?._id}
-            className="bg-rose-50/30 p-4 lg:p-5 flex items-center gap-3 group rounded-lg hover:shadow-md hover:bg-rose-50/50 transition-all"
+            className="bg-amber-50/40 p-4 lg:p-5 flex items-center gap-3 group rounded-lg hover:shadow-md hover:bg-amber-50/70 transition-all border border-amber-100/50 hover:border-amber-200"
           >
             {category?.image && (
-              <div className="overflow-hidden border border-rose-100 hover:border-rose-300 hoverEffect w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 p-1 rounded-lg">
+              <div className="overflow-hidden border border-amber-200/50 hover:border-amber-300 hoverEffect w-16 h-16 lg:w-20 lg:h-20 flex-shrink-0 p-1 rounded-lg bg-amber-50/30">
                 <Link href={`/category/${category?.slug?.current}`}>
                   <Image
                     src={urlFor(category?.image).url()}
@@ -84,11 +86,11 @@ const HomeCategories = ({ categories }: { categories: Category[] }) => {
               </div>
             )}
             <div className="space-y-1 min-w-0 flex-1">
-              <h3 className="text-sm lg:text-base font-semibold truncate">
+              <h3 className="text-sm lg:text-base font-semibold truncate text-gray-800">
                 {category?.title}
               </h3>
               <p className="text-xs lg:text-sm text-gray-600 truncate">
-                <span className="font-bold text-rose-500">{`(${category?.productCount || 0})`}</span>{" "}
+                <span className="font-bold text-amber-700">{`(${category?.productCount || 0})`}</span>{" "}
                 <span>Artikel verfügbar</span>
               </p>
             </div>

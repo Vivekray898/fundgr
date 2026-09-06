@@ -1,35 +1,175 @@
 // components/ProductMinimalSection.tsx
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import ProductMinimalCard from "./ProductMinimalCard";
 import { ArrowRight } from "lucide-react";
-import { Product } from "@/sanity.types";
+import { client } from "@/sanity/lib/client";
+import { urlFor } from "@/sanity/lib/image";
+
+// Define Product type locally since sanity.types might not have all fields
+interface Product {
+  _id: string;
+  name: string;
+  slug: { current: string } | string;
+  images?: Array<{ asset?: { _id: string; url: string } }> | string[];
+  price: number;
+  discount?: number;
+  originalPrice?: number;
+  isDeal?: boolean;
+  dealEndDate?: string;
+  status?: string;
+  stock?: number;
+  categories?: Array<{ _id: string; title: string; slug: { current: string } }> | string[];
+  brand?: string;
+  brandName?: string;
+  brandSlug?: string;
+  description?: string;
+}
 
 interface ProductMinimalSectionProps {
-  products: Product[];
+  products?: Product[];
   title?: string;
   subtitle?: string;
   linkText?: string;
   linkHref?: string;
   columns?: 2 | 3 | 4;
   className?: string;
+  fetchFromSanity?: boolean;
+  status?: "new" | "hot" | "sale";
+  limit?: number;
 }
 
 const ProductMinimalSection = ({ 
-  products, 
-  title = "Top Angebote",
-  subtitle,
+  products: propProducts,
+  title = "Sale Angebote",
+  subtitle = "Spare jetzt bei unseren Sale-Produkten!",
   linkText = "Alle anzeigen",
   linkHref = "/angebote",
   columns = 4,
-  className = ""
+  className = "",
+  fetchFromSanity = true,
+  status = "sale",
+  limit = 8
 }: ProductMinimalSectionProps) => {
-  
+  const [products, setProducts] = useState<Product[]>(propProducts || []);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
   const gridCols = {
     2: "grid-cols-2",
     3: "grid-cols-2 md:grid-cols-3",
     4: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
   }[columns];
+
+  // Fetch products from Sanity if fetchFromSanity is true
+  useEffect(() => {
+    if (fetchFromSanity && !propProducts) {
+      const fetchProducts = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          console.log(`🔍 Fetching products with status: "${status}"...`);
+          
+          // Fetch products with specific status from Sanity
+          const query = `*[_type == "product" && status == $status && stock > 0] | order(_createdAt desc)[0...$limit] {
+            _id,
+            name,
+            slug,
+            images[]{
+              asset->{
+                _id,
+                url
+              }
+            },
+            price,
+            discount,
+            originalPrice,
+            isDeal,
+            dealEndDate,
+            status,
+            stock,
+            categories[]->{
+              _id,
+              title,
+              "slug": slug.current
+            },
+            brand->{
+              _id,
+              name,
+              "slug": slug.current
+            },
+            description
+          }`;
+          
+          const result = await client.fetch(query, { status, limit });
+          console.log(`✅ Found ${result?.length || 0} products with status "${status}"`);
+          setProducts(result || []);
+        } catch (error) {
+          console.error("Error fetching sale products:", error);
+          setError("Fehler beim Laden der Produkte");
+          setProducts([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchProducts();
+    }
+  }, [fetchFromSanity, propProducts, status, limit]);
+
+  // If loading, show skeleton
+  if (loading) {
+    return (
+      <div className={`my-6 sm:my-12 ${className}`}>
+        <div className="flex items-center justify-between mb-3 sm:mb-6">
+          <div>
+            <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900">{title}</h2>
+            {subtitle && <p className="text-[10px] sm:text-sm text-gray-500 mt-1">{subtitle}</p>}
+          </div>
+          <div className="text-[10px] sm:text-sm font-medium text-amber-700 flex items-center gap-1">
+            {linkText}
+            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+          </div>
+        </div>
+        <div className={`grid ${gridCols} gap-2 sm:gap-4`}>
+          {[...Array(4)].map((_, index) => (
+            <div key={index} className="animate-pulse">
+              <div className="flex items-center gap-2 p-2 rounded-lg border border-amber-100/50 bg-white">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-amber-100/50 flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-2 bg-amber-100/50 rounded w-1/3" />
+                  <div className="h-3 bg-amber-100/50 rounded w-2/3" />
+                  <div className="h-2 bg-amber-100/50 rounded w-1/4" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // If error, show error state
+  if (error) {
+    return (
+      <div className={`my-6 sm:my-12 ${className}`}>
+        <div className="flex items-center justify-between mb-3 sm:mb-6">
+          <h2 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900">{title}</h2>
+        </div>
+        <div className="text-center py-8 bg-red-50/30 rounded-lg border border-red-100/50">
+          <p className="text-red-500 text-sm">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-2 text-sm text-amber-700 hover:text-amber-900 underline"
+          >
+            Erneut versuchen
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`my-6 sm:my-12 ${className}`}>
@@ -43,7 +183,7 @@ const ProductMinimalSection = ({
         </div>
         <Link 
           href={linkHref} 
-          className="text-[10px] sm:text-sm font-medium text-rose-500 hover:text-rose-600 flex items-center gap-1"
+          className="text-[10px] sm:text-sm font-medium text-amber-700 hover:text-amber-900 flex items-center gap-1"
         >
           {linkText}
           <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -51,15 +191,16 @@ const ProductMinimalSection = ({
       </div>
 
       {/* Product Grid - Mobile: 2 columns, Desktop: 3-4 columns */}
-      {products.length > 0 ? (
+      {products && products.length > 0 ? (
         <div className={`grid ${gridCols} gap-2 sm:gap-4`}>
-          {products.map((product: Product) => (
+          {products.map((product) => (
             <ProductMinimalCard key={product._id} product={product} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 bg-rose-50/30 rounded-lg">
-          <p className="text-gray-500">Keine Produkte verfügbar.</p>
+        <div className="text-center py-8 bg-amber-50/30 rounded-lg border border-amber-100/50">
+          <p className="text-gray-500 text-sm">Keine Sale-Angebote verfügbar.</p>
+          <p className="text-xs text-gray-400 mt-1">Schauen Sie später wieder vorbei!</p>
         </div>
       )}
     </div>

@@ -1,0 +1,19 @@
+/* app/(client)/page.module.css */
+.grocerySections {
+  padding-top: 40px;
+  padding-bottom: 80px;
+}
+
+.grocerySections > * + * {
+  margin-top: 80px;
+}
+
+@media (max-width: 768px) {
+  .grocerySections {
+    padding-top: 20px;
+    padding-bottom: 40px;
+  }
+  .grocerySections > * + * {
+    margin-top: 40px;
+  }
+}

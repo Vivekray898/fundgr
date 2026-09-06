@@ -6,6 +6,7 @@ import { CatalogueProvider } from "@/components/providers/CatalogueSettingsProvi
 import { getSettings } from "@/sanity/queries/settings";
 import type { Metadata } from "next";
 import OptimonkScript from "@/components/OptimonkScript";
+import { Providers } from "./providers"; // Import the providers
 
 export const metadata: Metadata = {
   title: {
@@ -27,18 +28,20 @@ export default async function RootLayout({
     <html lang="en">
       <body className="font-poppins antialiased">
         <ClerkProvider>
-          <CatalogueProvider initialSettings={catalogueSettings}>
-            {children}
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                style: {
-                  background: "#000000",
-                  color: "#fff",
-                },
-              }}
-            />
-          </CatalogueProvider>
+          <Providers> {/* Wrap with Providers */}
+            <CatalogueProvider initialSettings={catalogueSettings}>
+              {children}
+              <Toaster
+                position="bottom-right"
+                toastOptions={{
+                  style: {
+                    background: "#000000",
+                    color: "#fff",
+                  },
+                }}
+              />
+            </CatalogueProvider>
+          </Providers>
         </ClerkProvider>
         
         {/* OptiMonk Script - Placed outside providers for better performance */}
