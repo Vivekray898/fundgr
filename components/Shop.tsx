@@ -79,7 +79,6 @@ const Shop = ({ categories, brands }: Props) => {
   const updateURL = useCallback((params: { category?: string | null; brand?: string | null; sort?: string | null }) => {
     const currentParams = new URLSearchParams(searchParams?.toString() || "");
     
-    // Update or remove params
     Object.entries(params).forEach(([key, value]) => {
       if (value && value !== "null" && value !== "") {
         currentParams.set(key, value);
@@ -88,16 +87,14 @@ const Shop = ({ categories, brands }: Props) => {
       }
     });
     
-    // Build the new URL
     const newUrl = currentParams.toString() 
       ? `${pathname}?${currentParams.toString()}`
       : pathname;
     
-    // Use replace to avoid adding to browser history on every filter change
     router.replace(newUrl, { scroll: false });
   }, [searchParams, pathname, router]);
 
-  // Sync state with URL params when they change externally (e.g., back/forward buttons)
+  // Sync state with URL params
   useEffect(() => {
     const brand = searchParams?.get("brand");
     const category = searchParams?.get("category");
@@ -188,7 +185,6 @@ const Shop = ({ categories, brands }: Props) => {
   const seasonalIcon = selectedCategoryData?.seasonalIcon || 
     selectedParentData?.seasonalIcon || "flower";
 
-  // Find current brand name for fallback display
   const selectedBrandName = (brands as any[])?.find(
     (b) => (b.slug?.current || b.slug) === selectedBrand
   )?.name;
@@ -271,7 +267,6 @@ const Shop = ({ categories, brands }: Props) => {
     setSelectedBrand(null);
     setSelectedSort(null);
     
-    // Update URL to remove all filter params
     updateURL({ category: null, brand: null, sort: null });
   };
 
@@ -279,7 +274,6 @@ const Shop = ({ categories, brands }: Props) => {
     setIsFilterOpen(false);
   };
 
-  // Wrapped setter functions that update URL - now accepting SetStateAction
   const handleSetSelectedCategory = (value: React.SetStateAction<string | null>) => {
     const resolvedValue = typeof value === 'function' ? value(selectedCategory) : value;
     setSelectedCategory(resolvedValue);
@@ -299,18 +293,18 @@ const Shop = ({ categories, brands }: Props) => {
   };
 
   return (
-    <div className="border-t">
+    <div className="border-t border-[#E8E3D8]">
       <Container className="mt-3 sm:mt-5">
-        {/* Simple Header - Not sticky, minimal */}
+        {/* Simple Header */}
         <div className="pb-3 sm:pb-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm sm:text-base uppercase tracking-wide font-semibold text-gray-800">
+            <h2 className="text-sm sm:text-base uppercase tracking-wide font-semibold text-[#1a1a1a]">
               Produkte entdecken
             </h2>
             {hasActiveFilters && (
               <button
                 onClick={resetFilters}
-                className="text-rose-500 underline text-xs font-medium hover:text-rose-600"
+                className="text-[#B8923A] underline text-xs font-medium hover:text-[#9A7A2A] transition-colors"
               >
                 Filter zurücksetzen ({activeFilterCount})
               </button>
@@ -334,7 +328,7 @@ const Shop = ({ categories, brands }: Props) => {
 
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 relative">
           {/* Desktop Filter Sidebar */}
-          <div className="hidden lg:block lg:sticky lg:top-20 lg:self-start lg:h-[calc(100vh-160px)] lg:overflow-y-auto lg:min-w-64 pb-5 lg:border-r border-rose-100/50 scrollbar-hide">
+          <div className="hidden lg:block lg:sticky lg:top-20 lg:self-start lg:h-[calc(100vh-160px)] lg:overflow-y-auto lg:min-w-64 pb-5 lg:border-r border-[#E8E3D8]/50 scrollbar-hide">
             <CategoryList
               categories={topLevelCategories as any}
               selectedCategory={selectedCategory}
@@ -355,12 +349,12 @@ const Shop = ({ categories, brands }: Props) => {
           <div className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
             <button
               onClick={toggleFilter}
-              className="flex items-center gap-2 px-5 py-2.5 bg-rose-500 hover:bg-rose-600 rounded-full text-sm font-medium text-white shadow-lg shadow-rose-500/30 active:scale-95 transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#1a1a1a] hover:bg-[#2a2a2a] rounded-full text-sm font-medium text-white shadow-lg shadow-black/20 active:scale-95 transition-all"
             >
               <SlidersHorizontal className="w-4 h-4" />
               <span>Filter</span>
               {activeFilterCount > 0 && (
-                <span className="bg-white text-rose-500 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                <span className="bg-[#D4A853] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                   {activeFilterCount}
                 </span>
               )}
@@ -388,11 +382,11 @@ const Shop = ({ categories, brands }: Props) => {
                   <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
                 </div>
 
-                <div className="flex items-center justify-between px-5 pb-3 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-center justify-between px-5 pb-3 border-b border-[#E8E3D8] flex-shrink-0">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-bold text-gray-800">Filter</h2>
+                    <h2 className="text-lg font-bold text-[#1a1a1a]">Filter</h2>
                     {activeFilterCount > 0 && (
-                      <span className="bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full">
+                      <span className="bg-[#D4A853] text-white text-xs px-2 py-0.5 rounded-full">
                         {activeFilterCount}
                       </span>
                     )}
@@ -401,21 +395,21 @@ const Shop = ({ categories, brands }: Props) => {
                     {hasActiveFilters && (
                       <button
                         onClick={resetFilters}
-                        className="text-sm text-rose-500 hover:text-rose-600 font-medium"
+                        className="text-sm text-[#B8923A] hover:text-[#9A7A2A] font-medium transition-colors"
                       >
                         Alle zurücksetzen
                       </button>
                     )}
                     <button
                       onClick={() => setIsFilterOpen(false)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      className="p-2 rounded-full hover:bg-[#F5F0E8] transition-colors"
                     >
-                      <X className="w-5 h-5 text-gray-600" />
+                      <X className="w-5 h-5 text-[#1a1a1a]" />
                     </button>
                   </div>
                 </div>
 
-                <div className="flex border-b border-gray-100 flex-shrink-0 px-1">
+                <div className="flex border-b border-[#E8E3D8] flex-shrink-0 px-1">
                   {[
                     { id: "categories", label: "Kategorien" },
                     { id: "brands", label: "Marken" },
@@ -425,12 +419,12 @@ const Shop = ({ categories, brands }: Props) => {
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
                       className={`flex-1 py-3 text-sm font-medium transition-all relative ${
-                        activeTab === tab.id ? "text-rose-500" : "text-gray-500"
+                        activeTab === tab.id ? "text-[#B8923A]" : "text-[#8A7A6A]"
                       }`}
                     >
                       {tab.label}
                       {activeTab === tab.id && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-rose-500" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4A853]" />
                       )}
                     </button>
                   ))}
@@ -462,17 +456,17 @@ const Shop = ({ categories, brands }: Props) => {
                   )}
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 rounded-b-3xl flex-shrink-0">
+                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#E8E3D8] p-4 rounded-b-3xl flex-shrink-0">
                   <div className="flex gap-3">
                     <button
                       onClick={resetFilters}
-                      className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-3 text-sm font-medium text-[#1a1a1a] border border-[#E8E3D8] rounded-xl hover:bg-[#F5F0E8] transition-colors"
                     >
                       Alle zurücksetzen
                     </button>
                     <button
                       onClick={applyFilters}
-                      className="flex-1 px-4 py-3 text-sm font-medium text-white bg-rose-500 rounded-xl hover:bg-rose-600 transition-all"
+                      className="flex-1 px-4 py-3 text-sm font-medium text-white bg-[#1a1a1a] rounded-xl hover:bg-[#2a2a2a] transition-all"
                     >
                       Filter anwenden
                       {activeFilterCount > 0 && ` (${activeFilterCount})`}
@@ -487,8 +481,8 @@ const Shop = ({ categories, brands }: Props) => {
           <div className="flex-1 pt-0 lg:pt-2">
             {loading ? (
               <div className="p-20 flex flex-col gap-2 items-center justify-center bg-white">
-                <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-                <p className="font-semibold tracking-wide text-base">
+                <Loader2 className="w-10 h-10 text-[#D4A853] animate-spin" />
+                <p className="font-semibold tracking-wide text-base text-[#1a1a1a]">
                   Produkte werden geladen ...
                 </p>
               </div>

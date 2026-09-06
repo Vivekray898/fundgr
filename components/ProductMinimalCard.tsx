@@ -36,16 +36,15 @@ interface ProductMinimalCardProps {
   className?: string;
 }
 
-const ProductMinimalCard = ({ 
-  product, 
-  showCategory = true, 
+const ProductMinimalCard = ({
+  product,
+  showCategory = true,
   showRating = true,
   compact = false,
-  className = "" 
+  className = "",
 }: ProductMinimalCardProps) => {
   const { enabled, pricePlaceholder } = useCatalogueMode();
-  
-  // Safety check - if no product, return null
+
   if (!product) {
     return null;
   }
@@ -54,42 +53,58 @@ const ProductMinimalCard = ({
   const hasDiscount = (product?.discount || 0) > 0;
 
   // Get the first category safely
-  const firstCategory = product?.categories && Array.isArray(product.categories) && product.categories.length > 0
-    ? product.categories[0]
-    : null;
+  const firstCategory =
+    product?.categories && Array.isArray(product.categories) && product.categories.length > 0
+      ? product.categories[0]
+      : null;
 
-  const categorySlug = firstCategory && typeof firstCategory === 'object' && 'slug' in firstCategory
-    ? (firstCategory as any)?.slug?.current
-    : null;
+  const categorySlug =
+    firstCategory && typeof firstCategory === "object" && "slug" in firstCategory
+      ? (firstCategory as any)?.slug?.current
+      : null;
 
-  const categoryTitle = firstCategory && typeof firstCategory === 'object' && 'title' in firstCategory
-    ? (firstCategory as any)?.title
-    : null;
+  const categoryTitle =
+    firstCategory && typeof firstCategory === "object" && "title" in firstCategory
+      ? (firstCategory as any)?.title
+      : null;
 
-  // Get the product slug safely
-  const productSlug = product?.slug && typeof product.slug === 'object' && 'current' in product.slug
-    ? product.slug.current
-    : product?.slug || '';
+  const productSlug =
+    product?.slug && typeof product.slug === "object" && "current" in product.slug
+      ? product.slug.current
+      : product?.slug || "";
 
   return (
-    <div className={`flex items-center gap-2 ${compact ? 'p-1.5' : 'p-2'} rounded-lg border border-amber-200/40 hover:border-amber-300 hover:shadow-sm transition-all bg-white ${className}`}>
+    <div
+      className={`flex items-center gap-2 ${compact ? "p-1.5" : "p-2"} rounded-[14px] border border-[#E4DCC8]/60 hover:border-[#1B8057] hover:shadow-[0_4px_12px_rgba(27,128,87,0.12)] transition-all bg-[#FBF7EE] ${className}`}
+    >
       {/* Small Image */}
-      <Link href={`/product/${productSlug}`} className="flex-shrink-0">
-        <div className={`${compact ? 'w-10 h-10' : 'w-12 h-12 sm:w-14 sm:h-14'} rounded-lg overflow-hidden bg-amber-50/30`}>
+      <Link href={`/product/${productSlug}`} className="flex-shrink-0 relative">
+        <div
+          className={`${
+            compact ? "w-10 h-10" : "w-12 h-12 sm:w-14 sm:h-14"
+          } rounded-[10px] overflow-hidden bg-white border border-[#E4DCC8]/40`}
+        >
           {firstImage ? (
             <Image
               src={urlFor(firstImage).url()}
-              alt={product?.name || "Product"}
+              alt={product?.name || "Produkt"}
               width={56}
               height={56}
               className="w-full h-full object-contain"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-amber-300 text-lg">📦</span>
+              <span className="text-[#7C7566] text-lg">📦</span>
             </div>
           )}
         </div>
+
+        {/* Discount sticker */}
+        {hasDiscount && (
+          <span className="absolute -top-1.5 -left-1.5 bg-[#D64550] text-white text-[8px] sm:text-[9px] font-extrabold leading-none px-1.5 py-1 rounded-full border border-[#E4DCC8]/40 shadow-sm rotate-[-8deg]">
+            -{product.discount}%
+          </span>
+        )}
       </Link>
 
       {/* Content */}
@@ -97,8 +112,8 @@ const ProductMinimalCard = ({
         {/* Category */}
         {showCategory && categoryTitle && (
           <Link
-            href={`/category/${categorySlug || ''}`}
-            className="text-[8px] sm:text-[10px] text-amber-700 font-medium uppercase tracking-wide hover:text-amber-900 transition-colors"
+            href={`/category/${categorySlug || ""}`}
+            className="text-[8px] sm:text-[10px] text-[#146044] font-semibold hover:text-[#0f3a29] transition-colors"
           >
             {categoryTitle}
           </Link>
@@ -107,7 +122,7 @@ const ProductMinimalCard = ({
         {/* Title */}
         {product?.name && (
           <Link href={`/product/${productSlug}`}>
-            <h4 className="text-[10px] sm:text-xs font-semibold text-gray-800 line-clamp-1 hover:text-amber-700 transition-colors">
+            <h4 className="text-[10px] sm:text-xs font-semibold text-[#202B26] line-clamp-1 hover:text-[#146044] transition-colors">
               {product?.name}
             </h4>
           </Link>
@@ -121,15 +136,15 @@ const ProductMinimalCard = ({
                 <StarIcon
                   key={index}
                   className="w-2 h-2 sm:w-2.5 sm:h-2.5"
-                  fill={index < 4 ? "#d97706" : "#d1d5db"}
-                  color={index < 4 ? "#d97706" : "#d1d5db"}
+                  fill={index < 4 ? "#F4B400" : "#E4DCC8"}
+                  color={index < 4 ? "#F4B400" : "#E4DCC8"}
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* Price - Conditional rendering */}
+        {/* Price */}
         <div className="mt-0.5">
           {!enabled ? (
             <PriceView
@@ -138,7 +153,7 @@ const ProductMinimalCard = ({
               className="text-[10px] sm:text-xs"
             />
           ) : (
-            <p className="text-[10px] sm:text-xs text-gray-500 font-medium">
+            <p className="text-[10px] sm:text-xs text-[#7C7566] font-medium">
               {pricePlaceholder}
             </p>
           )}
@@ -146,9 +161,9 @@ const ProductMinimalCard = ({
 
         {/* Sale Badge */}
         {product?.status === "sale" && (
-          <div className="mt-0.5">
-            <span className="text-[8px] sm:text-[9px] font-semibold text-amber-700 bg-amber-100/60 px-1.5 py-0.5 rounded">
-              SALE
+          <div className="mt-1">
+            <span className="inline-block text-[8px] sm:text-[9px] font-extrabold text-[#202B26] bg-[#F4B400] px-1.5 py-0.5 rounded-[4px] border border-[#E4DCC8]/40 shadow-sm rotate-[-3deg]">
+              ANGEBOT
             </span>
           </div>
         )}

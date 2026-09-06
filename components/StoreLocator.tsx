@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Store data from Sanity
 interface StoreData {
@@ -34,21 +35,18 @@ interface StoreData {
   slug?: string | { current: string };
 }
 
-// Helper to get slug string - FIXED
+// Helper to get slug string
 const getStoreSlug = (store: StoreData): string => {
   if (!store) return '';
   
-  // If slug is a string, use it directly
   if (typeof store.slug === 'string') {
     return store.slug;
   }
   
-  // If slug is an object with current property
   if (store.slug && typeof store.slug === 'object' && 'current' in store.slug) {
     return store.slug.current;
   }
   
-  // Fallback: generate slug from name
   if (store.name) {
     return store.name
       .toLowerCase()
@@ -56,7 +54,6 @@ const getStoreSlug = (store: StoreData): string => {
       .replace(/^-+|-+$/g, '');
   }
   
-  // Ultimate fallback to _id
   return store._id || '';
 };
 
@@ -75,11 +72,11 @@ interface StoreLocatorSettings {
   stores?: StoreData[];
 }
 
-// Pure CSS placeholder with rose/pink colors
+// Pure CSS placeholder with amber colors
 const StorePlaceholder = ({ name }: { name: string }) => (
-  <div className="w-full h-full bg-gradient-to-br from-rose-100/50 to-pink-100/50 flex items-center justify-center">
+  <div className="w-full h-full bg-gradient-to-br from-amber-100/50 to-orange-100/50 flex items-center justify-center">
     <div className="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center">
-      <Store className="w-5 h-5 text-rose-400" />
+      <Store className="w-5 h-5 text-amber-600" />
     </div>
   </div>
 );
@@ -90,7 +87,8 @@ interface StoreLocatorProps {
   children?: React.ReactNode;
   onStoreChange?: (store: StoreData) => void;
   settings?: StoreLocatorSettings;
-  storageKey?: string; // Optional custom storage key
+  storageKey?: string;
+  onNavigate?: () => void; // NEW: Callback when navigating to store page
 }
 
 const StoreLocator = ({ 
@@ -99,8 +97,10 @@ const StoreLocator = ({
   children,
   onStoreChange,
   settings = {},
-  storageKey = "selectedStore"
+  storageKey = "selectedStore",
+  onNavigate // NEW
 }: StoreLocatorProps) => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStore, setSelectedStore] = useState<StoreData | null>(null);
   const [showStoreList, setShowStoreList] = useState(false);
@@ -108,6 +108,7 @@ const StoreLocator = ({
   const [isDesktop, setIsDesktop] = useState(false);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const offcanvasRef = useRef<HTMLDivElement>(null);
 
   const stores = settings?.stores || [];
@@ -129,11 +130,9 @@ const StoreLocator = ({
   // Load selected store from localStorage on mount
   useEffect(() => {
     if (stores.length > 0 && !isInitialized) {
-      // Try to load from localStorage
       const savedStoreId = localStorage.getItem(storageKey);
       
       if (savedStoreId) {
-        // Find store by _id or name
         const savedStore = stores.find(s => 
           s._id === savedStoreId || s.name === savedStoreId
         );
@@ -145,7 +144,6 @@ const StoreLocator = ({
         }
       }
       
-      // If no saved store or not found, use default
       const defaultStore = stores.find(s => s.isDefault) || stores[0];
       setSelectedStore(defaultStore);
       setIsInitialized(true);
@@ -160,7 +158,6 @@ const StoreLocator = ({
         localStorage.setItem(storageKey, storeId);
       }
       
-      // Also trigger the onStoreChange callback
       if (onStoreChange) {
         onStoreChange(selectedStore);
       }
@@ -248,19 +245,40 @@ const StoreLocator = ({
     store.address?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Get the store page URL - FIXED: Use proper slug
   const getStoreUrl = (store: StoreData) => {
     const slug = getStoreSlug(store);
-    // Clean the slug to ensure it's URL-safe
     const cleanSlug = slug
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
     
-    // If cleanSlug is empty, use a fallback
     const finalSlug = cleanSlug || store._id || store.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'store';
     
     return `/store/${finalSlug}`;
+  };
+
+  // Handle store navigation with auto-close
+  const handleStoreNavigation = (e: React.MouseEvent<HTMLAnchorElement>, store: StoreData) => {
+    e.preventDefault();
+    const url = getStoreUrl(store);
+    
+    // Close the modal/offcanvas first
+    setIsOpen(false);
+    setShowStoreList(false);
+    setIsNavigating(true);
+    
+    // Call the onNavigate callback to close parent menu
+    if (onNavigate) {
+      onNavigate();
+    }
+    
+    // Navigate after a small delay to allow the close animation to complete
+    setTimeout(() => {
+      router.push(url);
+      setTimeout(() => {
+        setIsNavigating(false);
+      }, 500);
+    }, 300);
   };
 
   const renderTrigger = () => {
@@ -276,11 +294,11 @@ const StoreLocator = ({
       return (
         <button
           onClick={handleOpen}
-          className={`flex items-center gap-1.5 text-rose-500 hover:text-rose-600 hoverEffect ${className}`}
+          className={`flex items-center gap-1.5 text-amber-700 hover:text-amber-900 hoverEffect ${className}`}
         >
           <MapPin className="w-3.5 h-3.5" />
           <span>{title}</span>
-          <CheckCircle className="w-3 h-3 text-rose-500" />
+          <CheckCircle className="w-3 h-3 text-amber-700" />
         </button>
       );
     }
@@ -288,11 +306,11 @@ const StoreLocator = ({
     return (
       <button
         onClick={handleOpen}
-        className={`flex items-center gap-1.5 text-sm text-gray-600 hover:text-rose-500 active:bg-rose-50 rounded-full transition-colors px-2.5 py-1.5 ${className}`}
+        className={`flex items-center gap-1.5 text-sm text-gray-600 hover:text-amber-700 active:bg-amber-50 rounded-full transition-colors px-2.5 py-1.5 ${className}`}
       >
         <MapPin className="w-4 h-4" />
         <span>{title}</span>
-        <CheckCircle className="w-3.5 h-3.5 text-rose-500" />
+        <CheckCircle className="w-3.5 h-3.5 text-amber-700" />
       </button>
     );
   };
@@ -328,8 +346,8 @@ const StoreLocator = ({
           onClick={() => handleStoreSelect(store)}
           className={`w-full text-left p-3 rounded-xl border transition-all active:scale-[0.98] ${
             isSelected
-              ? "border-rose-400 bg-rose-50"
-              : "border-gray-200 hover:border-rose-300 active:bg-rose-50"
+              ? "border-amber-400 bg-amber-50"
+              : "border-gray-200 hover:border-amber-300 active:bg-amber-50"
           }`}
         >
           <div className="flex items-center gap-3">
@@ -369,7 +387,7 @@ const StoreLocator = ({
               </div>
             </div>
             {isSelected && (
-              <CheckCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-amber-700 flex-shrink-0" />
             )}
           </div>
         </button>
@@ -409,7 +427,7 @@ const StoreLocator = ({
           style={isDesktop ? {} : { maxHeight: "92vh" }}
         >
           {isDesktop && (
-            <div className="sticky top-0 bg-white z-10 px-4 py-4 border-b border-rose-100 flex items-center justify-between rounded-tl-2xl">
+            <div className="sticky top-0 bg-white z-10 px-4 py-4 border-b border-amber-200/30 flex items-center justify-between rounded-tl-2xl">
               <div>
                 <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   {title}
@@ -420,7 +438,7 @@ const StoreLocator = ({
               </div>
               <button
                 onClick={handleClose}
-                className="p-2 -mr-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                className="p-2 -mr-2 rounded-full hover:bg-amber-50 active:bg-amber-100 transition-colors"
                 aria-label="Schließen"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -435,7 +453,7 @@ const StoreLocator = ({
           )}
 
           {!isDesktop && (
-            <div className="sticky top-0 bg-white z-10 px-4 pb-3 border-b border-rose-100">
+            <div className="sticky top-0 bg-white z-10 px-4 pb-3 border-b border-amber-200/30">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -447,7 +465,7 @@ const StoreLocator = ({
                 </div>
                 <button
                   onClick={handleClose}
-                  className="p-2 -mr-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                  className="p-2 -mr-2 rounded-full hover:bg-amber-50 active:bg-amber-100 transition-colors"
                   aria-label="Schließen"
                 >
                   <X className="w-5 h-5 text-gray-500" />
@@ -469,14 +487,14 @@ const StoreLocator = ({
                     placeholder={placeholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-3 text-sm bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:bg-white transition-all"
+                    className="w-full pl-9 pr-4 py-3 text-sm bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition-all"
                     autoFocus
                   />
                 </div>
 
                 <button
                   onClick={() => setShowStoreList(false)}
-                  className="flex items-center gap-2 text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors mb-2"
+                  className="flex items-center gap-2 text-sm font-medium text-amber-700 hover:text-amber-900 transition-colors mb-2"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>{backLabel}</span>
@@ -489,7 +507,7 @@ const StoreLocator = ({
             ) : (
               selectedStore ? (
                 <div className="space-y-4">
-                  <div className="relative w-full h-52 rounded-2xl overflow-hidden bg-gradient-to-br from-rose-100/50 to-pink-100/50">
+                  <div className="relative w-full h-52 rounded-2xl overflow-hidden bg-gradient-to-br from-amber-100/50 to-orange-100/50">
                     {selectedStore.image && !imageError[selectedStore.name] ? (
                       <Image
                         src={selectedStore.image}
@@ -502,17 +520,17 @@ const StoreLocator = ({
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center">
-                          <Store className="w-16 h-16 text-rose-300/50 mx-auto mb-2" />
-                          <p className="text-rose-400 font-semibold text-lg">{selectedStore.name}</p>
-                          <p className="text-rose-400/70 text-sm">{selectedStore.city}</p>
+                          <Store className="w-16 h-16 text-amber-300/50 mx-auto mb-2" />
+                          <p className="text-amber-600 font-semibold text-lg">{selectedStore.name}</p>
+                          <p className="text-amber-600/70 text-sm">{selectedStore.city}</p>
                         </div>
                       </div>
                     )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-rose-50 rounded-xl p-3">
-                      <Clock className="w-4 h-4 text-rose-500 mb-1" />
+                    <div className="bg-amber-50 rounded-xl p-3">
+                      <Clock className="w-4 h-4 text-amber-700 mb-1" />
                       <p className="text-xs text-gray-600 font-medium">{openingHoursLabel}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{selectedStore.openingHours}</p>
                     </div>
@@ -534,7 +552,7 @@ const StoreLocator = ({
                       href={getMapsUrl(selectedStore)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors"
+                      className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-amber-700 hover:text-amber-900 transition-colors"
                     >
                       <Navigation className="w-4 h-4" />
                       <span>{routeLabel}</span>
@@ -549,14 +567,14 @@ const StoreLocator = ({
                     <div className="space-y-2">
                       <a
                         href={`tel:${selectedStore.phone}`}
-                        className="flex items-center gap-3 text-sm text-gray-700 hover:text-rose-500 transition-colors active:bg-rose-50 p-1 -mx-1 rounded-lg"
+                        className="flex items-center gap-3 text-sm text-gray-700 hover:text-amber-700 transition-colors active:bg-amber-50 p-1 -mx-1 rounded-lg"
                       >
                         <Phone className="w-4 h-4 text-gray-400" />
                         <span>{selectedStore.phone}</span>
                       </a>
                       <a
                         href={`mailto:${selectedStore.email}`}
-                        className="flex items-center gap-3 text-sm text-gray-700 hover:text-rose-500 transition-colors active:bg-rose-50 p-1 -mx-1 rounded-lg"
+                        className="flex items-center gap-3 text-sm text-gray-700 hover:text-amber-700 transition-colors active:bg-amber-50 p-1 -mx-1 rounded-lg"
                       >
                         <Mail className="w-4 h-4 text-gray-400" />
                         <span>{selectedStore.email}</span>
@@ -573,7 +591,7 @@ const StoreLocator = ({
                       placeholder={placeholder}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-4 py-3 text-sm bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:bg-white transition-all"
+                      className="w-full pl-9 pr-4 py-3 text-sm bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition-all"
                       autoFocus
                     />
                   </div>
@@ -586,17 +604,18 @@ const StoreLocator = ({
           </div>
 
           {!showStoreList && selectedStore && (
-            <div className={`absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-rose-100 p-4 ${!isDesktop ? 'pb-6 rounded-b-3xl' : 'rounded-bl-2xl'}`}>
+            <div className={`absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-amber-200/30 p-4 ${!isDesktop ? 'pb-6 rounded-b-3xl' : 'rounded-bl-2xl'}`}>
               <div className="flex gap-3">
                 <button
                   onClick={handleChangeStore}
-                  className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                  className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 border border-gray-300 rounded-xl hover:bg-amber-50 active:bg-amber-100 transition-colors"
                 >
                   {changeStoreText}
                 </button>
                 <Link
                   href={getStoreUrl(selectedStore)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-rose-500 rounded-xl hover:bg-rose-600 active:scale-[0.98] transition-all"
+                  onClick={(e) => handleStoreNavigation(e, selectedStore)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-amber-700 rounded-xl hover:bg-amber-800 active:scale-[0.98] transition-all"
                 >
                   <Store className="w-4 h-4" />
                   <span>{storePageText}</span>

@@ -51,14 +51,14 @@ const SortimentPage = ({ categories }: SortimentPageProps) => {
   return (
     <div className="bg-white min-h-screen pb-8 sm:pb-12">
       {/* Hero Section - More compact */}
-      <div className="bg-gradient-to-br from-rose-50 via-pink-50 to-blue-50 py-6 sm:py-8 md:py-10 text-center border-b border-pink-100">
+      <div className="bg-[#F8F6F2] py-6 sm:py-8 md:py-10 text-center border-b border-[#E8E3D8]">
         <div className="max-w-screen-xl mx-auto px-3 sm:px-4">
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
-            <span className="bg-gradient-to-r from-rose-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#1a1a1a]">
+            <span className="text-[#1a1a1a]">
               Unser Sortiment
             </span>
           </h1>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2 max-w-2xl mx-auto">
+          <p className="text-xs sm:text-sm text-[#8A7A6A] mt-1 sm:mt-2 max-w-2xl mx-auto">
             Entdecken Sie unsere vielfältigen Produktkategorien
           </p>
         </div>
@@ -68,7 +68,7 @@ const SortimentPage = ({ categories }: SortimentPageProps) => {
         {/* Search Bar - Compact */}
         <div className="max-w-md mx-auto mb-4 sm:mb-6">
           <div className={`relative transition-all duration-300 ${isSearchFocused ? 'scale-[1.01]' : ''}`}>
-            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8A7A6A]">
               <Search className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </div>
             <input
@@ -78,12 +78,12 @@ const SortimentPage = ({ categories }: SortimentPageProps) => {
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className="w-full pl-7 sm:pl-9 pr-7 sm:pr-9 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-300 bg-white/80 backdrop-blur-sm transition-all duration-300"
+              className="w-full pl-7 sm:pl-9 pr-7 sm:pr-9 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-[#E8E3D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A853] focus:border-[#D4A853] bg-white/80 backdrop-blur-sm transition-all duration-300"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8A7A6A] hover:text-[#B8923A] transition-colors"
               >
                 <X className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
               </button>
@@ -94,7 +94,7 @@ const SortimentPage = ({ categories }: SortimentPageProps) => {
             <motion.p 
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-[10px] sm:text-xs text-gray-500 mt-1 text-center"
+              className="text-[10px] sm:text-xs text-[#8A7A6A] mt-1 text-center"
             >
               {filteredCategories?.length} Kategorien gefunden
             </motion.p>
@@ -110,13 +110,13 @@ const SortimentPage = ({ categories }: SortimentPageProps) => {
             animate={{ opacity: 1 }}
             className="text-center py-8 sm:py-12 md:py-16"
           >
-            <div className="inline-block p-2 sm:p-3 bg-gradient-to-br from-rose-50 to-pink-50 rounded-full mb-2 sm:mb-3">
-              <Search className="w-5 sm:w-6 h-5 sm:h-6 text-rose-400" />
+            <div className="inline-block p-2 sm:p-3 bg-[#F5F0E8] rounded-full mb-2 sm:mb-3">
+              <Search className="w-5 sm:w-6 h-5 sm:h-6 text-[#D4A853]" />
             </div>
-            <p className="text-gray-500 text-sm sm:text-base">Keine Kategorien gefunden</p>
+            <p className="text-[#8A7A6A] text-sm sm:text-base">Keine Kategorien gefunden</p>
             <button
               onClick={() => setSearchTerm("")}
-              className="mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full text-xs sm:text-sm font-medium hover:from-rose-600 hover:to-pink-600 active:scale-95 transition-all duration-300 shadow-lg shadow-rose-200/50"
+              className="mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 bg-[#1a1a1a] text-white rounded-full text-xs sm:text-sm font-medium hover:bg-[#2a2a2a] active:scale-95 transition-all duration-300 shadow-lg shadow-black/20"
             >
               Alle anzeigen
             </button>

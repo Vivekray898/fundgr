@@ -17,8 +17,6 @@ interface Category {
 }
 
 const CategoryGrid = ({ categories }: { categories: Category[] }) => {
-  // Show ALL categories - don't filter out those without images
-  // Categories without images will show the icon fallback
   const categoriesToShow = categories || [];
 
   return (

@@ -143,12 +143,12 @@ const SearchBar = ({
     if (!showSuggestions || query.trim().length < 2) return null;
 
     return (
-      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 z-[9999] max-h-[400px] overflow-y-auto">
+      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-amber-200/40 z-[9999] max-h-[400px] overflow-y-auto">
         {/* Quick search suggestions */}
         {defaultSuggestions.filter(s => 
           s.toLowerCase().includes(query.toLowerCase())
         ).length > 0 && (
-          <div className="p-3 border-b border-gray-100">
+          <div className="p-3 border-b border-amber-200/30">
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-2">
               Schnellsuche
             </p>
@@ -159,7 +159,7 @@ const SearchBar = ({
                 <button
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-full hover:bg-rose-500 hover:text-white transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-full hover:bg-amber-800 hover:text-white transition-colors"
                 >
                   {suggestion}
                 </button>
@@ -171,7 +171,7 @@ const SearchBar = ({
         {/* Product suggestions */}
         {loading ? (
           <div className="p-4 flex items-center justify-center">
-            <Loader2 className="w-5 h-5 text-rose-500 animate-spin" />
+            <Loader2 className="w-5 h-5 text-amber-800 animate-spin" />
           </div>
         ) : productSuggestions.length > 0 ? (
           <div className="p-3">
@@ -183,7 +183,7 @@ const SearchBar = ({
                 <button
                   key={product._id}
                   onClick={() => handleProductClick(product)}
-                  className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-rose-50 transition-colors"
+                  className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-amber-50 transition-colors"
                 >
                   {product.image || product.images?.[0]?.asset?.url ? (
                     <Image
@@ -224,7 +224,7 @@ const SearchBar = ({
     return (
       <div className="relative z-[9999]" ref={searchContainerRef}>
         <form onSubmit={handleSearch} className="flex items-center gap-2 w-full">
-          <div className="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2.5 focus-within:ring-2 focus-within:ring-rose-400 focus-within:bg-white transition-all">
+          <div className="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2.5 focus-within:ring-2 focus-within:ring-amber-400 focus-within:bg-white transition-all">
             <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <input
               ref={inputRef}
@@ -246,7 +246,7 @@ const SearchBar = ({
           </div>
           <button
             type="submit"
-            className="p-2.5 bg-rose-500 text-white rounded-full hover:bg-rose-600 active:scale-95 transition-all flex-shrink-0 shadow-md hover:shadow-lg"
+            className="p-2.5 bg-amber-800 text-white rounded-full hover:bg-amber-950 active:scale-95 transition-all flex-shrink-0 shadow-md hover:shadow-lg"
             aria-label="Suchen"
           >
             <Search className="w-5 h-5" />
@@ -263,10 +263,10 @@ const SearchBar = ({
       <>
         <button
           onClick={handleOpen}
-          className="p-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors"
+          className="p-2 rounded-full hover:bg-amber-50 active:bg-amber-100 transition-colors"
           aria-label="Suchen"
         >
-          <Search className="w-5 h-5 text-gray-600 hover:text-rose-500 transition-colors" />
+          <Search className="w-5 h-5 text-gray-600 hover:text-amber-800 transition-colors" />
         </button>
 
         {/* Fullscreen search overlay - Mobile optimized */}
@@ -275,15 +275,15 @@ const SearchBar = ({
             isOpen ? "opacity-100 visible" : "opacity-0 invisible"
           }`}
         >
-          <div className="flex items-center gap-2 p-3 border-b border-rose-100">
+          <div className="flex items-center gap-2 p-3 border-b border-amber-200/30">
             <button
               onClick={handleClose}
-              className="p-2 -ml-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors"
+              className="p-2 -ml-2 rounded-full hover:bg-amber-50 active:bg-amber-100 transition-colors"
             >
               <X className="w-5 h-5 text-gray-600" />
             </button>
             <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2">
-              <div className="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2.5 focus-within:ring-2 focus-within:ring-rose-400 focus-within:bg-white transition-all">
+              <div className="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2.5 focus-within:ring-2 focus-within:ring-amber-400 focus-within:bg-white transition-all">
                 <Search className="w-4 h-4 text-gray-400" />
                 <input
                   ref={inputRef}
@@ -306,7 +306,7 @@ const SearchBar = ({
               </div>
               <button
                 type="submit"
-                className="p-2.5 bg-rose-500 text-white rounded-full hover:bg-rose-600 active:scale-95 transition-all shadow-md"
+                className="p-2.5 bg-amber-800 text-white rounded-full hover:bg-amber-950 active:scale-95 transition-all shadow-md"
               >
                 <Search className="w-5 h-5" />
               </button>
@@ -318,7 +318,7 @@ const SearchBar = ({
             <div className="p-4">
               {loading ? (
                 <div className="flex justify-center py-8">
-                  <Loader2 className="w-6 h-6 text-rose-500 animate-spin" />
+                  <Loader2 className="w-6 h-6 text-amber-800 animate-spin" />
                 </div>
               ) : productSuggestions.length > 0 ? (
                 <>
@@ -330,7 +330,7 @@ const SearchBar = ({
                       <button
                         key={product._id}
                         onClick={() => handleProductClick(product)}
-                        className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-rose-50 transition-colors"
+                        className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-amber-50 transition-colors"
                       >
                         {product.image || product.images?.[0]?.asset?.url ? (
                           <Image
@@ -376,7 +376,7 @@ const SearchBar = ({
                   <button
                     key={suggestion}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-full hover:bg-rose-500 hover:text-white active:bg-rose-600 transition-colors"
+                    className="px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-full hover:bg-amber-800 hover:text-white active:bg-amber-950 transition-colors"
                   >
                     {suggestion}
                   </button>
@@ -395,13 +395,13 @@ const SearchBar = ({
       {!isOpen ? (
         <button
           onClick={handleOpen}
-          className="p-2 rounded-full hover:bg-rose-50 transition-colors"
+          className="p-2 rounded-full hover:bg-amber-50 transition-colors"
           aria-label="Suchen"
         >
-          <Search className="w-5 h-5 text-gray-600 hover:text-rose-500 transition-colors" />
+          <Search className="w-5 h-5 text-gray-600 hover:text-amber-800 transition-colors" />
         </button>
       ) : (
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[400px] bg-white shadow-lg rounded-xl border border-rose-200 z-[9999] animate-in slide-in-from-right-5 duration-200">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[400px] bg-white shadow-lg rounded-xl border border-amber-200/40 z-[9999] animate-in slide-in-from-right-5 duration-200">
           <form onSubmit={handleSearch} className="flex items-center px-3 py-1.5">
             <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <input
@@ -414,27 +414,27 @@ const SearchBar = ({
               autoFocus
             />
             {loading && (
-              <Loader2 className="w-4 h-4 text-rose-500 animate-spin flex-shrink-0" />
+              <Loader2 className="w-4 h-4 text-amber-800 animate-spin flex-shrink-0" />
             )}
             {query && !loading && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="p-1 rounded-full hover:bg-rose-50 transition-colors flex-shrink-0"
+                className="p-1 rounded-full hover:bg-amber-50 transition-colors flex-shrink-0"
               >
                 <X className="w-4 h-4 text-gray-400" />
               </button>
             )}
             <button
               type="submit"
-              className="ml-1 p-2 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-colors flex-shrink-0"
+              className="ml-1 p-2 bg-amber-800 text-white rounded-full hover:bg-amber-950 transition-colors flex-shrink-0"
             >
               <Search className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={handleClose}
-              className="ml-1 p-2 rounded-full hover:bg-rose-50 transition-colors flex-shrink-0"
+              className="ml-1 p-2 rounded-full hover:bg-amber-50 transition-colors flex-shrink-0"
             >
               <X className="w-4 h-4 text-gray-400" />
             </button>

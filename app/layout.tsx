@@ -6,7 +6,8 @@ import { CatalogueProvider } from "@/components/providers/CatalogueSettingsProvi
 import { getSettings } from "@/sanity/queries/settings";
 import type { Metadata } from "next";
 import OptimonkScript from "@/components/OptimonkScript";
-import { Providers } from "./providers"; // Import the providers
+import { Providers } from "./providers";
+import LoadingWrapper from "@/components/LoadingWrapper";
 
 export const metadata: Metadata = {
   title: {
@@ -28,9 +29,11 @@ export default async function RootLayout({
     <html lang="en">
       <body className="font-poppins antialiased">
         <ClerkProvider>
-          <Providers> {/* Wrap with Providers */}
+          <Providers>
             <CatalogueProvider initialSettings={catalogueSettings}>
-              {children}
+              <LoadingWrapper delay={500}>
+                {children}
+              </LoadingWrapper>
               <Toaster
                 position="bottom-right"
                 toastOptions={{
@@ -44,7 +47,6 @@ export default async function RootLayout({
           </Providers>
         </ClerkProvider>
         
-        {/* OptiMonk Script - Placed outside providers for better performance */}
         <OptimonkScript />
       </body>
     </html>

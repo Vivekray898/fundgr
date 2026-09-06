@@ -1,10 +1,10 @@
-﻿// src/features/grocery-shop/components/GroceryCountdownBanner.tsx
+﻿// components/HomePage/GroceryCountdownBanner.tsx
 'use client';
 
 import { Fragment, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCountdownBanner } from '../hooks/useCountdownBanner';
+import { useCountdownBanner } from '@/components/hooks/useCountdownBanner';
 
 function IconArrowRight({ size = 18 }: { size?: number }) {
   return (
@@ -23,7 +23,7 @@ function CountdownTimer({ targetDate }: CountdownTimerProps) {
 
   useEffect(() => {
     if (!targetDate) return;
-    
+
     const target = new Date(targetDate).getTime();
     const update = () => {
       const diff = Math.max(0, target - Date.now());
@@ -109,10 +109,10 @@ export function GroceryCountdownBanner() {
     return (
       <section className="gcb-section">
         <div className="container-main">
-          <div 
-            className="gcb-wrap" 
-            style={{ 
-              backgroundColor: '#f5f5f5', 
+          <div
+            className="gcb-wrap"
+            style={{
+              backgroundColor: '#fff3e6',
               minHeight: '120px',
               display: 'flex',
               alignItems: 'center',
@@ -127,6 +127,7 @@ export function GroceryCountdownBanner() {
     );
   }
 
+  // If no countdown banner from Sanity, don't render anything
   if (!banner) {
     return null;
   }
@@ -159,6 +160,10 @@ export function GroceryCountdownBanner() {
       </div>
 
       <style>{`
+        .gcb-section {
+          width: 100%;
+        }
+
         .gcb-wrap {
           display: flex;
           flex-direction: row;

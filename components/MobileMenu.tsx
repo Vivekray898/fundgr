@@ -50,6 +50,7 @@ const MobileMenu = ({
   const [productSuggestions, setProductSuggestions] = useState<ProductSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [storeLocatorKey, setStoreLocatorKey] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -125,6 +126,13 @@ const MobileMenu = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Re-mount StoreLocator when menu opens to ensure it's fresh
+  useEffect(() => {
+    if (isOpen) {
+      setStoreLocatorKey(prev => prev + 1);
+    }
+  }, [isOpen]);
+
   const toggleCategory = (id: string) => {
     setExpandedCategory(expandedCategory === id ? null : id);
   };
@@ -180,7 +188,7 @@ const MobileMenu = ({
       {/* Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="lg:hidden p-2 -ml-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors"
+        className="lg:hidden p-2 -ml-2 rounded-full hover:bg-amber-50 active:bg-amber-100 transition-colors"
         aria-label="Menü"
       >
         <AlignLeft className="w-6 h-6 text-gray-700" />
@@ -207,11 +215,11 @@ const MobileMenu = ({
           }`}
         >
           {/* Header - Main Menu */}
-          <div className="sticky top-0 bg-white z-10 border-b border-rose-100">
+          <div className="sticky top-0 bg-white z-10 border-b border-amber-200/30">
             <div className="flex items-center justify-between p-3">
               <button
                 onClick={handleClose}
-                className="p-2 -ml-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors flex-shrink-0"
+                className="p-2 -ml-2 rounded-full hover:bg-amber-50 active:bg-amber-100 transition-colors flex-shrink-0"
               >
                 <X className="w-5 h-5 text-gray-600" />
               </button>
@@ -219,7 +227,7 @@ const MobileMenu = ({
               {/* Compact Search with Suggestions */}
               <div className="flex-1 min-w-0 ml-2 relative" ref={searchContainerRef}>
                 <form onSubmit={handleSearchSubmit}>
-                  <div className="flex items-center bg-gray-100 rounded-full px-3 py-1.5 focus-within:ring-2 focus-within:ring-rose-400 focus-within:bg-white transition-all">
+                  <div className="flex items-center bg-gray-100 rounded-full px-3 py-1.5 focus-within:ring-2 focus-within:ring-amber-400 focus-within:bg-white transition-all">
                     <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     <input
                       type="text"
@@ -230,7 +238,7 @@ const MobileMenu = ({
                       autoFocus={isOpen}
                     />
                     {loading && (
-                      <Loader2 className="w-3.5 h-3.5 text-rose-400 animate-spin flex-shrink-0" />
+                      <Loader2 className="w-3.5 h-3.5 text-amber-600 animate-spin flex-shrink-0" />
                     )}
                     {searchQuery && !loading && (
                       <button
@@ -257,7 +265,7 @@ const MobileMenu = ({
                             <button
                               key={product._id}
                               onClick={() => handleProductClick(product)}
-                              className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-rose-50 transition-colors"
+                              className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-amber-50 transition-colors"
                             >
                               {product.image || product.images?.[0]?.asset?.url ? (
                                 <Image
@@ -286,7 +294,7 @@ const MobileMenu = ({
                         <div className="border-t border-gray-100 mt-2 pt-2">
                           <button
                             onClick={() => handleSuggestionClick(searchQuery)}
-                            className="w-full text-center text-sm text-rose-500 hover:text-rose-600 font-medium py-2"
+                            className="w-full text-center text-sm text-amber-700 hover:text-amber-900 font-medium py-2"
                           >
                             Alle Ergebnisse anzeigen für "{searchQuery}"
                           </button>
@@ -297,7 +305,7 @@ const MobileMenu = ({
                         <p className="text-sm text-gray-500">Keine Produkte gefunden</p>
                         <button
                           onClick={() => handleSuggestionClick(searchQuery)}
-                          className="mt-2 text-sm text-rose-500 hover:text-rose-600 font-medium"
+                          className="mt-2 text-sm text-amber-700 hover:text-amber-900 font-medium"
                         >
                           Alle Ergebnisse anzeigen für "{searchQuery}"
                         </button>
@@ -314,13 +322,13 @@ const MobileMenu = ({
             <nav className="overflow-y-auto h-[calc(100%-120px)]">
               <ul className="py-2">
                 {/* Sortiment - Opens as separate page */}
-                <li className="border-b border-rose-50">
+                <li className="border-b border-amber-100/50">
                   <button
                     onClick={handleSortimentClick}
-                    className="flex items-center justify-between w-full px-4 py-4 text-sm font-medium text-gray-700 hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                    className="flex items-center justify-between w-full px-4 py-4 text-sm font-medium text-gray-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
                   >
                     <span className="text-base font-semibold">Sortiment</span>
-                    <ChevronRight className="w-5 h-5 text-rose-400" />
+                    <ChevronRight className="w-5 h-5 text-amber-600" />
                   </button>
                 </li>
 
@@ -331,14 +339,14 @@ const MobileMenu = ({
                   const isExpanded = expandedCategory === item.label;
 
                   return (
-                    <li key={item.label} className="border-b border-rose-50">
+                    <li key={item.label} className="border-b border-amber-100/50">
                       {hasChildren ? (
                         <>
                           <button
                             onClick={() => toggleCategory(item.label)}
                             className={`flex items-center justify-between w-full px-4 py-3.5 text-sm font-medium transition-colors ${
-                              isActive ? "text-rose-500" : "text-gray-700"
-                            } hover:bg-rose-50 active:bg-rose-100`}
+                              isActive ? "text-amber-700" : "text-gray-700"
+                            } hover:bg-amber-50 active:bg-amber-100`}
                           >
                             <span>{item.label}</span>
                             <ChevronDown 
@@ -348,7 +356,7 @@ const MobileMenu = ({
                             />
                           </button>
                           {isExpanded && item.children && (
-                            <ul className="bg-rose-50/30">
+                            <ul className="bg-amber-50/30">
                               {item.children.map((child) => (
                                 <li key={child.url}>
                                   <Link
@@ -356,9 +364,9 @@ const MobileMenu = ({
                                     onClick={handleClose}
                                     className={`block px-8 py-3 text-sm transition-colors ${
                                       pathname === child.url
-                                        ? "text-rose-500 font-medium"
+                                        ? "text-amber-700 font-medium"
                                         : "text-gray-600"
-                                    } hover:text-rose-500 active:bg-rose-50`}
+                                    } hover:text-amber-700 active:bg-amber-50`}
                                   >
                                     {child.label}
                                   </Link>
@@ -368,7 +376,7 @@ const MobileMenu = ({
                                 <Link
                                   href={item.url}
                                   onClick={handleClose}
-                                  className="block px-8 py-3 text-sm font-medium text-rose-500 hover:bg-rose-50 active:bg-rose-100"
+                                  className="block px-8 py-3 text-sm font-medium text-amber-700 hover:bg-amber-50 active:bg-amber-100"
                                 >
                                   Alle anzeigen →
                                 </Link>
@@ -381,8 +389,8 @@ const MobileMenu = ({
                           href={item.url}
                           onClick={handleClose}
                           className={`block px-4 py-3.5 text-sm font-medium transition-colors ${
-                            isActive ? "text-rose-500" : "text-gray-700"
-                          } hover:bg-rose-50 active:bg-rose-100`}
+                            isActive ? "text-amber-700" : "text-gray-700"
+                          } hover:bg-amber-50 active:bg-amber-100`}
                         >
                           {item.label}
                         </Link>
@@ -396,10 +404,10 @@ const MobileMenu = ({
             /* Sortiment Page - Sliding Submenu */
             <div className="h-[calc(100%-120px)] flex flex-col">
               {/* Submenu Header */}
-              <div className="sticky top-0 bg-white z-10 border-b border-rose-100 px-4 py-3 flex items-center gap-3">
+              <div className="sticky top-0 bg-white z-10 border-b border-amber-200/30 px-4 py-3 flex items-center gap-3">
                 <button
                   onClick={handleBackClick}
-                  className="p-2 -ml-2 rounded-full hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                  className="p-2 -ml-2 rounded-full hover:bg-amber-50 active:bg-amber-100 transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </button>
@@ -410,11 +418,11 @@ const MobileMenu = ({
               <div className="flex-1 overflow-y-auto">
                 <ul className="py-2">
                   {/* Alle anzeigen link */}
-                  <li className="border-b border-rose-50">
+                  <li className="border-b border-amber-100/50">
                     <Link
                       href="/sortiment"
                       onClick={handleClose}
-                      className="block px-4 py-3.5 text-sm font-medium text-rose-500 hover:bg-rose-50 active:bg-rose-100"
+                      className="block px-4 py-3.5 text-sm font-medium text-amber-700 hover:bg-amber-50 active:bg-amber-100"
                     >
                       Alle anzeigen
                     </Link>
@@ -429,12 +437,12 @@ const MobileMenu = ({
                       const isExpanded = expandedCategory === category._id;
                       
                       return (
-                        <li key={category._id} className="border-b border-rose-50">
+                        <li key={category._id} className="border-b border-amber-100/50">
                           {hasChildren ? (
                             <>
                               <button
                                 onClick={() => toggleCategory(category._id)}
-                                className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-medium text-gray-700 hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                                className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-medium text-gray-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
                               >
                                 <span>{category.title}</span>
                                 <ChevronDown 
@@ -445,13 +453,13 @@ const MobileMenu = ({
                               </button>
                               
                               {isExpanded && category.children && (
-                                <ul className="bg-rose-50/30">
+                                <ul className="bg-amber-50/30">
                                   {category.children.map((child: any) => (
                                     <li key={child._id}>
                                       <Link
                                         href={`/category/${child.slug?.current || child.slug}`}
                                         onClick={handleClose}
-                                        className="block px-8 py-3 text-sm text-gray-600 hover:text-rose-500 hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                                        className="block px-8 py-3 text-sm text-gray-600 hover:text-amber-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
                                       >
                                         {child.title}
                                       </Link>
@@ -464,7 +472,7 @@ const MobileMenu = ({
                             <Link
                               href={`/category/${category.slug?.current || category.slug}`}
                               onClick={handleClose}
-                              className="block px-4 py-3.5 text-sm text-gray-700 hover:text-rose-500 hover:bg-rose-50 active:bg-rose-100 transition-colors"
+                              className="block px-4 py-3.5 text-sm text-gray-700 hover:text-amber-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
                             >
                               {category.title}
                             </Link>
@@ -478,20 +486,24 @@ const MobileMenu = ({
             </div>
           )}
 
-          {/* Bottom Actions - Only Store Locator with Border */}
+          {/* Bottom Actions - Store Locator with onNavigate prop */}
           {!showSortimentPage && (
-            <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-rose-100 p-4 pb-6">
+            <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-amber-200/30 p-4 pb-6">
               <div className="flex items-center">
-                {/* Wrapper with border */}
-                <div className="w-full border border-rose-200 rounded-xl overflow-hidden hover:border-rose-400 transition-colors">
+                <div 
+                  className="w-full border border-amber-200/50 rounded-xl overflow-hidden hover:border-amber-400 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <StoreLocator 
-                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-rose-500 active:text-rose-500 transition-colors w-full px-4 py-3 bg-white hover:bg-rose-50/50"
+                    key={storeLocatorKey}
+                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-amber-700 active:text-amber-700 transition-colors w-full px-4 py-3 bg-white hover:bg-amber-50/50 cursor-pointer"
                     settings={storeLocatorSettings}
+                    onNavigate={handleClose} // ✅ Pass handleClose to close menu when store is selected
                   >
-                    <MapPin className="w-4 h-4 flex-shrink-0 text-rose-400" />
+                    <MapPin className="w-4 h-4 flex-shrink-0 text-amber-600" />
                     <span className="flex-1 font-medium">Mein Markt</span>
-                    <CheckCircle className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" />
-                    <ChevronRight className="w-4 h-4 text-rose-300 flex-shrink-0" />
+                    <CheckCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-amber-400 flex-shrink-0" />
                   </StoreLocator>
                 </div>
               </div>

@@ -28,16 +28,16 @@ const SortList = ({ selectedSort, setSelectedSort, isMobile = false }: Props) =>
             <div
               key={index}
               onClick={() => setSelectedSort(option?.value)}
-              className="flex items-center space-x-3 hover:cursor-pointer px-3 py-3 rounded-xl hover:bg-gray-50 transition-colors"
+              className="flex items-center space-x-3 hover:cursor-pointer px-3 py-3 rounded-xl hover:bg-[#F5F0E8] transition-colors"
             >
               <RadioGroupItem
                 value={option?.value}
                 id={option?.value}
-                className="rounded-sm"
+                className="rounded-sm border-[#E8E3D8] data-[state=checked]:border-[#D4A853] data-[state=checked]:bg-[#D4A853]"
               />
               <Label
                 htmlFor={option.value}
-                className={`text-sm ${selectedSort === option?.value ? "font-semibold text-rose-600" : "font-normal text-gray-700"}`}
+                className={`text-sm ${selectedSort === option?.value ? "font-semibold text-[#1a1a1a]" : "font-normal text-[#1a1a1a]"}`}
               >
                 {option?.title}
               </Label>
@@ -49,17 +49,17 @@ const SortList = ({ selectedSort, setSelectedSort, isMobile = false }: Props) =>
   }
 
   return (
-    <div className="w-full bg-white rounded-xl border border-pink-100 shadow-sm overflow-hidden mb-4">
-      <div className="bg-gradient-to-r from-rose-50 via-pink-50 to-blue-50 border-b border-pink-100 px-4 py-3">
+    <div className="w-full bg-white rounded-xl border border-[#E8E3D8] shadow-sm overflow-hidden mb-4">
+      <div className="bg-[#F8F6F2] border-b border-[#E8E3D8] px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ArrowUpDown className="w-4 h-4 text-rose-500" />
-            <h3 className="text-sm font-bold text-gray-800">Sortieren nach</h3>
+            <ArrowUpDown className="w-4 h-4 text-[#D4A853]" />
+            <h3 className="text-sm font-bold text-[#1a1a1a]">Sortieren nach</h3>
           </div>
           {selectedSort && (
             <button
               onClick={() => setSelectedSort(null)}
-              className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-rose-500 transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-[#8A7A6A] hover:text-[#B8923A] transition-colors"
             >
               <X className="w-3 h-3" />
               <span>Zurücksetzen</span>
@@ -74,20 +74,20 @@ const SortList = ({ selectedSort, setSelectedSort, isMobile = false }: Props) =>
             <div
               key={index}
               onClick={() => setSelectedSort(option?.value)}
-              className="flex items-center space-x-2 hover:cursor-pointer px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center space-x-2 hover:cursor-pointer px-2 py-1.5 rounded-lg hover:bg-[#F5F0E8] transition-colors"
             >
               <RadioGroupItem
                 value={option?.value}
                 id={option?.value}
-                className="rounded-sm"
+                className="rounded-sm border-[#E8E3D8] data-[state=checked]:border-[#D4A853] data-[state=checked]:bg-[#D4A853]"
               />
               <Label
                 htmlFor={option.value}
                 className={cn(
                   "text-sm",
                   selectedSort === option?.value
-                    ? "font-semibold text-rose-600"
-                    : "font-normal text-gray-700"
+                    ? "font-semibold text-[#1a1a1a]"
+                    : "font-normal text-[#1a1a1a]"
                 )}
               >
                 {option?.title}
@@ -98,8 +98,8 @@ const SortList = ({ selectedSort, setSelectedSort, isMobile = false }: Props) =>
       </div>
 
       {selectedSort && (
-        <div className="border-t border-pink-100 px-3 py-1.5 bg-gradient-to-r from-rose-50/30 via-pink-50/30 to-blue-50/30">
-          <p className="text-xs text-gray-400">1 ausgewählt</p>
+        <div className="border-t border-[#E8E3D8] px-3 py-1.5 bg-[#F8F6F2]">
+          <p className="text-xs text-[#8A7A6A]">1 ausgewählt</p>
         </div>
       )}
     </div>

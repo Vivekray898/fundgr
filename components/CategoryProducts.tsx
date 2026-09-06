@@ -249,23 +249,23 @@ const CategoryProducts = ({ categories, slug }: Props) => {
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={() => setIsMobileFilterOpen(true)}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs sm:text-sm font-medium transition-colors active:scale-95"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-[#F8F6F2] hover:bg-[#F0EDE5] rounded-full text-xs sm:text-sm font-medium transition-colors active:scale-95"
           >
-            <SlidersHorizontal className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+            <SlidersHorizontal className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-[#1a1a1a]" />
             <span>Kategorien</span>
           </button>
           
           {hasActiveFilters && (
             <button
               onClick={() => handleCategoryChange(slug)}
-              className="text-rose-500 underline text-xs sm:text-sm font-medium hover:text-rose-600"
+              className="text-[#B8923A] underline text-xs sm:text-sm font-medium hover:text-[#9A7A2A]"
             >
               Zurück zu {typedCategories?.find(c => getSlugString(c.slug) === slug)?.title || slug}
             </button>
           )}
           
           {selectedName && currentSlug !== slug && (
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full truncate max-w-[120px] sm:max-w-[200px]">
+            <span className="text-xs text-[#8A7A6A] bg-[#F8F6F2] px-2 py-1 rounded-full truncate max-w-[120px] sm:max-w-[200px]">
               {selectedName}
             </span>
           )}
@@ -274,7 +274,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
 
       <div className="flex flex-col lg:flex-row items-start gap-3 sm:gap-5">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block lg:sticky lg:top-20 lg:self-start lg:h-[calc(100vh-160px)] lg:overflow-y-auto lg:min-w-56 pb-5 lg:border-r border-rose-100/50 scrollbar-hide">
+        <div className="hidden lg:block lg:sticky lg:top-20 lg:self-start lg:h-[calc(100vh-160px)] lg:overflow-y-auto lg:min-w-56 pb-5 lg:border-r border-[#E8E3D8]/50 scrollbar-hide">
           <div className="pr-4">
             {/* Search */}
             <div className="relative mb-3">
@@ -283,12 +283,12 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                 placeholder="Kategorien suchen..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 text-sm border-2 border-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-300 bg-white/80 transition-all"
+                className="w-full px-3 py-2 text-sm border-2 border-[#E8E3D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A853] focus:border-[#D4A853] bg-white/80 transition-all"
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8A7A6A] hover:text-[#B8923A] transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -307,14 +307,14 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                 );
                 
                 return (
-                  <div key={item?._id} className="border-b border-pink-50 last:border-0">
+                  <div key={item?._id} className="border-b border-[#E8E3D8]/30 last:border-0">
                     <button
                       onClick={() => handleCategoryChange(slugString)}
                       className={cn(
                         "w-full text-left px-3 py-2.5 rounded-lg transition-all text-sm flex items-center justify-between group",
                         isActive || childActive
-                          ? "bg-gradient-to-r from-rose-50 to-pink-50 text-rose-600 font-semibold"
-                          : "hover:bg-gray-50 text-gray-700"
+                          ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
+                          : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
                       )}
                     >
                       <span className="flex-1">{item?.title}</span>
@@ -325,25 +325,25 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                               e.stopPropagation();
                               toggleCategory(item?._id);
                             }}
-                            className="p-1 rounded hover:bg-gray-200 transition-colors"
+                            className="p-1 rounded hover:bg-[#E8E3D8] transition-colors"
                           >
                             <ChevronDown 
                               className={cn(
-                                "w-3.5 h-3.5 transition-transform",
+                                "w-3.5 h-3.5 transition-transform text-[#8A7A6A]",
                                 isExpanded ? "rotate-180" : ""
                               )}
                             />
                           </button>
                         )}
                         {(isActive || childActive) && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#D4A853]" />
                         )}
                       </div>
                     </button>
                     
                     {/* Children */}
                     {hasChildren && isExpanded && (
-                      <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-pink-100 pl-3">
+                      <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-[#E8E3D8] pl-3">
                         {item.children?.map((child) => {
                           const childSlug = getSlugString(child.slug);
                           const isChildActive = childSlug === currentSlug;
@@ -354,13 +354,13 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                               className={cn(
                                 "w-full text-left px-3 py-2 rounded-lg transition-all text-sm flex items-center justify-between group",
                                 isChildActive
-                                  ? "bg-gradient-to-r from-rose-50 to-pink-50 text-rose-600 font-semibold"
-                                  : "hover:bg-gray-50 text-gray-600"
+                                  ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
+                                  : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
                               )}
                             >
                               <span className="flex-1">{child?.title}</span>
                               {isChildActive && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#D4A853]" />
                               )}
                             </button>
                           );
@@ -373,7 +373,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
             </div>
 
             {filteredCategories.length === 0 && (
-              <div className="text-center py-8 text-sm text-gray-500">
+              <div className="text-center py-8 text-sm text-[#8A7A6A]">
                 {searchTerm ? "Keine Kategorien gefunden" : "Keine Kategorien verfügbar"}
               </div>
             )}
@@ -403,12 +403,12 @@ const CategoryProducts = ({ categories, slug }: Props) => {
               >
                 {/* Drag Handle */}
                 <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
-                  <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+                  <div className="w-12 h-1.5 bg-[#E8E3D8] rounded-full" />
                 </div>
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 pb-3 border-b border-pink-100 flex-shrink-0">
-                  <h2 className="text-lg font-bold text-gray-800">Kategorien</h2>
+                <div className="flex items-center justify-between px-5 pb-3 border-b border-[#E8E3D8] flex-shrink-0">
+                  <h2 className="text-lg font-bold text-[#1a1a1a]">Kategorien</h2>
                   <div className="flex items-center gap-2">
                     {hasActiveFilters && (
                       <button
@@ -416,16 +416,16 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                           handleCategoryChange(slug);
                           setIsMobileFilterOpen(false);
                         }}
-                        className="text-sm text-rose-500 hover:text-rose-600 font-medium"
+                        className="text-sm text-[#B8923A] hover:text-[#9A7A2A] font-medium"
                       >
                         Zurücksetzen
                       </button>
                     )}
                     <button
                       onClick={() => setIsMobileFilterOpen(false)}
-                      className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      className="p-2 rounded-full hover:bg-[#F5F0E8] transition-colors"
                     >
-                      <X className="w-5 h-5 text-gray-600" />
+                      <X className="w-5 h-5 text-[#1a1a1a]" />
                     </button>
                   </div>
                 </div>
@@ -438,12 +438,12 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                       placeholder="Kategorien suchen..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-4 py-3 text-sm border-2 border-pink-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-300 bg-white transition-all"
+                      className="w-full px-4 py-3 text-sm border-2 border-[#E8E3D8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4A853] focus:border-[#D4A853] bg-white transition-all"
                     />
                     {searchTerm && (
                       <button
                         onClick={() => setSearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A7A6A] hover:text-[#B8923A] transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -464,14 +464,14 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                       );
                       
                       return (
-                        <div key={item?._id} className="border-b border-pink-50 last:border-0">
+                        <div key={item?._id} className="border-b border-[#E8E3D8]/30 last:border-0">
                           <button
                             onClick={() => handleCategoryChange(slugString)}
                             className={cn(
                               "w-full text-left px-3 py-3.5 rounded-xl transition-all text-sm flex items-center justify-between group",
                               isActive || childActive
-                                ? "bg-gradient-to-r from-rose-50 to-pink-50 text-rose-600 font-semibold"
-                                : "hover:bg-gray-50 text-gray-700"
+                                ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
+                                : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
                             )}
                           >
                             <span className="flex-1">{item?.title}</span>
@@ -482,24 +482,24 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                                     e.stopPropagation();
                                     toggleCategory(item?._id);
                                   }}
-                                  className="p-1 rounded hover:bg-gray-200 transition-colors"
+                                  className="p-1 rounded hover:bg-[#E8E3D8] transition-colors"
                                 >
                                   <ChevronDown 
                                     className={cn(
-                                      "w-4 h-4 transition-transform",
+                                      "w-4 h-4 transition-transform text-[#8A7A6A]",
                                       isExpanded ? "rotate-180" : ""
                                     )}
                                   />
                                 </button>
                               )}
                               {(isActive || childActive) && (
-                                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                                <span className="w-2 h-2 rounded-full bg-[#D4A853]" />
                               )}
                             </div>
                           </button>
                           
                           {hasChildren && isExpanded && (
-                            <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-pink-100 pl-3">
+                            <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-[#E8E3D8] pl-3">
                               {item.children?.map((child) => {
                                 const childSlug = getSlugString(child.slug);
                                 const isChildActive = childSlug === currentSlug;
@@ -510,13 +510,13 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                                     className={cn(
                                       "w-full text-left px-3 py-2.5 rounded-xl transition-all text-sm flex items-center justify-between group",
                                       isChildActive
-                                        ? "bg-gradient-to-r from-rose-50 to-pink-50 text-rose-600 font-semibold"
-                                        : "hover:bg-gray-50 text-gray-600"
+                                        ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
+                                        : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
                                     )}
                                   >
                                     <span className="flex-1">{child?.title}</span>
                                     {isChildActive && (
-                                      <span className="w-2 h-2 rounded-full bg-rose-500" />
+                                      <span className="w-2 h-2 rounded-full bg-[#D4A853]" />
                                     )}
                                   </button>
                                 );
@@ -529,17 +529,17 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                   </div>
 
                   {filteredCategories.length === 0 && (
-                    <div className="text-center py-8 text-sm text-gray-500">
+                    <div className="text-center py-8 text-sm text-[#8A7A6A]">
                       {searchTerm ? "Keine Kategorien gefunden" : "Keine Kategorien verfügbar"}
                     </div>
                   )}
                 </div>
 
                 {/* Footer */}
-                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-pink-100 p-4 rounded-b-3xl flex-shrink-0">
+                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#E8E3D8] p-4 rounded-b-3xl flex-shrink-0">
                   <button
                     onClick={() => setIsMobileFilterOpen(false)}
-                    className="w-full px-4 py-3 text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl hover:from-rose-600 hover:to-pink-600 active:scale-95 transition-all"
+                    className="w-full px-4 py-3 text-sm font-medium text-white bg-[#1a1a1a] rounded-xl hover:bg-[#2a2a2a] active:scale-95 transition-all"
                   >
                     Fertig
                   </button>
@@ -568,10 +568,10 @@ const CategoryProducts = ({ categories, slug }: Props) => {
           )}
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-10 sm:py-16 min-h-60 sm:min-h-80 space-y-3 sm:space-y-4 text-center bg-gray-100 rounded-lg w-full">
-              <div className="flex items-center space-x-2 text-rose-500">
+            <div className="flex flex-col items-center justify-center py-10 sm:py-16 min-h-60 sm:min-h-80 space-y-3 sm:space-y-4 text-center bg-[#F8F6F2] rounded-lg w-full">
+              <div className="flex items-center space-x-2 text-[#D4A853]">
                 <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" />
-                <span className="text-sm sm:text-base">Produkte werden geladen...</span>
+                <span className="text-sm sm:text-base text-[#1a1a1a]">Produkte werden geladen...</span>
               </div>
             </div>
           ) : products?.length > 0 ? (

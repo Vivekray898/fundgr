@@ -1,9 +1,9 @@
-﻿// src/features/grocery-shop/components/GroceryWeeklyDeals.tsx
+﻿// components/HomePage/GroceryWeeklyDeals.tsx
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useBanners } from '../hooks/useBanners';
+import { useBanners } from '@/components/hooks/useBanners';
 
 function IconArrowRight({ size = 18 }: { size?: number }) {
   return (
@@ -13,27 +13,23 @@ function IconArrowRight({ size = 18 }: { size?: number }) {
   );
 }
 
-// Default fallback data
-const DEFAULT_DATA = {
-  title: 'Weekly Deals on Organic\nVegetables',
-  description: 'Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.',
-  cta: 'SHOP NOW',
-  href: '/shop',
-  image: '/grocery-shop/img-with-text/img-with-text1.webp',
-};
-
 export function GroceryWeeklyDeals() {
   const { data: banners, isLoading } = useBanners('weekly');
 
-  // Get the first active weekly deal banner
-  const banner = banners && banners.length > 0 ? banners[0] : null;
+  // If no weekly deal banners from Sanity, don't render anything
+  if (!banners || banners.length === 0) {
+    return null;
+  }
 
-  // Use banner data if available, otherwise fallback to default
-  const title = banner?.title || DEFAULT_DATA.title;
-  const description = banner?.description || DEFAULT_DATA.description;
-  const cta = banner?.cta || DEFAULT_DATA.cta;
-  const href = banner?.href || DEFAULT_DATA.href;
-  const image = banner?.image || DEFAULT_DATA.image;
+  // Get the first active weekly deal banner
+  const banner = banners[0];
+
+  // Use banner data from Sanity
+  const title = banner.title;
+  const description = banner.description || '';
+  const cta = banner.cta;
+  const href = banner.href;
+  const image = banner.image;
 
   // Show loading skeleton
   if (isLoading) {

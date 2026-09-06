@@ -1,9 +1,9 @@
-﻿// src/features/grocery-shop/components/GroceryFullBanner.tsx
+﻿// components/HomePage/GroceryFullBanner.tsx
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useFullBanner } from '../hooks/useFullBanner';
+import { useFullBanner } from '@/components/hooks/useFullBanner';
 
 function IconArrowRight({ size = 16 }: { size?: number }) {
   return (
@@ -37,6 +37,7 @@ export function GroceryFullBanner() {
     );
   }
 
+  // If no banner from Sanity, don't render anything
   if (!banner) {
     return null;
   }
@@ -67,6 +68,10 @@ export function GroceryFullBanner() {
       </div>
 
       <style>{`
+        .gfb-section {
+          width: 100%;
+        }
+
         .gfb-wrap {
           position: relative;
           display: block;
@@ -74,6 +79,13 @@ export function GroceryFullBanner() {
           height: 380px;
           border-radius: 18px;
           overflow: hidden;
+        }
+
+        .gfb-image {
+          transition: transform 700ms ease;
+        }
+        .gfb-wrap:hover .gfb-image {
+          transform: scale(1.03);
         }
 
         .gfb-content {

@@ -90,18 +90,18 @@ const Header = async () => {
   return (
     <>
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm border-b border-amber-200/20">
         {/* Top Bar - Desktop only */}
         {topBarEnabled && (
-          <div className="hidden lg:block bg-gradient-to-r from-amber-50/40 via-orange-50/30 to-white border-b border-amber-200/30">
-            <Container className="flex items-center justify-between py-1.5 text-xs text-gray-600">
+          <div className="hidden lg:block bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-white border-b border-amber-200/30">
+            <Container className="flex items-center justify-between py-1.5 text-xs text-gray-700">
               {/* Trust badges - Compact */}
               <div className="flex items-center gap-6">
                 {trustBadges.map((badge, index) => {
                   const IconComponent = iconMap[badge.icon as keyof typeof iconMap];
                   return (
-                    <div key={index} className="flex items-center gap-1.5 text-gray-600">
-                      {IconComponent && <IconComponent className="w-3.5 h-3.5 text-amber-700" />}
+                    <div key={index} className="flex items-center gap-1.5 text-gray-700">
+                      {IconComponent && <IconComponent className="w-3.5 h-3.5 text-amber-800" />}
                       <span>{badge.text}</span>
                     </div>
                   );
@@ -118,7 +118,7 @@ const Header = async () => {
                     <Link 
                       key={index} 
                       href={link.url} 
-                      className="hover:text-amber-700 transition-colors"
+                      className="text-gray-600 hover:text-amber-800 transition-colors duration-200"
                     >
                       {link.label}
                     </Link>
@@ -152,19 +152,19 @@ const Header = async () => {
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center gap-5">
               {showWishlist && (
-                <div className="flex flex-col items-center gap-0.5 group">
+                <div className="flex flex-col items-center gap-0.5 group cursor-pointer">
                   <FavoriteButton showProduct={false} />
-                  <span className="text-[10px] text-gray-500 group-hover:text-amber-700">Merkliste</span>
+                  <span className="text-[10px] text-gray-500 group-hover:text-amber-800 transition-colors duration-200">Merkliste</span>
                 </div>
               )}
               
               {showCart && (
                 <Link href="/cart" className="flex flex-col items-center gap-0.5 group">
                   <div className="relative">
-                    <ShoppingCart className="w-5 h-5 text-gray-600 group-hover:text-amber-700 transition-colors" />
-                    <span className="absolute -top-1.5 -right-1.5 bg-amber-700 text-white h-4 w-4 rounded-full text-[9px] font-semibold flex items-center justify-center">0</span>
+                    <ShoppingCart className="w-5 h-5 text-gray-600 group-hover:text-amber-800 transition-colors duration-200" />
+                    <span className="absolute -top-1.5 -right-1.5 bg-amber-800 text-white h-4 w-4 rounded-full text-[9px] font-semibold flex items-center justify-center">0</span>
                   </div>
-                  <span className="text-[10px] text-gray-500 group-hover:text-amber-700">Warenkorb</span>
+                  <span className="text-[10px] text-gray-500 group-hover:text-amber-800 transition-colors duration-200">Warenkorb</span>
                 </Link>
               )}
               
@@ -179,8 +179,8 @@ const Header = async () => {
                         className="flex flex-col items-center gap-0.5 group focus:outline-none"
                         type="button"
                       >
-                        <User className="w-5 h-5 text-gray-600 group-hover:text-amber-700 transition-colors" />
-                        <span className="text-[10px] text-gray-500 group-hover:text-amber-700">Konto</span>
+                        <User className="w-5 h-5 text-gray-600 group-hover:text-amber-800 transition-colors duration-200" />
+                        <span className="text-[10px] text-gray-500 group-hover:text-amber-800 transition-colors duration-200">Konto</span>
                       </button>
                     </SignInButton>
                   )}
@@ -217,7 +217,7 @@ const Header = async () => {
           <StoreLocator 
             trigger="link"
             settings={storeLocatorSettings}
-            className="text-amber-700 hover:text-amber-900 px-3 py-2.5 flex items-center gap-1.5 text-sm font-medium"
+            className="text-amber-800 hover:text-amber-950 px-3 py-2.5 flex items-center gap-1.5 text-sm font-medium transition-colors duration-200"
           />
         </Container>
       </div>

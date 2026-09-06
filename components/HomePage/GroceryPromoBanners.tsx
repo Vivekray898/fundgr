@@ -1,44 +1,27 @@
-﻿// src/features/grocery-shop/components/GroceryPromoBanners.tsx
+﻿// components/HomePage/GroceryPromoBanners.tsx
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useBanners } from '../hooks/useBanners';
-
-// Fallback data if Sanity is not available
-const DEFAULT_BANNERS = [
-  {
-    id: 'banner-1',
-    tagline: 'SALE UP TO 30% OFF',
-    title: 'Farm Fresh Finds\nEvery Season',
-    cta: 'Shop Now',
-    href: '/shop',
-    image: '/grocery-shop/banner/banner1.webp',
-  },
-  {
-    id: 'banner-2',
-    tagline: 'STARTING AT $199.99',
-    title: "Nature's Best in\nEvery Bite",
-    cta: 'Shop Now',
-    href: '/shop',
-    image: '/grocery-shop/banner/banner2.webp',
-  },
-];
+import { useBanners } from '@/components/hooks/useBanners';
 
 export function GroceryPromoBanners() {
   const { data: banners, isLoading } = useBanners('promo');
 
-  // Use Sanity data if available, otherwise fallback to default
-  const displayBanners = banners && banners.length > 0
-    ? banners.map((banner) => ({
-        id: banner._id,
-        tagline: banner.tagline || '',
-        title: banner.title,
-        cta: banner.cta,
-        href: banner.href,
-        image: banner.image,
-      }))
-    : DEFAULT_BANNERS;
+  // If no promo banners from Sanity, don't render anything
+  if (!banners || banners.length === 0) {
+    return null;
+  }
+
+  // Use Sanity data for banners
+  const displayBanners = banners.map((banner) => ({
+    id: banner._id,
+    tagline: banner.tagline || '',
+    title: banner.title,
+    cta: banner.cta,
+    href: banner.href,
+    image: banner.image,
+  }));
 
   // Show loading state
   if (isLoading) {

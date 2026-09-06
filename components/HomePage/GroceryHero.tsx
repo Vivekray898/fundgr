@@ -1,4 +1,4 @@
-﻿// src/features/grocery-shop/components/GroceryHero.tsx
+﻿// components/HomePage/GroceryHero.tsx
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectFade, Pagination } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
-import { useBanners } from '@/components/hooks/useBanners'; // Updated import path
+import { useBanners } from '@/components/hooks/useBanners';
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/pagination';
@@ -20,74 +20,31 @@ function IconArrowRight({ size = 18 }: { size?: number }) {
   );
 }
 
-// Your original static data (kept as fallback)
-const DEFAULT_SLIDES = [
-  {
-    id: 1,
-    titleLines: ['Best of Organic', 'Farming'],
-    subtitle: 'Get 30% Off Your First Organic Order!',
-    cta: 'Shop now',
-    href: '/shop',
-    image: '/grocery-shop/hero-slider-and-banner/hero-slider-and-banner3.webp',
-  },
-  {
-    id: 2,
-    titleLines: ['Farm Fresh Every', 'Day'],
-    subtitle: 'Nature picked fruits and vegetables delivered straight to your door.',
-    cta: 'Shop now',
-    href: '/shop',
-    image: '/grocery-shop/hero-slider-and-banner/hero-slider-and-banner4.webp',
-  },
-  {
-    id: 3,
-    titleLines: ['Healthy Fresh Premium', 'Groceries'],
-    subtitle: 'From farm to table — premium organic produce every season.',
-    cta: 'Shop now',
-    href: '/shop',
-    image: '/grocery-shop/hero-slider-and-banner/hero-slider-and-banner5.webp',
-  },
-];
-
-const DEFAULT_SIDE_BANNERS = [
-  {
-    id: 'banner-1',
-    title: 'Fresh Groceries Delivered Fast',
-    cta: 'SHOP NOW',
-    href: '/shop',
-    image: '/grocery-shop/hero-slider-and-banner/hero-slider-and-banner1.webp',
-    textColor: '#222',
-  },
-  {
-    id: 'banner-2',
-    title: 'Grocery Shopping Made Easy',
-    cta: 'SHOP NOW',
-    href: '/shop',
-    image: '/grocery-shop/hero-slider-and-banner/hero-slider-and-banner2.webp',
-    textColor: '#fff',
-  },
-];
-
 export function GroceryHero() {
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [animKey, setAnimKey] = useState(0);
 
   // Fetch hero slides and side banners
-  const { data: heroSlides } = useBanners('hero');
-  const { data: sideBanners } = useBanners('side');
+  const { data: heroSlides, isLoading: heroLoading } = useBanners('hero');
+  const { data: sideBanners, isLoading: sideLoading } = useBanners('side');
 
-  // Use Sanity data if available, otherwise fallback to default
-  const slides = heroSlides && heroSlides.length > 0 
-    ? heroSlides.map((slide: any) => ({
-        id: slide._id,
-        titleLines: slide.titleLines || ['Best of Organic', 'Farming'],
-        subtitle: slide.subtitle || '',
-        cta: slide.cta || 'Shop now',
-        href: slide.href || '/shop',
-        image: slide.image,
-      }))
-    : DEFAULT_SLIDES;
+  // If no hero slides from Sanity, don't render anything
+  if (!heroSlides || heroSlides.length === 0) {
+    return null;
+  }
 
+  // Use Sanity data for slides
+  const slides = heroSlides.map((slide: any) => ({
+    id: slide._id,
+    titleLines: slide.titleLines || ['Best of Organic', 'Farming'],
+    subtitle: slide.subtitle || '',
+    cta: slide.cta || 'Shop now',
+    href: slide.href || '/shop',
+    image: slide.image,
+  }));
+
+  // Use Sanity data for side banners - only if they exist
   const finalSideBanners = sideBanners && sideBanners.length > 0
     ? sideBanners.map((banner: any) => ({
         id: banner._id,
@@ -97,7 +54,7 @@ export function GroceryHero() {
         image: banner.image,
         textColor: banner.textColor || '#222',
       }))
-    : DEFAULT_SIDE_BANNERS;
+    : [];
 
   return (
     <section className="gh-hero-section">
@@ -155,7 +112,7 @@ export function GroceryHero() {
               ))}
             </Swiper>
 
-            {/* Pagination — always visible, dot-inside-thin-circle (matches Fashion hero) */}
+            {/* Pagination — always visible, dot-inside-thin-circle */}
             <div className="gh-pagination">
               {slides.map((_, i) => (
                 <button
@@ -170,33 +127,32 @@ export function GroceryHero() {
             </div>
           </div>
 
-          {/* Side banners — 25% */}
-          <div className="gh-side-banners">
-            {finalSideBanners.map((banner) => (
-              <Link key={banner.id} href={banner.href} className="gh-side-banner">
-                <div className="gh-side-image-wrap">
-                  <Image
-                    src={banner.image}
-                    alt={banner.title}
-                    fill
-                    className="gh-side-image"
-                    style={{ objectFit: 'cover' }}
-                    sizes="(max-width: 991px) 100vw, 30vw"
-                  />
-                </div>
-                <div className="gh-side-content" style={{ color: banner.textColor }}>
-                  <h3 className="gh-side-title">{banner.title}</h3>
-                  <span className="gh-side-cta">{banner.cta}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {/* Side banners — only render if there are side banners */}
+          {finalSideBanners.length > 0 && (
+            <div className="gh-side-banners">
+              {finalSideBanners.map((banner) => (
+                <Link key={banner.id} href={banner.href} className="gh-side-banner">
+                  <div className="gh-side-image-wrap">
+                    <Image
+                      src={banner.image}
+                      alt={banner.title}
+                      fill
+                      className="gh-side-image"
+                      style={{ objectFit: 'cover' }}
+                      sizes="(max-width: 991px) 100vw, 30vw"
+                    />
+                  </div>
+                  <div className="gh-side-content" style={{ color: banner.textColor }}>
+                    <h3 className="gh-side-title">{banner.title}</h3>
+                    <span className="gh-side-cta">{banner.cta}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ============================================================
-          YOUR ORIGINAL STYLES — EXACTLY AS THEY WERE
-          ============================================================ */}
       <style>{`
         /* Gentle float-down from above — short travel, long duration, smooth fade */
         @keyframes ghFloatIn {
@@ -204,10 +160,7 @@ export function GroceryHero() {
           100% { opacity: 1; transform: translate3d(0, 0, 0); }
         }
 
-        /* Staggered reveal — button first, then description, then title.
-           Each child starts hidden slightly above and floats gently into place
-           when the parent stack gains .is-active. The animKey remount replays the
-           animation on every slide change. */
+        /* Staggered reveal — button first, then description, then title. */
         .gh-slide-stack > .gh-slide-title,
         .gh-slide-stack > .gh-slide-subtitle,
         .gh-slide-stack > .gh-slide-btn {
@@ -292,7 +245,6 @@ export function GroceryHero() {
           letter-spacing: -0.5px;
         }
 
-        /* Each line is a block span that never wraps — the 3/1-word split is fixed */
         .gh-slide-title-line {
           display: block;
           white-space: nowrap;
@@ -325,7 +277,7 @@ export function GroceryHero() {
           box-shadow: 0 6px 18px rgba(27, 128, 87, 0.35);
         }
 
-        /* Pagination — always visible, fixed-size dots that morph smoothly (no layout shift) */
+        /* Pagination */
         .gh-pagination {
           position: absolute;
           bottom: 26px;
@@ -338,7 +290,6 @@ export function GroceryHero() {
           will-change: transform;
         }
         .gh-dot {
-          /* Fixed outer hitbox — never re-layouts between active/inactive */
           width: 20px;
           height: 20px;
           padding: 0;
@@ -349,7 +300,6 @@ export function GroceryHero() {
           display: flex;
           align-items: center;
           justify-content: center;
-          /* Soft fade of the outer ring */
           transition: border-color 550ms cubic-bezier(0.22, 1, 0.36, 1),
                       box-shadow 550ms cubic-bezier(0.22, 1, 0.36, 1);
           border-color: transparent;
@@ -361,7 +311,6 @@ export function GroceryHero() {
           border-radius: 50%;
           background-color: #bbb;
           display: block;
-          /* GPU-friendly scale + color morph on the inner dot */
           transform: scale(1);
           transform-origin: center;
           will-change: transform, background-color;
@@ -379,7 +328,7 @@ export function GroceryHero() {
           transform: scale(0.8);
         }
 
-        /* Side banners — mobile base: stack 1 col */
+        /* Side banners */
         .gh-side-banners {
           display: grid;
           grid-template-columns: 1fr;
@@ -448,21 +397,14 @@ export function GroceryHero() {
           letter-spacing: 1px;
         }
 
-        /* ── < 750px — mobile: image on top, content below.
-           Explicit container height so Swiper's % heights resolve (otherwise
-           the swiper collapses when its parent is height:auto). Image + content
-           still live inside each SwiperSlide so they swap together on every
-           slide change. ── */
+        /* ── < 750px — mobile ── */
         @media (max-width: 749px) {
-          /* Wrap height = fluid image area + fixed ~280px content/pagination. */
           .gh-hero-slider-wrap {
             height: calc(clamp(280px, 58vw, 420px) + 280px);
             width: 100%;
             border-radius: 0;
             overflow: hidden;
           }
-          /* Swiper internals must also be 100% tall or the fade effect
-             collapses to 0 when our container height changes. */
           .gh-hero-slider-wrap .swiper,
           .gh-hero-slider-wrap .swiper-wrapper,
           .gh-hero-slider-wrap .swiper-slide {
@@ -488,7 +430,6 @@ export function GroceryHero() {
             overflow: hidden;
             z-index: 1;
           }
-          /* Belt-and-braces guarantee on next/image fill inside a non-absolute parent */
           .gh-slide-image-wrap img {
             width: 100% !important;
             height: 100% !important;
@@ -530,7 +471,7 @@ export function GroceryHero() {
           .gh-pagination { bottom: 20px; }
         }
 
-        /* ── ≥ 750px — tablet: side banners go side-by-side ── */
+        /* ── ≥ 750px — tablet ── */
         @media (min-width: 750px) {
           .gh-side-banners {
             grid-template-columns: 1fr 1fr;
@@ -541,7 +482,7 @@ export function GroceryHero() {
           .gh-slide-content { padding: 0 40px; }
         }
 
-        /* ── ≥ 992px — desktop: switch to 75/25 side-by-side ── */
+        /* ── ≥ 992px — desktop ── */
         @media (min-width: 992px) {
           .gh-hero-grid { grid-template-columns: 3fr 1fr; }
           .gh-hero-slider-wrap, .gh-slide { height: 650px; }
@@ -557,7 +498,7 @@ export function GroceryHero() {
           .gh-side-title { font-size: 17px; }
         }
 
-        /* ── ≥ 1200px — large desktop: final typography scale ── */
+        /* ── ≥ 1200px — large desktop ── */
         @media (min-width: 1200px) {
           .gh-slide-content { width: 50%; padding: 0 60px; }
           .gh-slide-title { font-size: 60px; line-height: 1.25; margin-bottom: 32px; letter-spacing: -0.8px; }

@@ -46,14 +46,14 @@ const CategoryPage = async ({
     <div className="py-4 sm:py-6 md:py-10">
       <Container>
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4 overflow-x-auto whitespace-nowrap">
-          <span className="hover:text-rose-500 transition-colors cursor-pointer">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-[#8A7A6A] mb-3 sm:mb-4 overflow-x-auto whitespace-nowrap">
+          <span className="hover:text-[#B8923A] transition-colors cursor-pointer">
             <a href="/sortiment">Sortiment</a>
           </span>
           <span>›</span>
           {parentTitle && (
             <>
-              <span className="hover:text-rose-500 transition-colors cursor-pointer">
+              <span className="hover:text-[#B8923A] transition-colors cursor-pointer">
                 <a href={`/category/${parentCategory.slug?.current || parentCategory.slug}`}>
                   {parentTitle}
                 </a>
@@ -61,15 +61,15 @@ const CategoryPage = async ({
               <span>›</span>
             </>
           )}
-          <span className="text-rose-600 font-medium">{categoryTitle}</span>
+          <span className="text-[#1a1a1a] font-medium">{categoryTitle}</span>
         </div>
 
         <Title className="text-xl sm:text-2xl md:text-3xl mb-2 sm:mb-4">
-          <span className="bg-gradient-to-r from-rose-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
+          <span className="text-[#1a1a1a]">
             {categoryTitle}
           </span>
           {category?.productCount && (
-            <span className="text-sm sm:text-base font-normal text-gray-400 ml-2">
+            <span className="text-sm sm:text-base font-normal text-[#8A7A6A] ml-2">
               ({category.productCount} Produkte)
             </span>
           )}
