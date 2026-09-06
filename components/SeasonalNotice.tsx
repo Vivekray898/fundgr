@@ -40,7 +40,6 @@ const SeasonalNotice = ({
 }: SeasonalNoticeProps) => {
   const Icon = iconMap[icon as keyof typeof iconMap] || Flower2;
 
-  // Format date for better display
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return null;
     try {
@@ -58,7 +57,7 @@ const SeasonalNotice = ({
   const formattedStart = formatDate(startDate);
   const formattedEnd = formatDate(endDate);
 
-  // Compact Variant - Clean and minimal
+  // Compact Variant
   if (variant === "compact") {
     return (
       <motion.div
@@ -67,31 +66,31 @@ const SeasonalNotice = ({
         exit={{ opacity: 0, y: -10 }}
         className={cn(
           "flex items-center gap-2 px-3 py-2",
-          "border border-blue-200/60 rounded-lg",
-          "bg-white/90",
+          "border border-[#E8E3D8]/60 rounded-lg",
+          "bg-white/90 backdrop-blur-sm",
           className
         )}
       >
-        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
-          <Icon className="w-3 h-3 text-blue-600" />
+        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#F5F0E8] flex items-center justify-center">
+          <Icon className="w-3 h-3 text-[#D4A853]" />
         </div>
-        <p className="flex-1 text-xs font-medium text-gray-700 truncate">
+        <p className="flex-1 text-xs font-medium text-[#1a1a1a] truncate">
           {message}
         </p>
         {onClose && (
           <button
             onClick={onClose}
-            className="flex-shrink-0 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            className="flex-shrink-0 p-1 rounded-full hover:bg-[#F5F0E8] transition-colors"
             aria-label="Schließen"
           >
-            <X className="w-3 h-3 text-gray-400 hover:text-gray-600 transition-colors" />
+            <X className="w-3 h-3 text-[#8A7A6A] hover:text-[#1a1a1a] transition-colors" />
           </button>
         )}
       </motion.div>
     );
   }
 
-  // Banner Variant - Professional German design with blue/red
+  // Banner Variant
   if (variant === "banner") {
     return (
       <motion.div
@@ -100,27 +99,26 @@ const SeasonalNotice = ({
         exit={{ opacity: 0, y: -10 }}
         className={cn(
           "w-full",
-          "border border-blue-200/40 rounded-xl",
-          "bg-white",
+          "border border-[#E8E3D8]/40 rounded-xl",
+          "bg-white/80 backdrop-blur-sm",
           "shadow-sm hover:shadow-md transition-shadow duration-300",
           className
         )}
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4">
-          {/* Left - Icon & Content */}
           <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
-              <Icon className="w-5 h-5 text-blue-600" />
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#F5F0E8] border border-[#E8E3D8] flex items-center justify-center">
+              <Icon className="w-5 h-5 text-[#D4A853]" />
             </div>
             
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-800 leading-tight">
+              <p className="text-sm font-semibold text-[#1a1a1a] leading-tight">
                 {message}
               </p>
               {(formattedStart || formattedEnd) && (
-                <p className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-1">
+                <p className="text-xs text-[#8A7A6A] mt-0.5 flex flex-wrap items-center gap-1">
                   <span className="inline-flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-gray-400" />
+                    <Calendar className="w-3 h-3 text-[#8A7A6A]" />
                     {formattedStart && <span>ab {formattedStart}</span>}
                     {formattedStart && formattedEnd && <span>•</span>}
                     {formattedEnd && <span>bis {formattedEnd}</span>}
@@ -130,16 +128,15 @@ const SeasonalNotice = ({
             </div>
           </div>
 
-          {/* Right - Actions */}
           <div className="flex items-center gap-2 ml-auto sm:ml-0">
             {onViewCategories && (
               <button
                 onClick={onViewCategories}
                 className={cn(
                   "px-4 py-2 text-sm font-medium",
-                  "border border-blue-300 hover:border-blue-500",
-                  "text-blue-600 hover:text-blue-700",
-                  "bg-transparent hover:bg-blue-50",
+                  "border border-[#D4A853]/50 hover:border-[#D4A853]",
+                  "text-[#B8923A] hover:text-[#9A7A2A]",
+                  "bg-transparent hover:bg-[#F5F0E8]",
                   "rounded-lg transition-all duration-200",
                   "active:scale-[0.97]",
                   "whitespace-nowrap flex items-center gap-1"
@@ -152,10 +149,10 @@ const SeasonalNotice = ({
             {onClose && (
               <button
                 onClick={onClose}
-                className="flex-shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                className="flex-shrink-0 p-2 rounded-full hover:bg-[#F5F0E8] transition-colors"
                 aria-label="Schließen"
               >
-                <X className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors" />
+                <X className="w-4 h-4 text-[#8A7A6A] hover:text-[#1a1a1a] transition-colors" />
               </button>
             )}
           </div>
@@ -164,7 +161,7 @@ const SeasonalNotice = ({
     );
   }
 
-  // Popup Variant - German design with blue/red
+  // Popup Variant
   return (
     <AnimatePresence>
       <motion.div
@@ -182,40 +179,33 @@ const SeasonalNotice = ({
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 relative overflow-hidden"
         >
-          {/* Decorative header - German flag colors */}
-          <div className="h-1.5 flex">
-            <div className="flex-1 bg-black" />
-            <div className="flex-1 bg-red-600" />
-            <div className="flex-1 bg-yellow-400" />
-          </div>
+          {/* Decorative header */}
+          <div className="h-1.5 bg-[#D4A853]" />
           
-          {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
+            className="absolute top-3 right-3 p-2 rounded-full hover:bg-[#F5F0E8] transition-colors z-10"
             aria-label="Schließen"
           >
-            <X className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors" />
+            <X className="w-4 h-4 text-[#8A7A6A] hover:text-[#1a1a1a] transition-colors" />
           </button>
           
           <div className="p-6 pt-4">
-            {/* Icon */}
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
-                <Icon className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 rounded-full bg-[#F5F0E8] border border-[#E8E3D8] flex items-center justify-center">
+                <Icon className="w-8 h-8 text-[#D4A853]" />
               </div>
             </div>
 
-            {/* Content */}
             <div className="text-center">
-              <h3 className="text-lg font-bold text-gray-800 mb-2 leading-tight">
+              <h3 className="text-lg font-bold text-[#1a1a1a] mb-2 leading-tight">
                 {message}
               </h3>
               
               {(formattedStart || formattedEnd) && (
-                <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-4 py-1.5 mb-4">
-                  <Calendar className="w-3.5 h-3.5 text-gray-500" />
-                  <p className="text-xs text-gray-600">
+                <div className="inline-flex items-center gap-2 bg-[#F8F6F2] rounded-full px-4 py-1.5 mb-4">
+                  <Calendar className="w-3.5 h-3.5 text-[#8A7A6A]" />
+                  <p className="text-xs text-[#8A7A6A]">
                     {formattedStart && <span>Ab {formattedStart}</span>}
                     {formattedStart && formattedEnd && <span> • </span>}
                     {formattedEnd && <span>Bis {formattedEnd}</span>}
@@ -223,21 +213,20 @@ const SeasonalNotice = ({
                 </div>
               )}
 
-              <p className="text-sm text-gray-500 leading-relaxed mb-6">
+              <p className="text-sm text-[#8A7A6A] leading-relaxed mb-6">
                 Entdecken Sie unsere saisonalen Produkte und Aktionen.
               </p>
             </div>
 
-            {/* Actions - Clean buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               {onViewCategories && (
                 <button
                   onClick={onViewCategories}
                   className={cn(
                     "flex-1 px-6 py-3 text-sm font-semibold",
-                    "border border-blue-300 hover:border-blue-500",
-                    "text-blue-600 hover:text-blue-700",
-                    "bg-transparent hover:bg-blue-50",
+                    "border border-[#D4A853]/50 hover:border-[#D4A853]",
+                    "text-[#B8923A] hover:text-[#9A7A2A]",
+                    "bg-transparent hover:bg-[#F5F0E8]",
                     "rounded-lg transition-all duration-200",
                     "active:scale-[0.97]",
                     "flex items-center justify-center gap-2"
@@ -251,7 +240,7 @@ const SeasonalNotice = ({
                 onClick={onClose}
                 className={cn(
                   "flex-1 px-6 py-3 text-sm font-semibold",
-                  "bg-blue-600 hover:bg-blue-700",
+                  "bg-[#1a1a1a] hover:bg-[#2a2a2a]",
                   "text-white",
                   "rounded-lg transition-all duration-200",
                   "active:scale-[0.97]",

@@ -62,7 +62,6 @@ const SeasonalNoProductAvailable = ({
 }: SeasonalNoProductAvailableProps) => {
   const Icon = iconMap[seasonalIcon as keyof typeof iconMap] || Flower2;
 
-  // Format date for display
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return null;
     try {
@@ -91,35 +90,32 @@ const SeasonalNoProductAvailable = ({
           className
         )}
       >
-        {/* Seasonal Banner - Professional Hollow Design */}
         <div className={cn(
           "w-full max-w-2xl mx-auto",
-          "border-2 border-blue-200 rounded-xl",
-          "bg-white",
+          "border-2 border-[#E8E3D8] rounded-xl",
+          "bg-white/80 backdrop-blur-sm",
           "shadow-sm",
           compact ? "p-4" : "p-5"
         )}>
           <div className="flex items-start gap-3">
-            {/* Icon */}
             <div className={cn(
-              "flex-shrink-0 rounded-full border-2 border-blue-200 bg-blue-50 flex items-center justify-center",
+              "flex-shrink-0 rounded-full border-2 border-[#E8E3D8] bg-[#F5F0E8] flex items-center justify-center",
               compact ? "w-10 h-10" : "w-12 h-12"
             )}>
               <Icon className={cn(
-                "text-blue-600",
+                "text-[#D4A853]",
                 compact ? "w-5 h-5" : "w-6 h-6"
               )} />
             </div>
 
             <div className="flex-1 min-w-0">
-              {/* Badges */}
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F5F0E8] text-[#B8923A] border border-[#E8E3D8]">
                   <Sparkles className="w-3 h-3" />
                   Saisonal
                 </span>
                 {(formattedStart || formattedEnd) && (
-                  <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-xs text-[#8A7A6A] bg-[#F8F6F2] px-2 py-0.5 rounded-full">
                     <Calendar className="w-3 h-3" />
                     {formattedStart && formattedStart}
                     {formattedStart && formattedEnd && " – "}
@@ -129,13 +125,13 @@ const SeasonalNoProductAvailable = ({
               </div>
               
               <p className={cn(
-                "text-gray-800 font-medium",
+                "text-[#1a1a1a] font-medium",
                 compact ? "text-sm" : "text-base"
               )}>
                 {seasonalMessage}
               </p>
               
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-[#8A7A6A] mt-1">
                 Dieses Produkt ist nur während der Saison verfügbar.
               </p>
             </div>
@@ -143,23 +139,22 @@ const SeasonalNoProductAvailable = ({
             {onClose && (
               <button
                 onClick={onClose}
-                className="flex-shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="flex-shrink-0 p-1.5 rounded-lg hover:bg-[#F5F0E8] transition-colors"
                 aria-label="Schließen"
               >
-                <X className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors" />
+                <X className="w-4 h-4 text-[#8A7A6A] hover:text-[#1a1a1a] transition-colors" />
               </button>
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-4 pt-4 border-t border-[#E8E3D8]">
             <Link
               href="/sortiment"
               className={cn(
                 "flex-1 inline-flex items-center justify-center gap-2",
-                "border border-blue-300 hover:border-blue-500",
-                "text-blue-600 hover:text-blue-700",
-                "bg-transparent hover:bg-blue-50",
+                "border border-[#D4A853]/50 hover:border-[#D4A853]",
+                "text-[#B8923A] hover:text-[#9A7A2A]",
+                "bg-transparent hover:bg-[#F5F0E8]",
                 "rounded-lg font-medium transition-all duration-200",
                 "active:scale-[0.97]",
                 compact ? "px-4 py-2 text-sm" : "px-5 py-2.5 text-sm"
@@ -179,7 +174,7 @@ const SeasonalNoProductAvailable = ({
               }}
               className={cn(
                 "inline-flex items-center justify-center gap-2",
-                "bg-blue-600 hover:bg-blue-700",
+                "bg-[#1a1a1a] hover:bg-[#2a2a2a]",
                 "text-white",
                 "rounded-lg font-medium transition-all duration-200",
                 "active:scale-[0.97]",
@@ -193,19 +188,18 @@ const SeasonalNoProductAvailable = ({
           </div>
         </div>
 
-        {/* Additional Info */}
         <div className="text-center mt-4 px-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[#8A7A6A]">
             {selectedTab ? (
               <>
-                <span className="font-medium text-gray-700">{selectedTab}</span>{" "}
+                <span className="font-medium text-[#1a1a1a]">{selectedTab}</span>{" "}
                 Produkte sind nur in der Saison erhältlich.
               </>
             ) : (
               "Diese Kategorie ist aktuell nicht verfügbar."
             )}
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-[#8A7A6A] mt-1">
             Schauen Sie später wieder vorbei oder entdecken Sie unsere anderen Kategorien.
           </p>
         </div>
@@ -213,7 +207,7 @@ const SeasonalNoProductAvailable = ({
     );
   }
 
-  // Default - No Product Available - Professional Design
+  // Default - No Product Available
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -225,32 +219,31 @@ const SeasonalNoProductAvailable = ({
       )}
     >
       <div className="text-center max-w-md mx-auto px-4">
-        {/* Icon with border */}
         <div className={cn(
-          "mx-auto rounded-full border-2 border-gray-200 bg-gray-50 flex items-center justify-center",
+          "mx-auto rounded-full border-2 border-[#E8E3D8] bg-[#F8F6F2] flex items-center justify-center",
           compact ? "w-16 h-16" : "w-20 h-20"
         )}>
           <AlertCircle className={cn(
-            "text-gray-400",
+            "text-[#8A7A6A]",
             compact ? "w-8 h-8" : "w-10 h-10"
           )} />
         </div>
 
         <h2 className={cn(
-          "font-semibold text-gray-800 mt-4",
+          "font-semibold text-[#1a1a1a] mt-4",
           compact ? "text-lg" : "text-xl"
         )}>
           Derzeit nicht verfügbar
         </h2>
 
         <p className={cn(
-          "text-gray-500 mt-2",
+          "text-[#8A7A6A] mt-2",
           compact ? "text-sm" : "text-base"
         )}>
           {selectedTab ? (
             <>
               In der Kategorie{" "}
-              <span className="font-medium text-blue-600">
+              <span className="font-medium text-[#D4A853]">
                 {selectedTab}
               </span>{" "}
               sind aktuell keine Produkte verfügbar.
@@ -261,25 +254,24 @@ const SeasonalNoProductAvailable = ({
         </p>
 
         <div className="flex items-center justify-center gap-2 mt-3">
-          <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-          <span className="text-sm text-blue-600 font-medium">
+          <Loader2 className="w-4 h-4 text-[#D4A853] animate-spin" />
+          <span className="text-sm text-[#B8923A] font-medium">
             Wir füllen bald wieder auf
           </span>
         </div>
 
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-[#8A7A6A] mt-2">
           Schauen Sie später wieder vorbei oder entdecken Sie unsere anderen Kategorien.
         </p>
 
-        {/* Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-5">
           <Link
             href="/sortiment"
             className={cn(
               "inline-flex items-center justify-center gap-2",
-              "border border-blue-300 hover:border-blue-500",
-              "text-blue-600 hover:text-blue-700",
-              "bg-transparent hover:bg-blue-50",
+              "border border-[#D4A853]/50 hover:border-[#D4A853]",
+              "text-[#B8923A] hover:text-[#9A7A2A]",
+              "bg-transparent hover:bg-[#F5F0E8]",
               "rounded-lg font-medium transition-all duration-200",
               "active:scale-[0.97]",
               compact ? "px-5 py-2 text-sm" : "px-6 py-2.5 text-sm"
@@ -299,7 +291,7 @@ const SeasonalNoProductAvailable = ({
             }}
             className={cn(
               "inline-flex items-center justify-center gap-2",
-              "bg-blue-600 hover:bg-blue-700",
+              "bg-[#1a1a1a] hover:bg-[#2a2a2a]",
               "text-white",
               "rounded-lg font-medium transition-all duration-200",
               "active:scale-[0.97]",
