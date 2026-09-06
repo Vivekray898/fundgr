@@ -24,22 +24,19 @@ interface Product {
 const DealsProductCard = ({ product }: { product: Product }) => {
   const { enabled, pricePlaceholder } = useCatalogueMode();
   
-  // Fix: Get image URL correctly from Sanity
   const imageUrl = product.images?.[0]?.asset?.url || product.images?.[0]?.url;
   
-  // Fix: Calculate discount percentage correctly
   const discountPercent = product.discount > 0 && product.price > 0
     ? Math.round((product.discount / product.price) * 100) 
     : 0;
 
-  // Fix: Use originalPrice or calculate from discount
   const originalPrice = product.originalPrice || (product.discount > 0 ? product.price + product.discount : null);
 
   return (
-    <div className="group bg-white rounded-xl border border-pink-100 overflow-hidden hover:shadow-lg hover:shadow-pink-100/50 transition-all hover:border-rose-200 active:scale-[0.98]">
+    <div className="group bg-white rounded-xl border border-[#E8E3D8] overflow-hidden hover:shadow-lg hover:shadow-[#E8E3D8]/50 transition-all hover:border-[#D4A853] active:scale-[0.98]">
       <Link href={`/product/${product.slug.current}`}>
         {/* Image */}
-        <div className="relative h-32 sm:h-40 md:h-48 overflow-hidden bg-gradient-to-br from-rose-50 to-pink-50">
+        <div className="relative h-32 sm:h-40 md:h-48 overflow-hidden bg-[#F8F6F2]">
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -50,27 +47,27 @@ const DealsProductCard = ({ product }: { product: Product }) => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Package className="w-12 h-12 text-rose-300/50" />
+              <Package className="w-12 h-12 text-[#E8E3D8]" />
             </div>
           )}
 
-          {/* Badges - Show only if discount > 0 and catalogue mode is OFF */}
+          {/* Badges */}
           {!enabled && discountPercent > 0 && (
-            <div className="absolute top-2 left-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow-lg shadow-rose-200/50 flex items-center gap-1">
+            <div className="absolute top-2 left-2 bg-[#D4A853] text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow-lg shadow-[#D4A853]/30 flex items-center gap-1">
               <Percent className="w-3 h-3" />
               -{discountPercent}%
             </div>
           )}
 
           {!enabled && product.isDeal && (
-            <div className="absolute top-2 right-2 bg-amber-400 text-amber-900 text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow-lg shadow-amber-200/50 flex items-center gap-1">
+            <div className="absolute top-2 right-2 bg-[#1a1a1a] text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow-lg shadow-black/20 flex items-center gap-1">
               <Tag className="w-3 h-3" />
               DEAL
             </div>
           )}
 
           {product.status === 'new' && (
-            <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow-lg shadow-emerald-200/50">
+            <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-full shadow-lg shadow-emerald-200/50">
               NEU
             </div>
           )}
@@ -91,7 +88,7 @@ const DealsProductCard = ({ product }: { product: Product }) => {
           {/* Catalogue Mode Badge */}
           {enabled && (
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent flex items-end justify-center pb-3">
-              <span className="bg-white/90 backdrop-blur-sm text-rose-600 text-[8px] sm:text-xs font-semibold px-3 py-1 rounded-full shadow-lg border border-rose-200">
+              <span className="bg-white/90 backdrop-blur-sm text-[#D4A853] text-[8px] sm:text-xs font-semibold px-3 py-1 rounded-full shadow-lg border border-[#D4A853]/30">
                 Im Markt erhältlich
               </span>
             </div>
@@ -100,18 +97,18 @@ const DealsProductCard = ({ product }: { product: Product }) => {
 
         {/* Content */}
         <div className="p-3 sm:p-4">
-          <h3 className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-rose-500 transition-colors">
+          <h3 className="text-xs sm:text-sm font-semibold text-[#1a1a1a] line-clamp-2 group-hover:text-[#B8923A] transition-colors">
             {product.name}
           </h3>
           
-          {/* Price Section - Conditional */}
+          {/* Price Section */}
           {!enabled ? (
             <div className="mt-2 flex items-center gap-2 flex-wrap">
-              <span className="text-base sm:text-lg font-bold text-rose-500">
+              <span className="text-base sm:text-lg font-bold text-[#1a1a1a]">
                 €{product.price?.toFixed(2)}
               </span>
               {originalPrice && originalPrice > product.price && (
-                <span className="text-xs sm:text-sm text-gray-400 line-through">
+                <span className="text-xs sm:text-sm text-[#8A7A6A] line-through">
                   €{originalPrice?.toFixed(2)}
                 </span>
               )}
@@ -123,7 +120,7 @@ const DealsProductCard = ({ product }: { product: Product }) => {
             </div>
           ) : (
             <div className="mt-2">
-              <span className="text-xs sm:text-sm text-gray-500 font-medium">
+              <span className="text-xs sm:text-sm text-[#8A7A6A] font-medium">
                 {pricePlaceholder}
               </span>
             </div>

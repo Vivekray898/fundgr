@@ -28,7 +28,7 @@ const DealsNavigation = ({
   ];
 
   return (
-    <div className="sticky top-0 z-30 bg-white border-b border-rose-100 shadow-sm">
+    <div className="sticky top-0 z-30 bg-white border-b border-[#E8E3D8] shadow-sm">
       <div className="max-w-screen-xl mx-auto px-3 sm:px-4">
         <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto py-2 sm:py-3 scrollbar-hide">
           {navigationLinks.map((link) => (
@@ -37,8 +37,8 @@ const DealsNavigation = ({
               onClick={() => onNavigate(link.id)}
               className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex-shrink-0 whitespace-nowrap ${
                 activeSection === link.id
-                  ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-200/50"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
+                  ? "bg-[#1a1a1a] text-white shadow-lg shadow-black/20"
+                  : "bg-[#F8F6F2] text-[#1a1a1a] hover:bg-[#E8E3D8]"
               }`}
             >
               <link.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

@@ -47,7 +47,6 @@ const DealsSection = ({
 }: DealsSectionProps) => {
   const { enabled } = useCatalogueMode();
   
-  // Filter out products with missing data
   const validProducts = products?.filter(p => p && p._id && p.name) || [];
   const displayProducts = validProducts.slice(0, maxDisplay);
 
@@ -59,15 +58,15 @@ const DealsSection = ({
     <section id={id} className="mb-8 sm:mb-12 scroll-mt-20 sm:scroll-mt-24">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{title}</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1a1a1a]">{title}</h2>
           {description && (
-            <p className="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1">{description}</p>
+            <p className="text-[#8A7A6A] text-xs sm:text-sm mt-0.5 sm:mt-1">{description}</p>
           )}
         </div>
         {validProducts.length > 0 && showViewAll && (
           <Link 
             href={linkHref} 
-            className="flex items-center gap-1 text-xs sm:text-sm font-medium text-rose-500 hover:text-rose-600 transition-colors"
+            className="flex items-center gap-1 text-xs sm:text-sm font-medium text-[#B8923A] hover:text-[#9A7A2A] transition-colors"
           >
             {linkText}
             <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

@@ -22,16 +22,16 @@ const ThemesSection = ({ themes }: { themes: Theme[] }) => {
     <section id="saisonal" className="mb-12 scroll-mt-24">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-[#1a1a1a]">
             {enabled ? "Saisonale Kategorien" : "Saisonale Artikel"}
           </h2>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-[#8A7A6A] text-sm mt-1">
             {enabled 
               ? "Entdecken Sie unsere saisonalen Kategorien" 
               : "Nur für begrenzte Zeit verfügbar"}
           </p>
         </div>
-        <Link href="/sortiment" className="text-rose-500 hover:text-rose-600 text-sm font-medium">
+        <Link href="/sortiment" className="text-[#B8923A] hover:text-[#9A7A2A] text-sm font-medium transition-colors">
           Zu allen Kategorien →
         </Link>
       </div>
@@ -42,7 +42,7 @@ const ThemesSection = ({ themes }: { themes: Theme[] }) => {
             <Link
               key={theme._id}
               href={`/category/${theme.slug}`}
-              className="group block overflow-hidden rounded-lg border border-gray-200 hover:shadow-lg transition-all"
+              className="group block overflow-hidden rounded-lg border border-[#E8E3D8] hover:shadow-lg hover:border-[#D4A853] transition-all"
             >
               <div className="relative h-48 overflow-hidden">
                 {theme.image ? (
@@ -53,11 +53,11 @@ const ThemesSection = ({ themes }: { themes: Theme[] }) => {
                     className="object-cover group-hover:scale-105 transition-transform"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center">
+                  <div className="w-full h-full bg-[#F8F6F2] flex items-center justify-center">
                     {enabled ? (
-                      <Eye className="w-12 h-12 text-rose-400" />
+                      <Eye className="w-12 h-12 text-[#D4A853]" />
                     ) : (
-                      <Clock className="w-12 h-12 text-rose-400" />
+                      <Clock className="w-12 h-12 text-[#D4A853]" />
                     )}
                   </div>
                 )}
@@ -78,9 +78,9 @@ const ThemesSection = ({ themes }: { themes: Theme[] }) => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <Clock className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-          <p className="text-gray-500">
+        <div className="text-center py-10 bg-[#F8F6F2] rounded-lg border border-[#E8E3D8]">
+          <Clock className="w-10 h-10 text-[#E8E3D8] mx-auto mb-2" />
+          <p className="text-[#8A7A6A]">
             {enabled 
               ? "Keine saisonalen Kategorien verfügbar." 
               : "Keine saisonalen Artikel verfügbar."}
