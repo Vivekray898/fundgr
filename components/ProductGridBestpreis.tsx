@@ -5,8 +5,9 @@ import React, { useEffect, useState, useRef } from "react";
 import ProductCard from "./ProductCard";
 import { motion } from "motion/react";
 import { client } from "@/sanity/lib/client";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import Container from "./Container";
+import Link from "next/link";
 
 // Define Product type locally
 interface Product {
@@ -145,77 +146,90 @@ const ProductGridBestpreis = () => {
           </div>
         </div>
       ) : products?.length ? (
-        <div className="relative mt-4 sm:mt-10">
-          {/* Subtle Gradient Fades */}
-          <div
-            className={`absolute left-0 top-0 bottom-0 w-10 sm:w-14 bg-gradient-to-r from-white via-white/60 to-transparent pointer-events-none z-10 transition-opacity duration-500 ${
-              canScrollLeft ? "opacity-100" : "opacity-0"
-            }`}
-          />
-          <div
-            className={`absolute right-0 top-0 bottom-0 w-10 sm:w-14 bg-gradient-to-l from-white via-white/60 to-transparent pointer-events-none z-10 transition-opacity duration-500 ${
-              canScrollRight ? "opacity-100" : "opacity-0"
-            }`}
-          />
+        <>
+          <div className="relative mt-4 sm:mt-10">
+            {/* Subtle Gradient Fades */}
+            <div
+              className={`absolute left-0 top-0 bottom-0 w-10 sm:w-14 bg-gradient-to-r from-white via-white/60 to-transparent pointer-events-none z-10 transition-opacity duration-500 ${
+                canScrollLeft ? "opacity-100" : "opacity-0"
+              }`}
+            />
+            <div
+              className={`absolute right-0 top-0 bottom-0 w-10 sm:w-14 bg-gradient-to-l from-white via-white/60 to-transparent pointer-events-none z-10 transition-opacity duration-500 ${
+                canScrollRight ? "opacity-100" : "opacity-0"
+              }`}
+            />
 
-          <div
-            ref={scrollContainerRef}
-            className="flex gap-3 sm:gap-5 overflow-x-auto pb-4 sm:pb-4 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          >
-            {products.map((product, index) => (
-              <motion.div
-                key={product?._id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(index * 0.02, 0.3) }}
-                className="min-w-[170px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px] xl:min-w-[260px] max-w-[260px] snap-start flex-shrink-0"
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))}
-          </div>
+            <div
+              ref={scrollContainerRef}
+              className="flex gap-3 sm:gap-5 overflow-x-auto pb-4 sm:pb-4 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            >
+              {products.map((product, index) => (
+                <motion.div
+                  key={product?._id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(index * 0.02, 0.3) }}
+                  className="min-w-[170px] sm:min-w-[200px] md:min-w-[220px] lg:min-w-[240px] xl:min-w-[260px] max-w-[260px] snap-start flex-shrink-0"
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </div>
 
-          {/* Navigation Arrows */}
-          {hasOverflow && (
-            <>
-              <button
-                onClick={() => scrollProducts("left")}
-                disabled={!canScrollLeft}
-                className={`absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-md border-2 border-amber-300/70 flex items-center justify-center hover:bg-amber-50 hover:border-amber-500 transition-all duration-200 z-20 ${
-                  canScrollLeft ? "opacity-100" : "opacity-40 cursor-default"
-                }`}
-                aria-label="Nach links scrollen"
-              >
-                <ChevronLeft className="w-6 h-6 text-gray-800" />
-              </button>
+            {/* Navigation Arrows */}
+            {hasOverflow && (
+              <>
+                <button
+                  onClick={() => scrollProducts("left")}
+                  disabled={!canScrollLeft}
+                  className={`absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-md border-2 border-amber-300/70 flex items-center justify-center hover:bg-amber-50 hover:border-amber-500 transition-all duration-200 z-20 ${
+                    canScrollLeft ? "opacity-100" : "opacity-40 cursor-default"
+                  }`}
+                  aria-label="Nach links scrollen"
+                >
+                  <ChevronLeft className="w-6 h-6 text-gray-800" />
+                </button>
 
-              <button
-                onClick={() => scrollProducts("right")}
-                disabled={!canScrollRight}
-                className={`absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-md border-2 border-amber-300/70 flex items-center justify-center hover:bg-amber-50 hover:border-amber-500 transition-all duration-200 z-20 ${
-                  canScrollRight ? "opacity-100" : "opacity-40 cursor-default"
-                }`}
-                aria-label="Nach rechts scrollen"
-              >
-                <ChevronRight className="w-6 h-6 text-gray-800" />
-              </button>
-            </>
-          )}
+                <button
+                  onClick={() => scrollProducts("right")}
+                  disabled={!canScrollRight}
+                  className={`absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white shadow-md border-2 border-amber-300/70 flex items-center justify-center hover:bg-amber-50 hover:border-amber-500 transition-all duration-200 z-20 ${
+                    canScrollRight ? "opacity-100" : "opacity-40 cursor-default"
+                  }`}
+                  aria-label="Nach rechts scrollen"
+                >
+                  <ChevronRight className="w-6 h-6 text-gray-800" />
+                </button>
+              </>
+            )}
 
-          {/* Progress indicator */}
-          <div className="flex items-center gap-3 mt-4 px-1">
-            <p className="text-sm sm:text-base text-gray-600 flex-shrink-0 whitespace-nowrap">
-              <span className="font-bold text-gray-900">{products.length}</span> Produkte
-            </p>
-            <div className="flex-1 h-1.5 bg-amber-100 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-amber-700 rounded-full"
-                style={{ width: `${Math.max(scrollProgress * 100, 8)}%` }}
-                transition={{ duration: 0.3 }}
-              />
+            {/* Progress indicator */}
+            <div className="flex items-center gap-3 mt-4 px-1">
+              <p className="text-sm sm:text-base text-gray-600 flex-shrink-0 whitespace-nowrap">
+                <span className="font-bold text-gray-900">{products.length}</span> Produkte
+              </p>
+              <div className="flex-1 h-1.5 bg-amber-100 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-amber-700 rounded-full"
+                  style={{ width: `${Math.max(scrollProgress * 100, 8)}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
             </div>
           </div>
-        </div>
+
+          {/* View All Button */}
+          <div className="flex justify-center mt-6 sm:mt-8">
+            <Link
+              href="/brand/bestpreis"
+              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-amber-700 text-white font-semibold text-sm sm:text-base rounded-full hover:bg-amber-800 transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+            >
+              Alle Bestpreis Produkte anzeigen
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Link>
+          </div>
+        </>
       ) : (
         <div className="text-center py-14 sm:py-16 bg-amber-50/60 rounded-xl mt-4 sm:mt-10 border-2 border-amber-200/50">
           <div className="text-6xl sm:text-7xl mb-4">💎</div>

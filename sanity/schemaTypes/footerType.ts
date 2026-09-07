@@ -303,18 +303,7 @@ export const footerType = defineType({
               name: "method",
               title: "Payment Method",
               type: "string",
-              options: {
-                list: [
-                  { title: "PayPal", value: "paypal" },
-                  { title: "Wero", value: "wero" },
-                  { title: "Invoice", value: "invoice" },
-                  { title: "Credit Card", value: "creditCard" },
-                  { title: "Prepayment", value: "prepayment" },
-                  { title: "Financing", value: "financing" },
-                  { title: "Instant Bank Transfer", value: "instantBank" },
-                  { title: "Direct Debit", value: "directDebit" },
-                ],
-              },
+              description: "Enter a payment method key (e.g., 'paypal', 'invoice', or custom like 'applePay')",
             }),
           ],
           initialValue: [

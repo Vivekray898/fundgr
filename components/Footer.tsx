@@ -25,18 +25,6 @@ import {
   PhoneCall,
 } from "lucide-react";
 
-// Payment methods mapping with icons
-const paymentMethods = {
-  paypal: "PayPal",
-  wero: "Wero",
-  invoice: "Rechnung",
-  creditCard: "Kreditkarte",
-  prepayment: "Vorkasse",
-  financing: "Finanzierung",
-  instantBank: "Sofortüberweisung",
-  directDebit: "Lastschrift",
-};
-
 // Social media icons
 const socialIcons = {
   facebook: Facebook,
@@ -64,8 +52,7 @@ const toTelHref = (value: string) => `tel:${value.replace(/[^\d+]/g, "")}`;
 const isLikelyPhone = (value: string) => /\d{3,}/.test(value);
 
 const Footer = () => {
-  // "contact" starts expanded on mobile — it's the section boomer customers
-  // reach for first (they want to call, not click through five menus).
+  // "contact" starts expanded on mobile
   const [expandedSections, setExpandedSections] = useState<string[]>(["contact"]);
   const [footerData, setFooterData] = useState<any>(null);
   const [categories, setCategories] = useState<any[]>([]);
@@ -83,8 +70,7 @@ const Footer = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Show a "back to top" button once the footer is likely in view —
-  // helps anyone who doesn't want to swipe-scroll all the way back up.
+  // Show a "back to top" button
   useEffect(() => {
     const onScroll = () => setShowBackToTop(window.scrollY > 600);
     onScroll();
@@ -163,8 +149,7 @@ const Footer = () => {
     { title: "Alle Märkte", href: "/markets" },
   ];
 
-  // Contact Info — this is the section that matters most for older customers,
-  // so it now renders first everywhere and the phone number is tappable.
+  // Contact Info
   const contactTitle = footerData?.contactInfo?.title || "Haben Sie Fragen? Rufen Sie uns an!";
   const contactItems: ContactItem[] = footerData?.contactInfo?.items || [
     { icon: "phone", title: "Rufen Sie uns an", subtitle: "+49 123 456 789" },
@@ -173,9 +158,33 @@ const Footer = () => {
     { icon: "mail", title: "E-Mail", subtitle: "info@fundgrube.de" },
   ];
 
-  // Payment Methods
+  // Payment Methods - FIXED: Handle both string and object types
   const paymentTitle = footerData?.paymentMethods?.title || "Zahlen Sie ganz bequem!";
-  const paymentMethodsList: string[] = footerData?.paymentMethods?.methods || [
+  
+  // Helper function to extract payment method value from Sanity array items
+  const getPaymentMethodValue = (item: any): string => {
+    // If it's a string, return it directly
+    if (typeof item === 'string') {
+      return item;
+    }
+    // If it's an object, try to get the value
+    if (item && typeof item === 'object') {
+      // Check for common Sanity array item structures
+      if (item.method) return item.method;
+      if (item.value) return item.value;
+      if (item.name) return item.name;
+      // If it has a _type, try to find the actual value
+      if (item._type === 'string' && item._key) {
+        // This might be a string stored as an object
+        return item.value || item.method || '';
+      }
+    }
+    // Fallback: return the item as string or empty
+    return String(item || '');
+  };
+
+  // Get payment methods list safely
+  const rawPaymentMethods = footerData?.paymentMethods?.methods || [
     "paypal",
     "wero",
     "invoice",
@@ -185,6 +194,38 @@ const Footer = () => {
     "instantBank",
     "directDebit",
   ];
+
+  // Convert to strings array
+  const paymentMethodsList: string[] = rawPaymentMethods.map(getPaymentMethodValue).filter(Boolean);
+
+  // Custom methods from Sanity
+  const customMethodsFromSanity = footerData?.paymentMethods?.customMethods || {};
+
+  // Default payment method labels
+  const defaultMethods: Record<string, string> = {
+    paypal: "PayPal",
+    wero: "Wero",
+    invoice: "Rechnung",
+    creditCard: "Kreditkarte",
+    prepayment: "Vorkasse",
+    financing: "Finanzierung",
+    instantBank: "Sofortüberweisung",
+    directDebit: "Lastschrift",
+  };
+
+  // Get display label for a payment method
+  const getPaymentMethodLabel = (method: string): string => {
+    // Check custom methods first
+    if (customMethodsFromSanity[method]) {
+      return customMethodsFromSanity[method];
+    }
+    // Check default methods
+    if (defaultMethods[method]) {
+      return defaultMethods[method];
+    }
+    // Return the method itself if no label found
+    return method;
+  };
 
   // Bottom Bar
   const copyrightText = footerData?.bottomBar?.copyrightText || "©2026 FundGrube GmbH & Co. KG";
@@ -204,8 +245,7 @@ const Footer = () => {
     mail: Mail,
   };
 
-  // Sections for accordion — contact now leads, categories moved after
-  // service/company since browsing-by-category is a "younger shopper" habit.
+  // Sections for accordion
   const sections = [
     { id: "contact", title: contactTitle, show: true },
     { id: "service", title: serviceTitle, show: true },
@@ -275,8 +315,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-white text-gray-900 border-t-2 border-amber-300/50 mt-12 md:mt-16 lg:mt-20 text-base">
-      {/* Big, obvious "Call us now" strip — the single most important action
-          for a customer who'd rather talk to a person than click around. */}
+      {/* Call us now strip */}
       <div className="bg-amber-700">
         <Container className="py-3 md:py-4">
           <a
@@ -329,7 +368,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Mobile Accordion View — bigger tap targets, bigger text */}
+        {/* Mobile Accordion View */}
         <div className="md:hidden space-y-3">
           {sections.map((section) => {
             if (!section.show) return null;
@@ -415,9 +454,9 @@ const Footer = () => {
           })}
         </div>
 
-        {/* Desktop Grid View — contact column leads */}
+        {/* Desktop Grid View */}
         <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-10">
-          {/* Contact Column — first, so it's the first thing the eye lands on */}
+          {/* Contact Column */}
           <div>
             <h3 className="text-gray-900 font-extrabold mb-5 text-lg uppercase tracking-wide border-b-2 border-amber-300/60 pb-3">
               {contactTitle}
@@ -515,7 +554,7 @@ const Footer = () => {
         </div>
       )}
 
-      {/* Payment Methods */}
+      {/* Payment Methods - FIXED: Properly handle object/string items */}
       <div className="border-t-2 border-amber-300/40 bg-gradient-to-r from-amber-50/40 via-orange-50/30 to-white">
         <Container className="py-6 md:py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
@@ -524,14 +563,17 @@ const Footer = () => {
               {paymentTitle}
             </h3>
             <div className="flex flex-wrap justify-center gap-2 md:gap-3">
-              {paymentMethodsList?.slice(0, isMobile ? 4 : 8).map((method: string) => (
-                <span
-                  key={method}
-                  className="px-4 py-2 md:px-5 md:py-3 bg-white border-2 border-amber-300/60 rounded-lg text-sm md:text-base font-semibold text-gray-800 hover:border-amber-500 hover:bg-amber-50 transition-all duration-300"
-                >
-                  {paymentMethods[method as keyof typeof paymentMethods] || method}
-                </span>
-              ))}
+              {paymentMethodsList.slice(0, isMobile ? 4 : 8).map((method: string) => {
+                const displayLabel = getPaymentMethodLabel(method);
+                return (
+                  <span
+                    key={method}
+                    className="px-4 py-2 md:px-5 md:py-3 bg-white border-2 border-amber-300/60 rounded-lg text-sm md:text-base font-semibold text-gray-800 hover:border-amber-500 hover:bg-amber-50 transition-all duration-300"
+                  >
+                    {displayLabel}
+                  </span>
+                );
+              })}
               {isMobile && paymentMethodsList.length > 4 && (
                 <span className="px-4 py-2 text-sm text-gray-600 font-semibold">
                   +{paymentMethodsList.length - 4} weitere
@@ -542,7 +584,7 @@ const Footer = () => {
         </Container>
       </div>
 
-      {/* Bottom Bar — legal links get real tap targets and readable size */}
+      {/* Bottom Bar */}
       <div className="border-t-2 border-amber-300/40 bg-gradient-to-r from-amber-50/40 via-orange-50/30 to-white">
         <Container className="py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -564,16 +606,16 @@ const Footer = () => {
         </Container>
       </div>
 
-{/* Back to top — positioned BELOW WhatsApp on desktop and mobile */}
-{showBackToTop && (
-  <button
-    onClick={scrollToTop}
-    aria-label="Nach oben scrollen"
-    className="fixed z-40 w-14 h-14 rounded-full bg-amber-700 text-white shadow-lg hover:bg-amber-800 active:scale-95 transition-all flex items-center justify-center bottom-24 right-8 md:bottom-24 md:right-8"
-  >
-    <ArrowUp className="w-6 h-6" />
-  </button>
-)}
+      {/* Back to top */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          aria-label="Nach oben scrollen"
+          className="fixed z-40 w-14 h-14 rounded-full bg-amber-700 text-white shadow-lg hover:bg-amber-800 active:scale-95 transition-all flex items-center justify-center bottom-24 right-8 md:bottom-24 md:right-8"
+        >
+          <ArrowUp className="w-6 h-6" />
+        </button>
+      )}
 
       <FloatingWhatsApp />
     </footer>

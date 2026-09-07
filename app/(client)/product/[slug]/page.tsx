@@ -9,24 +9,21 @@ import RecentlyViewed from "@/components/RecentlyViewed";
 import ProductCharacteristics from "@/components/ProductCharacteristics";
 import { getProductBySlug, getRelatedProducts } from "@/sanity/queries";
 import { getSettings } from "@/sanity/queries/settings";
-import { 
-  CornerDownLeft, 
-  StarIcon, 
-  Truck, 
-  ChevronLeft, 
-  Share2, 
-  MessageCircle, 
-  Scale, 
-  Package,
+import {
+  StarIcon,
+  ChevronLeft,
   Store,
   Clock,
-  MapPin
+  MapPin,
+  PhoneCall,
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import React from "react";
 import SeasonalProductNotice from "@/components/SeasonalProductNotice";
 import Link from "next/link";
 import MarketLocatorButton from "@/components/MarketLocatorButton";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import ShareButton from "@/components/ShareButton";
 
 const SingleProductPage = async ({
   params,
@@ -36,7 +33,7 @@ const SingleProductPage = async ({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   const settings = await getSettings();
-  
+
   if (!product) {
     return notFound();
   }
@@ -51,6 +48,8 @@ const SingleProductPage = async ({
   const isCatalogueMode = settings?.catalogueMode?.enabled || false;
   const pricePlaceholder = settings?.catalogueMode?.pricePlaceholder || "Preis im Markt erhältlich";
   const productPageCta = settings?.catalogueMode?.productPageCta || "Bezugsquelle finden";
+  const storePhone = settings?.contactPhone || "+49 123 456 789";
+  const whatsappNumber = "4917632853448";
 
   const seasonalCategories = product?.categories?.filter(
     (cat: any) => cat?.isSeasonal === true
@@ -58,63 +57,68 @@ const SingleProductPage = async ({
 
   let brandSlug = null;
   let brandName = null;
-  
+
   if (product?.brand) {
-    if (typeof product.brand === 'object' && product.brand !== null) {
+    if (typeof product.brand === "object" && product.brand !== null) {
       const brand = product.brand as any;
       brandSlug = brand.slug?.current || brand.slug || null;
       brandName = brand.title || brand.name || null;
-    } else if (typeof product.brand === 'string') {
+    } else if (typeof product.brand === "string") {
       brandName = product.brand;
     }
   }
+
+  // Build WhatsApp URL with product link and German text
+  const productUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://fundgrube.de'}/product/${product.slug?.current || slug}`;
+  const whatsappText = `Hallo! Ich habe eine Frage zu folgendem Produkt: ${product.name} - ${productUrl}`;
+  const whatsappUrl = `https://api.whatsapp.com/send/?phone=${whatsappNumber}&text=${encodeURIComponent(whatsappText)}&type=phone_number&app_absent=0`;
 
   return (
     <>
       {seasonalCategories && seasonalCategories.length > 0 && (
         <SeasonalProductNotice categories={seasonalCategories} variant="banner" />
       )}
-      
-      <Container className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-6">
+
+      <Container className="px-4 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6">
         {/* Back Button */}
-        <Link 
-          href="/shop" 
-          className="inline-flex items-center gap-1 text-xs sm:text-sm text-gray-400 hover:text-rose-500 mb-3 sm:mb-4 transition-colors"
+        <Link
+          href="/shop"
+          className="inline-flex items-center gap-1.5 text-sm sm:text-base font-semibold text-gray-700 hover:text-amber-700 mb-4 sm:mb-5 transition-colors py-2 -ml-1 pl-1 pr-2 rounded-lg hover:bg-amber-50"
         >
-          <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span>Zurück</span>
+          <ChevronLeft className="w-5 h-5 sm:w-5 sm:h-5" />
+          <span>Zurück zur Übersicht</span>
         </Link>
 
-        <div className="flex flex-col lg:flex-row gap-4 md:gap-6 lg:gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-10">
           {/* Product Images */}
           {product?.images && (
             <div className="w-full lg:w-1/2">
               <ImageView images={product?.images} isStock={product?.stock} />
             </div>
           )}
-          
+
           {/* Product Details */}
           <div className="w-full lg:w-1/2">
             {/* Product Name & Categories */}
-            <div className="mb-3">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 leading-tight mb-1.5">
+            <div className="mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-2.5">
                 {product?.name}
               </h1>
               {product?.categories && product.categories.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1.5">
                   {product.categories.slice(0, 3).map((cat: any, index: number) => {
-                    const categoryTitle = typeof cat === 'string' ? cat : cat?.title || cat?.name || 'Category';
+                    const categoryTitle = typeof cat === "string" ? cat : cat?.title || cat?.name || "Category";
                     return (
-                      <span 
+                      <span
                         key={index}
-                        className="text-[10px] font-medium text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full"
+                        className="text-xs sm:text-sm font-semibold text-amber-800 bg-amber-100 px-3 py-1 rounded-full"
                       >
                         {categoryTitle}
                       </span>
                     );
                   })}
                   {product.categories.length > 3 && (
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-xs sm:text-sm text-gray-600 self-center">
                       +{product.categories.length - 3}
                     </span>
                   )}
@@ -123,46 +127,45 @@ const SingleProductPage = async ({
             </div>
 
             {/* Rating & Description */}
-            <div className="mb-3">
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="flex items-center gap-0.5">
-                  {[...Array(5)].map((_, index) => (
-                    <StarIcon
-                      key={index}
-                      size={14}
-                      className="text-rose-400"
-                      fill="#f43f5e"
-                    />
-                  ))}
+            <div className="mb-4">
+              {!isCatalogueMode && (
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, index) => (
+                      <StarIcon key={index} size={20} className="text-amber-500" fill="#d97706" />
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-600 font-medium">(120 Bewertungen)</span>
                 </div>
-                <span className="text-xs text-gray-400">(120)</span>
-              </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              )}
+              <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
                 {product?.description}
               </p>
             </div>
 
             {/* Price & Stock */}
-            <div className="border-t border-b border-rose-100 py-3 mb-3">
+            <div className="border-t-2 border-b-2 border-amber-200/70 py-4 mb-4">
               {!isCatalogueMode ? (
-                <div className="flex items-end justify-between">
+                <div className="flex items-end justify-between gap-3">
                   <div>
                     <PriceView
                       price={product?.price}
                       discount={product?.discount}
-                      className="text-2xl font-bold"
+                      className="text-3xl sm:text-4xl font-extrabold"
                     />
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-                        product?.stock === 0 
-                          ? "bg-red-50 text-red-600" 
-                          : "bg-green-50 text-green-600"
-                      }`}>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span
+                        className={`px-3 py-1 text-sm font-bold rounded-full ${
+                          product?.stock === 0
+                            ? "bg-red-100 text-red-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
                         {(product?.stock as number) > 0 ? "Auf Lager" : "Ausverkauft"}
                       </span>
                       {product?.stock && product.stock > 0 && (
-                        <span className="text-xs text-gray-400">
-                          {product.stock} Stk.
+                        <span className="text-sm text-gray-600 font-medium">
+                          {product.stock} Stk. verfügbar
                         </span>
                       )}
                     </div>
@@ -170,12 +173,10 @@ const SingleProductPage = async ({
                   <FavoriteButton showProduct={true} product={product} />
                 </div>
               ) : (
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xl font-medium text-gray-600">
-                      {pricePlaceholder}
-                    </p>
-                    <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-50 text-amber-600">
+                    <p className="text-2xl font-bold text-gray-800">{pricePlaceholder}</p>
+                    <span className="inline-block mt-2 px-3 py-1 text-sm font-bold rounded-full bg-amber-100 text-amber-800">
                       Im Markt verfügbar
                     </span>
                   </div>
@@ -185,11 +186,11 @@ const SingleProductPage = async ({
             </div>
 
             {/* Action Button */}
-            <div className="mb-3">
+            <div className="mb-4">
               {!isCatalogueMode ? (
                 <AddToCartButton product={product} />
               ) : (
-                <MarketLocatorButton 
+                <MarketLocatorButton
                   brandSlug={brandSlug}
                   brandName={brandName}
                   label={productPageCta}
@@ -200,52 +201,62 @@ const SingleProductPage = async ({
             {/* Product Characteristics */}
             <ProductCharacteristics product={product} />
 
-            {/* Quick Actions */}
-            <div className="flex items-center justify-between gap-1 sm:gap-2 border-t border-rose-100 py-3">
-              {[
-                { icon: Scale, label: "Vergleichen" },
-                { icon: MessageCircle, label: "Fragen" },
-                { icon: Store, label: "Marktfinder" },
-                { icon: Share2, label: "Teilen" },
-              ].map((item, index) => (
-                <button
-                  key={index}
-                  className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-gray-500 hover:text-rose-500 transition-colors px-1 sm:px-2 py-1 rounded hover:bg-rose-50"
-                >
-                  <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span className="whitespace-nowrap">{item.label}</span>
-                </button>
-              ))}
+            {/* Quick Actions - Only Share button remains */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 border-t-2 border-amber-200/70 py-4">
+              <WhatsAppButton 
+                whatsappUrl={whatsappUrl} 
+                label="Fragen"
+                variant="button"
+              />
+              <ShareButton 
+                productName={product.name} 
+                productUrl={productUrl} 
+              />
             </div>
 
-            {/* Market Info */}
-            <div className="space-y-2">
-              <div className="flex items-start gap-3 bg-gradient-to-r from-rose-50/50 to-pink-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
-                <Store className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+            {/* Market Info - Removed WhatsApp Contact Section */}
+            <div className="space-y-3 mt-1">
+              {/* Phone Contact Section */}
+              <a
+                href={`tel:${storePhone.replace(/[^\d+]/g, "")}`}
+                className="flex items-start gap-4 bg-amber-700 rounded-xl px-4 py-4 hover:bg-amber-800 transition-colors"
+                aria-label={`Markt anrufen: ${storePhone}`}
+              >
+                <PhoneCall className="w-6 h-6 text-white flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Im Markt verfügbar</p>
-                  <p className="text-xs text-gray-400">Jetzt in Ihrem fundgrube Markt vorrätig</p>
+                  <p className="text-base font-bold text-white">Fragen zum Produkt?</p>
+                  <p className="text-lg font-extrabold text-white underline">{storePhone}</p>
+                </div>
+              </a>
+
+              <div className="flex items-start gap-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl px-4 py-4 border-2 border-amber-200/60">
+                <Store className="w-6 h-6 text-amber-800 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-base font-bold text-gray-900">Im Markt verfügbar</p>
+                  <p className="text-sm text-gray-600 mt-0.5">Jetzt in Ihrem Fundgrube Markt vorrätig</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 bg-gradient-to-r from-blue-50/50 to-rose-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
-                <Clock className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+
+              <div className="flex items-start gap-4 bg-gradient-to-r from-blue-50 to-amber-50 rounded-xl px-4 py-4 border-2 border-amber-200/60">
+                <Clock className="w-6 h-6 text-amber-800 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Öffnungszeiten</p>
-                  <p className="text-xs text-gray-400">Mo - Sa: 08:00 - 20:00 Uhr</p>
+                  <p className="text-base font-bold text-gray-900">Öffnungszeiten</p>
+                  <p className="text-sm text-gray-600 mt-0.5">Mo – Sa: 08:00 – 20:00 Uhr</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 bg-gradient-to-r from-amber-50/50 to-rose-50/50 rounded-lg px-3 py-2.5 border border-rose-100">
-                <MapPin className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+
+              <Link
+                href="/store"
+                className="flex items-start gap-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl px-4 py-4 border-2 border-amber-200/60 hover:border-amber-400 hover:bg-amber-100/60 transition-colors"
+              >
+                <MapPin className="w-6 h-6 text-amber-800 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Markt finden</p>
-                  <Link 
-                    href="/store"
-                    className="text-xs text-rose-500 hover:text-rose-600 font-medium transition-colors"
-                  >
-                    Nächsten fundgrube Markt finden →
-                  </Link>
+                  <p className="text-base font-bold text-gray-900">Markt finden</p>
+                  <p className="text-sm text-amber-800 font-semibold mt-0.5">
+                    Nächsten Fundgrube Markt finden →
+                  </p>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -254,7 +265,7 @@ const SingleProductPage = async ({
       {/* Related Products Section */}
       {relatedProducts && relatedProducts.length > 0 && (
         <Container>
-          <RelatedProducts 
+          <RelatedProducts
             products={relatedProducts}
             title="Das könnte Ihnen auch gefallen"
           />
@@ -263,7 +274,7 @@ const SingleProductPage = async ({
 
       {/* Recently Viewed Section */}
       <Container>
-        <RecentlyViewed 
+        <RecentlyViewed
           currentProductId={product._id}
           currentProduct={product}
           maxItems={8}
