@@ -172,7 +172,8 @@ const getGermanWeekday = (date: Date): string => {
 };
 
 const StorePage = ({ store }: StorePageProps) => {
-  const [openServices, setOpenServices] = useState<string[]>([]);
+  const [openServices, setOpenServices] = useState<string[]>(['vor-ort']);
+  const [openHoursExpanded, setOpenHoursExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [timezone, setTimezone] = useState<string>('Europe/Berlin');
 
@@ -243,6 +244,17 @@ const StorePage = ({ store }: StorePageProps) => {
   const getServiceIcon = (iconName: string) => {
     return serviceIcons[iconName] || serviceIcons.default;
   };
+
+  // Get today's opening hours
+  const getTodayHours = () => {
+    if (!currentTime || isNaN(currentTime.getTime())) {
+      return null;
+    }
+    const today = getGermanWeekday(currentTime);
+    return store.openingHours?.find(h => h.day === today) || null;
+  };
+
+  const todayHours = getTodayHours();
 
   // Format opening hours for display
   const getOpeningHoursDisplay = () => {
@@ -454,12 +466,48 @@ const StorePage = ({ store }: StorePageProps) => {
                     )}
                   </div>
 
-                  {/* Opening Hours */}
+                  {/* Opening Hours - Collapsible on mobile */}
                   <div className="mb-4">
-                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                      Öffnungszeiten
-                    </h3>
-                    {getOpeningHoursDisplay()}
+                    <button
+                      onClick={() => setOpenHoursExpanded(!openHoursExpanded)}
+                      className="w-full flex items-center justify-between group lg:cursor-default"
+                    >
+                      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Öffnungszeiten
+                      </h3>
+                      <span className="lg:hidden">
+                        {openHoursExpanded ? (
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                        )}
+                      </span>
+                    </button>
+                    
+                    {/* Mobile: Show only today's hours when collapsed */}
+                    <div className="lg:hidden">
+                      {!openHoursExpanded ? (
+                        todayHours ? (
+                          <div className="flex justify-between text-sm py-1 mt-1">
+                            <span className="text-gray-600">{todayHours.day}</span>
+                            <span className={todayHours.isClosed ? 'text-red-500' : 'text-gray-800 font-medium'}>
+                              {todayHours.isClosed ? 'Geschlossen' : todayHours.hours}
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 mt-1">Keine Öffnungszeiten</p>
+                        )
+                      ) : (
+                        <div className="mt-2">
+                          {getOpeningHoursDisplay()}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Desktop: Show all hours */}
+                    <div className="hidden lg:block mt-1">
+                      {getOpeningHoursDisplay()}
+                    </div>
                   </div>
 
                   {/* Contact */}
