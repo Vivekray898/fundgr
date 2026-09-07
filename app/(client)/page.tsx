@@ -17,6 +17,7 @@ import { GroceryFullBanner } from "@/components/HomePage/GroceryFullBanner";
 import HeroBannerSlider from "@/components/HomePage/HeroBannerSlider";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
+import HotProducts from "@/components/HomePage/HotProducts";
 
 // Fetch hero banner slides from Sanity
 async function getHeroSlides() {
@@ -64,6 +65,8 @@ const Home = async () => {
         
         {/* 3. PROMO BANNER - First promotional break */}
         <GroceryPromoBanners />
+
+        <HotProducts />
         
         {/* 4. WEEKLY DEALS - Product section with deals */}
         <GroceryWeeklyDeals products={dealProducts} />
