@@ -76,31 +76,37 @@ const ProductCard = ({ product }: { product: Product }) => {
           {product?.name}
         </Title>
         
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="flex items-center">
-            {[...Array(5)].map((_, index) => (
-              <StarIcon
-                key={index}
-                className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                  index < 4 ? "text-rose-400" : "text-gray-300"
-                }`}
-                fill={index < 4 ? "#f43f5e" : "#d1d5db"}
-              />
-            ))}
+        {/* Reviews - Hidden in catalogue mode */}
+        {!enabled && (
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center">
+              {[...Array(5)].map((_, index) => (
+                <StarIcon
+                  key={index}
+                  className={`w-3 h-3 sm:w-4 sm:h-4 ${
+                    index < 4 ? "text-rose-400" : "text-gray-300"
+                  }`}
+                  fill={index < 4 ? "#f43f5e" : "#d1d5db"}
+                />
+              ))}
+            </div>
+            <p className="text-gray-400 text-[10px] sm:text-xs tracking-wide">5 Reviews</p>
           </div>
-          <p className="text-gray-400 text-[10px] sm:text-xs tracking-wide">5 Reviews</p>
-        </div>
+        )}
 
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <p className="font-medium text-gray-600 text-[10px] sm:text-xs">In Stock</p>
-          <p
-            className={`text-[10px] sm:text-xs ${
-              product?.stock === 0 ? "text-red-500" : "text-rose-500 font-semibold"
-            }`}
-          >
-            {(product?.stock as number) > 0 ? product?.stock : "unavailable"}
-          </p>
-        </div>
+        {/* Stock - Hidden in catalogue mode */}
+        {!enabled && (
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <p className="font-medium text-gray-600 text-[10px] sm:text-xs">In Stock</p>
+            <p
+              className={`text-[10px] sm:text-xs ${
+                product?.stock === 0 ? "text-red-500" : "text-rose-500 font-semibold"
+              }`}
+            >
+              {(product?.stock as number) > 0 ? product?.stock : "unavailable"}
+            </p>
+          </div>
+        )}
 
         {/* Price - Conditional rendering */}
         {!enabled ? (

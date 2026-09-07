@@ -1,18 +1,11 @@
 // components/HomePage/HeroBannerSlider.tsx
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import type { Swiper as SwiperType } from 'swiper';
-import { ChevronLeft, ChevronRight, ArrowRight, Pause, Play } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useBanners } from '@/components/hooks/useBanners';
-
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
 
 export interface HeroSlide {
   id: string;
@@ -29,7 +22,6 @@ export interface HeroSlide {
 }
 
 interface HeroBannerSliderProps {
-  autoplayMs?: number;
   fallbackSlides?: HeroSlide[];
 }
 
@@ -88,20 +80,9 @@ const getBadgeColor = (label: string): string => {
 };
 
 const HeroBannerSlider = ({ 
-  autoplayMs = 5000,
   fallbackSlides = DEFAULT_SLIDES
 }: HeroBannerSliderProps) => {
-  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const prefersReducedMotion = useRef(false);
-
   const { data: bannerData } = useBanners('hero');
-
-  useEffect(() => {
-    prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion.current) setIsPlaying(false);
-  }, []);
 
   const mapBannersToSlides = (banners: any[]): HeroSlide[] => {
     return banners.map((banner) => ({
@@ -123,136 +104,74 @@ const HeroBannerSlider = ({
     ? mapBannersToSlides(bannerData)
     : fallbackSlides;
 
-  const toggleAutoplay = () => {
-    if (!swiperInstance) return;
-    if (isPlaying) {
-      swiperInstance.autoplay.stop();
-    } else {
-      swiperInstance.autoplay.start();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
   if (!slides || slides.length === 0) return null;
 
   return (
     <section className="hbs-section hbs-fade-in">
       <div className="hbs-wrapper">
-        {/* Banner Slider */}
-        <div className="hbs-slider-wrap">
-          <Swiper
-            modules={[Navigation, Pagination, Autoplay]}
-            onSwiper={setSwiperInstance}
-            onSlideChange={(s) => setActiveIndex(s.realIndex)}
-            navigation={{ 
-              prevEl: '.hbs-prev', 
-              nextEl: '.hbs-next' 
-            }}
-            pagination={{ 
-              el: '.hbs-pagination-container', 
-              clickable: true,
-              bulletClass: 'hbs-dot',
-              bulletActiveClass: 'hbs-dot-active',
-              renderBullet: (index, className) => {
-                return `<button class="${className}" aria-label="Go to slide ${index + 1}"></button>`;
-              }
-            }}
-            autoplay={
-              prefersReducedMotion.current
-                ? false
-                : { delay: autoplayMs, disableOnInteraction: false }
-            }
-            loop={slides.length > 1}
-            speed={700}
-            grabCursor={true}
-            touchRatio={1.5}
-            resistanceRatio={0.85}
-          >
-            {slides.map((slide) => (
-              <SwiperSlide key={slide.id}>
-                <div className="hbs-slide">
-                  <Image
-                    src={slide.image}
-                    alt={slide.title}
-                    fill
-                    priority
-                    className="hbs-img hbs-img-desktop"
-                    style={{ objectFit: 'cover' }}
-                    sizes="100vw"
-                  />
-                  <Image
-                    src={slide.imageMobile || slide.image}
-                    alt={slide.title}
-                    fill
-                    priority
-                    className="hbs-img hbs-img-mobile"
-                    style={{ objectFit: 'cover' }}
-                    sizes="100vw"
-                  />
+        {/* Stacked Banners - No Sliding */}
+        <div className="hbs-stack">
+          {slides.map((slide, index) => (
+            <div key={slide.id} className="hbs-banner-item">
+              <div className="hbs-slide">
+                {/* Desktop Image */}
+                <Image
+                  src={slide.image}
+                  alt={slide.title}
+                  fill
+                  priority={index === 0}
+                  className="hbs-img hbs-img-desktop"
+                  style={{ objectFit: 'cover' }}
+                  sizes="100vw"
+                />
+                {/* Mobile Image */}
+                <Image
+                  src={slide.imageMobile || slide.image}
+                  alt={slide.title}
+                  fill
+                  priority={index === 0}
+                  className="hbs-img hbs-img-mobile"
+                  style={{ objectFit: 'cover' }}
+                  sizes="100vw"
+                />
 
-                  <div className="hbs-scrim" />
+                <div className="hbs-scrim" />
 
-                  <div className="hbs-content">
-                    <div className="hbs-panel">
-                      {slide.badgeLabel && (
-                        <span 
-                          className="hbs-badge"
-                          style={{ backgroundColor: slide.badgeColor || '#1B8057' }}
-                        >
-                          {slide.badgeLabel}
-                        </span>
-                      )}
-                      
-                      <h2 className="hbs-title">{slide.title}</h2>
-                      
-                      {slide.subtitle && (
-                        <p className="hbs-subtitle">{slide.subtitle}</p>
-                      )}
-                      
-                      {slide.price && (
-                        <div className="hbs-price-wrap">
-                          {slide.originalPrice && (
-                            <span className="hbs-price-original">{slide.originalPrice}</span>
-                          )}
-                          <span className="hbs-price">{slide.price}</span>
-                        </div>
-                      )}
-                      
-                      <Link href={slide.ctaHref} className="hbs-cta">
-                        {slide.ctaText}
-                        <ArrowRight size={16} />
-                      </Link>
-                    </div>
+                <div className="hbs-content">
+                  <div className="hbs-panel">
+                    {slide.badgeLabel && (
+                      <span 
+                        className="hbs-badge"
+                        style={{ backgroundColor: slide.badgeColor || '#1B8057' }}
+                      >
+                        {slide.badgeLabel}
+                      </span>
+                    )}
+                    
+                    <h2 className="hbs-title">{slide.title}</h2>
+                    
+                    {slide.subtitle && (
+                      <p className="hbs-subtitle">{slide.subtitle}</p>
+                    )}
+                    
+                    {slide.price && (
+                      <div className="hbs-price-wrap">
+                        {slide.originalPrice && (
+                          <span className="hbs-price-original">{slide.originalPrice}</span>
+                        )}
+                        <span className="hbs-price">{slide.price}</span>
+                      </div>
+                    )}
+                    
+                    <Link href={slide.ctaHref} className="hbs-cta">
+                      {slide.ctaText}
+                      <ArrowRight size={16} />
+                    </Link>
                   </div>
                 </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-
-          {/* Navigation Arrows */}
-          <button className="hbs-arrow hbs-prev" aria-label="Previous">
-            <ChevronLeft size={20} />
-          </button>
-          <button className="hbs-arrow hbs-next" aria-label="Next">
-            <ChevronRight size={20} />
-          </button>
-        </div>
-
-        {/* Pagination & Controls */}
-        <div className="hbs-controls">
-          <div className="hbs-controls-inner">
-            <button
-              className="hbs-playpause"
-              onClick={toggleAutoplay}
-              aria-label={isPlaying ? 'Automatischen Wechsel pausieren' : 'Automatischen Wechsel starten'}
-            >
-              {isPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
-            </button>
-
-            <div className="hbs-pagination-container" />
-
-            <div className="hbs-controls-spacer" />
-          </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -260,13 +179,14 @@ const HeroBannerSlider = ({
         /* ── Mobile First ── */
         .hbs-section {
           width: 100%;
+          padding: 0 4px;
         }
 
         .hbs-wrapper {
           width: 100%;
         }
 
-        /* Fade in animation to prevent sudden snapping */
+        /* Fade in animation */
         .hbs-fade-in {
           animation: hbsFadeIn 0.6s ease-out forwards;
         }
@@ -276,20 +196,27 @@ const HeroBannerSlider = ({
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Slider Wrapper ── */
-        .hbs-slider-wrap {
-          position: relative;
+        /* ── Stack Container ── */
+        .hbs-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
           width: 100%;
-          overflow: hidden;
-          border-radius: 12px;
         }
 
-        /* ── Slider ── */
+        .hbs-banner-item {
+          width: 100%;
+          border-radius: 10px;
+          overflow: hidden;
+        }
+
+        /* ── Slide/Banner ── */
         .hbs-slide {
           position: relative;
           width: 100%;
-          height: 280px;
+          height: 200px;
           overflow: hidden;
+          border-radius: 10px;
         }
 
         .hbs-img {
@@ -309,7 +236,7 @@ const HeroBannerSlider = ({
             to right,
             rgba(0, 0, 0, 0.7) 0%,
             rgba(0, 0, 0, 0.3) 60%,
-            rgba(0, 0, 0, 0.1) 100%
+            rgba(0, 0, 0, 0.05) 100%
           );
           z-index: 1;
         }
@@ -321,7 +248,7 @@ const HeroBannerSlider = ({
           z-index: 2;
           display: flex;
           align-items: center;
-          padding: 20px 24px;
+          padding: 16px 18px;
         }
 
         .hbs-panel {
@@ -329,17 +256,17 @@ const HeroBannerSlider = ({
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          gap: 6px;
+          gap: 4px;
           position: relative;
           z-index: 2;
         }
 
         .hbs-badge {
           display: inline-block;
-          padding: 3px 12px;
+          padding: 2px 10px;
           border-radius: 4px;
           color: #fff;
-          font-size: 10px;
+          font-size: 9px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -349,7 +276,7 @@ const HeroBannerSlider = ({
         .hbs-title {
           margin: 0;
           color: #fff;
-          font-size: 18px;
+          font-size: 16px;
           font-weight: 700;
           line-height: 1.2;
           letter-spacing: -0.3px;
@@ -358,27 +285,31 @@ const HeroBannerSlider = ({
         .hbs-subtitle {
           margin: 0;
           color: rgba(255, 255, 255, 0.85);
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 400;
-          line-height: 1.4;
+          line-height: 1.3;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .hbs-price-wrap {
           display: flex;
           align-items: center;
-          gap: 10px;
-          margin-top: 4px;
+          gap: 8px;
+          margin-top: 2px;
         }
 
         .hbs-price-original {
           color: rgba(255, 255, 255, 0.5);
-          font-size: 13px;
+          font-size: 11px;
           text-decoration: line-through;
         }
 
         .hbs-price {
           color: #fff;
-          font-size: 20px;
+          font-size: 17px;
           font-weight: 700;
         }
 
@@ -386,181 +317,86 @@ const HeroBannerSlider = ({
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          margin-top: 8px;
-          padding: 8px 20px;
+          margin-top: 6px;
+          padding: 6px 16px;
           background: #fff;
           color: #1a1a1a;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 600;
           border-radius: 30px;
           text-decoration: none;
-          transition: background-color 200ms ease, transform 200ms ease;
+          transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
         }
         .hbs-cta:hover {
           background: #f0f0f0;
           transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        /* ── Arrows ── */
-        .hbs-arrow {
-          display: none;
-        }
-
-        /* ── Controls ── */
-        .hbs-controls {
-          padding: 14px 16px 4px 16px;
-          background: transparent;
-        }
-
-        .hbs-controls-inner {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          max-width: 400px;
-          margin: 0 auto;
-          gap: 12px;
-        }
-
-        .hbs-playpause {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          border: 1px solid #d0d0d0;
-          background: #fff;
-          color: #333;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: background-color 200ms ease, transform 200ms ease, border-color 200ms ease;
-          flex-shrink: 0;
-          padding: 0;
-        }
-        .hbs-playpause:hover {
-          background: #f0f0f0;
-          border-color: #aaa;
-          transform: scale(1.05);
-        }
-        .hbs-playpause:active {
-          transform: scale(0.95);
-        }
-
-        /* ── Pagination Dots ── */
-        .hbs-pagination-container {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        .hbs-pagination-container .hbs-dot {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background: #d4d4d4;
-          cursor: pointer;
-          border: 2px solid transparent;
-          padding: 0;
-          transition: all 300ms ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .hbs-pagination-container .hbs-dot:hover {
-          background: #d4a853;
-          transform: scale(1.1);
-        }
-
-        .hbs-pagination-container .hbs-dot-active {
-          background: #F4B400;
-          border-color: #d4a853;
-          width: 28px;
-          border-radius: 6px;
-          transform: scale(1);
-        }
-
-        .hbs-controls-spacer {
-          width: 28px;
-          flex-shrink: 0;
-        }
-
-        /* ── Tablet ── */
+        /* ── Tablet (640px - 1023px) ── */
         @media (min-width: 640px) {
-          .hbs-slide { height: 340px; }
-          .hbs-content { padding: 30px 40px; }
-          .hbs-title { font-size: 24px; }
-          .hbs-subtitle { font-size: 14px; }
-          .hbs-price { font-size: 24px; }
-          .hbs-cta { font-size: 13px; padding: 10px 24px; }
-          .hbs-badge { font-size: 11px; padding: 4px 14px; }
-          .hbs-controls { padding: 16px 20px 4px 20px; }
-          .hbs-controls-inner { max-width: 450px; }
-          .hbs-pagination-container .hbs-dot { width: 11px; height: 11px; }
-          .hbs-pagination-container .hbs-dot-active { width: 30px; }
+          .hbs-section { padding: 0 8px; }
+          .hbs-stack { gap: 16px; }
+          .hbs-slide { height: 240px; border-radius: 12px; }
+          .hbs-banner-item { border-radius: 12px; }
+          .hbs-content { padding: 24px 32px; }
+          .hbs-title { font-size: 20px; }
+          .hbs-subtitle { font-size: 13px; }
+          .hbs-price { font-size: 20px; }
+          .hbs-cta { font-size: 12px; padding: 8px 20px; }
+          .hbs-badge { font-size: 10px; padding: 3px 12px; }
         }
 
-        /* ── Desktop ── */
-        @media (min-width: 992px) {
-          .hbs-slide { height: 400px; }
+        /* ── Desktop (1024px - 1279px) ── */
+        @media (min-width: 1024px) {
+          .hbs-section { padding: 0 12px; }
+          .hbs-stack { gap: 20px; }
+          .hbs-slide { height: 340px; border-radius: 14px; }
+          .hbs-banner-item { border-radius: 14px; }
 
           .hbs-img-mobile { display: none; }
           .hbs-img-desktop { display: block; }
 
+          .hbs-content { padding: 32px 48px; }
+          .hbs-panel { max-width: 55%; }
+          .hbs-title { font-size: 28px; }
+          .hbs-subtitle { font-size: 14px; }
+          .hbs-price { font-size: 24px; }
+          .hbs-cta { font-size: 13px; padding: 10px 24px; }
+          .hbs-badge { font-size: 11px; padding: 4px 14px; }
+          .hbs-price-original { font-size: 13px; }
+        }
+
+        /* ── Large Desktop (1280px - 1535px) ── */
+        @media (min-width: 1280px) {
+          .hbs-section { padding: 0 16px; }
+          .hbs-stack { gap: 24px; }
+          .hbs-slide { height: 400px; border-radius: 16px; }
+          .hbs-banner-item { border-radius: 16px; }
+          .hbs-title { font-size: 34px; }
           .hbs-content { padding: 40px 60px; }
           .hbs-panel { max-width: 50%; }
-          .hbs-title { font-size: 32px; }
-          .hbs-subtitle { font-size: 15px; }
           .hbs-price { font-size: 28px; }
           .hbs-cta { font-size: 14px; padding: 12px 28px; }
           .hbs-badge { font-size: 12px; padding: 4px 16px; }
-
-          /* Show arrows on desktop */
-          .hbs-arrow {
-            display: flex;
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 3;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(255, 255, 255, 0.9);
-            color: #1a1a1a;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 200ms ease, opacity 200ms ease;
-            opacity: 0;
-            pointer-events: none;
-          }
-          .hbs-slider-wrap:hover .hbs-arrow {
-            opacity: 1;
-            pointer-events: auto;
-          }
-          .hbs-arrow:hover {
-            background: #fff;
-          }
-          .hbs-prev { left: 16px; }
-          .hbs-next { right: 16px; }
-
-          .hbs-controls { padding: 18px 24px 4px 24px; }
-          .hbs-controls-inner { max-width: 500px; gap: 16px; }
-          .hbs-playpause { width: 32px; height: 32px; }
-          .hbs-pagination-container .hbs-dot { width: 12px; height: 12px; }
-          .hbs-pagination-container .hbs-dot-active { width: 32px; }
-          .hbs-controls-spacer { width: 32px; }
+          .hbs-subtitle { font-size: 15px; }
+          .hbs-price-original { font-size: 14px; }
         }
 
-        /* ── Large Desktop ── */
-        @media (min-width: 1200px) {
-          .hbs-slide { height: 460px; }
-          .hbs-title { font-size: 38px; }
-          .hbs-content { padding: 50px 80px; }
+        /* ── Extra Large Desktop (1536px+) ── */
+        @media (min-width: 1536px) {
+          .hbs-section { padding: 0 20px; }
+          .hbs-stack { gap: 28px; }
+          .hbs-slide { height: 460px; border-radius: 18px; }
+          .hbs-banner-item { border-radius: 18px; }
+          .hbs-title { font-size: 40px; }
+          .hbs-content { padding: 48px 72px; }
+          .hbs-panel { max-width: 48%; }
           .hbs-price { font-size: 32px; }
-          .hbs-arrow { width: 44px; height: 44px; }
-          .hbs-prev { left: 20px; }
-          .hbs-next { right: 20px; }
-          .hbs-controls { padding: 20px 28px 4px 28px; }
+          .hbs-cta { font-size: 15px; padding: 14px 32px; }
+          .hbs-badge { font-size: 13px; padding: 5px 18px; }
+          .hbs-subtitle { font-size: 16px; }
+          .hbs-price-original { font-size: 15px; }
         }
       `}</style>
     </section>

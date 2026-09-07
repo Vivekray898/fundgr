@@ -1,4 +1,4 @@
-// sanity/schemas/product.ts
+// sanity/schemas/product.ts - Add hidden conditions
 import { TrolleyIcon } from "@sanity/icons";
 import { defineField, defineType } from "sanity";
 
@@ -49,23 +49,29 @@ export const productType = defineType({
       type: "datetime",
       description: "When does this deal end? (Optional)",
     }),
+    // These fields should be hidden in catalogue mode
+    // Note: In Sanity, you'd need a custom component or document action
+    // to hide these conditionally. This is a suggestion for the schema.
     defineField({
       name: "originalPrice",
       title: "Original Price (UVP)",
       type: "number",
       description: "The original price before discount",
+      // Hidden in catalogue mode - would need a custom solution
     }),
     defineField({
       name: "price",
       title: "Price",
       type: "number",
       validation: (Rule) => Rule.required().min(0),
+      // Hidden in catalogue mode - would need a custom solution
     }),
     defineField({
       name: "discount",
       title: "Discount",
       type: "number",
       validation: (Rule) => Rule.required().min(0),
+      // Hidden in catalogue mode - would need a custom solution
     }),
     defineField({
       name: "categories",
@@ -78,6 +84,7 @@ export const productType = defineType({
       title: "Stock",
       type: "number",
       validation: (Rule) => Rule.min(0),
+      // Hidden in catalogue mode - would need a custom solution
     }),
     defineField({
       name: "brand",
