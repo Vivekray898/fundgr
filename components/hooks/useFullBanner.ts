@@ -21,7 +21,7 @@ export function useFullBanner() {
     queryKey: ['full-banner'],
     queryFn: async () => {
       const query = `
-        *[_type == "banner" && isActive == true && placement == "full-banner"] | order(order asc)[0] {
+        *[_type == "banner" && isActive == true && placement == "full-banner"] | order(order asc) {
           _id,
           title,
           description,
@@ -35,30 +35,21 @@ export function useFullBanner() {
       
       const data = await client.fetch(query);
       
-      if (!data) {
-        // Return default/fallback data if no banner exists in Sanity
-        return {
-          _id: 'default',
-          title: 'Your Favorite Groceries\nin One Place',
-          description: 'Grocery shopping made simple with fresh produce, pantry staples, and fast delivery right to your door.',
-          cta: 'Shop Now',
-          href: '/shop',
-          image: '/grocery-shop/full-width-banner/full-width-banner1.webp',
-          isActive: true,
-          order: 0,
-        } as FullBannerData;
+      if (!data || data.length === 0) {
+        // Return empty array if no banner exists in Sanity
+        return [];
       }
       
-      return {
-        _id: data._id,
-        title: data.title || 'Your Favorite Groceries\nin One Place',
-        description: data.description || 'Grocery shopping made simple with fresh produce, pantry staples, and fast delivery right to your door.',
-        cta: data.cta || 'Shop Now',
-        href: data.href || '/shop',
-        image: urlFor(data.image).url(),
-        isActive: data.isActive ?? true,
-        order: data.order || 0,
-      } as FullBannerData;
+      return data.map((banner: any) => ({
+        _id: banner._id,
+        title: banner.title || 'Your Favorite Groceries in One Place',
+        description: banner.description || 'Grocery shopping made simple with fresh produce, pantry staples, and fast delivery right to your door.',
+        cta: banner.cta || 'Shop Now',
+        href: banner.href || '/shop',
+        image: urlFor(banner.image).url(),
+        isActive: banner.isActive ?? true,
+        order: banner.order || 0,
+      })) as FullBannerData[];
     },
     staleTime: 5 * 60 * 1000,
   });
