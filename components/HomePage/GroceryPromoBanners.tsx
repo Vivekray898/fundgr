@@ -72,13 +72,11 @@ export function GroceryPromoBanners() {
                   className="gpb-image"
                   style={{ objectFit: 'cover' }}
                   sizes="(min-width: 992px) 50vw, 100vw"
-                  quality={75}
+                  quality={95}
                 />
               </div>
               <div className="gpb-content">
-                {banner.tagline && (
-                  <span className="gpb-tagline">{banner.tagline}</span>
-                )}
+                <span className="gpb-tagline">{banner.tagline}</span>
                 <h3 className="gpb-title">{banner.title}</h3>
                 <span className="gpb-cta">{banner.cta}</span>
               </div>

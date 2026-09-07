@@ -58,9 +58,9 @@ const Home = async () => {
 
        {/* Hero Banner Slider - Pass slides from Sanity */}
         <HeroBannerSlider slides={heroSlides} autoplayMs={6000} />
-        
-        {/* 2. CATEGORIES - Quick navigation */}
-        <HomeCategories categories={categories} />
+
+        {/* 8. PRODUCT GRID - Main product showcase */}
+        <ProductGrid />
         
         {/* 3. PROMO BANNER - First promotional break */}
         <GroceryPromoBanners />
@@ -68,8 +68,8 @@ const Home = async () => {
         {/* 4. WEEKLY DEALS - Product section with deals */}
         <GroceryWeeklyDeals products={dealProducts} />
 
-        {/* 8. PRODUCT GRID - Main product showcase */}
-        <ProductGrid />
+        {/* 2. CATEGORIES - Quick navigation */}
+        <HomeCategories categories={categories} />
         
         {/* 5. COUNTDOWN BANNER - Promotional banner with urgency */}
         <GroceryCountdownBanner />

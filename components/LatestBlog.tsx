@@ -15,45 +15,45 @@ const LatestBlog = async () => {
   
   return (
     <div className="mb-8 lg:mb-16">
-      <Title>Neueste Blogartikel</Title>
+      <Title className="text-[#1a1a1a]">Neueste Blogartikel</Title>
       
-      {/* Mobile: Compact Horizontal Scroll */}
+      {/* Mobile: Larger Cards - 1.3 cards visible */}
       <div className="lg:hidden overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] mt-2">
-        <div className="flex gap-2.5">
+        <div className="flex gap-3">
           {blogs?.map((blog) => (
             <div 
               key={blog?._id} 
-              className="rounded-lg overflow-hidden bg-white border border-gray-100 flex-shrink-0 w-[160px] snap-start shadow-sm hover:shadow-md transition-shadow"
+              className="rounded-xl overflow-hidden bg-white/80 backdrop-blur-sm border border-[#E8E3D8] flex-shrink-0 w-[72vw] max-w-[280px] snap-start shadow-sm hover:shadow-md transition-shadow"
             >
               {blog?.mainImage && (
-                <Link href={`/blog/${blog?.slug?.current}`} className="block relative">
+                <Link href={`/riff-raff/${blog?.slug?.current}`} className="block relative">
                   <Image
                     src={urlFor(blog?.mainImage).url()}
                     alt={blog?.title || "Blog"}
-                    width={200}
-                    height={120}
-                    className="w-full h-24 object-cover"
+                    width={400}
+                    height={200}
+                    className="w-full h-40 object-cover"
                   />
                 </Link>
               )}
-              <div className="p-2.5">
-                <div className="flex flex-wrap items-center gap-1.5 mb-1">
+              <div className="p-3.5">
+                <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                   {blog?.blogcategories?.slice(0, 2).map((item, index) => (
                     <span
                       key={index}
-                      className="text-[8px] px-1.5 py-0.5 bg-rose-50 text-rose-500 font-medium rounded-full"
+                      className="text-[9px] px-2 py-0.5 bg-[#F5F0E8] text-[#B8923A] font-medium rounded-full border border-[#E8E3D8]"
                     >
                       {item?.title}
                     </span>
                   ))}
-                  <span className="flex items-center gap-0.5 text-[8px] text-gray-400">
-                    <Calendar size={10} />
+                  <span className="flex items-center gap-0.5 text-[9px] text-[#8A7A6A]">
+                    <Calendar size={10} className="text-[#8A7A6A]" />
                     {dayjs(blog.publishedAt).format("DD.MM.")}
                   </span>
                 </div>
                 <Link
-                  href={`/blog/${blog?.slug?.current}`}
-                  className="text-[11px] font-medium tracking-wide line-clamp-2 hover:text-rose-500 transition-colors leading-tight"
+                  href={`/riff-raff/${blog?.slug?.current}`}
+                  className="text-sm font-semibold text-[#1a1a1a] line-clamp-2 hover:text-[#B8923A] transition-colors leading-snug"
                 >
                   {blog?.title}
                 </Link>
@@ -63,15 +63,15 @@ const LatestBlog = async () => {
         </div>
       </div>
 
-      {/* Tablet: Slightly larger cards */}
+      {/* Tablet: Grid */}
       <div className="hidden md:grid lg:hidden grid-cols-2 gap-3 mt-3">
         {blogs?.slice(0, 4).map((blog) => (
           <div 
             key={blog?._id} 
-            className="rounded-lg overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+            className="rounded-lg overflow-hidden bg-white/80 backdrop-blur-sm border border-[#E8E3D8] shadow-sm hover:shadow-md transition-shadow"
           >
             {blog?.mainImage && (
-              <Link href={`/blog/${blog?.slug?.current}`} className="block relative">
+              <Link href={`/riff-raff/${blog?.slug?.current}`} className="block relative">
                 <Image
                   src={urlFor(blog?.mainImage).url()}
                   alt={blog?.title || "Blog"}
@@ -86,19 +86,19 @@ const LatestBlog = async () => {
                 {blog?.blogcategories?.slice(0, 2).map((item, index) => (
                   <span
                     key={index}
-                    className="text-[9px] px-2 py-0.5 bg-rose-50 text-rose-500 font-medium rounded-full"
+                    className="text-[9px] px-2 py-0.5 bg-[#F5F0E8] text-[#B8923A] font-medium rounded-full border border-[#E8E3D8]"
                   >
                     {item?.title}
                   </span>
                 ))}
-                <span className="flex items-center gap-1 text-[9px] text-gray-400">
-                  <Calendar size={11} />
+                <span className="flex items-center gap-1 text-[9px] text-[#8A7A6A]">
+                  <Calendar size={11} className="text-[#8A7A6A]" />
                   {dayjs(blog.publishedAt).format("DD.MM.YYYY")}
                 </span>
               </div>
               <Link
-                href={`/blog/${blog?.slug?.current}`}
-                className="text-xs font-semibold tracking-wide line-clamp-2 hover:text-rose-500 transition-colors leading-snug"
+                href={`/riff-raff/${blog?.slug?.current}`}
+                className="text-xs font-semibold text-[#1a1a1a] line-clamp-2 hover:text-[#B8923A] transition-colors leading-snug"
               >
                 {blog?.title}
               </Link>
@@ -112,10 +112,10 @@ const LatestBlog = async () => {
         {blogs?.slice(0, 4).map((blog) => (
           <div 
             key={blog?._id} 
-            className="rounded-xl overflow-hidden bg-white border border-gray-100 hover:shadow-lg transition-all hover:-translate-y-0.5"
+            className="rounded-xl overflow-hidden bg-white/80 backdrop-blur-sm border border-[#E8E3D8] hover:shadow-lg transition-all hover:border-[#D4A853] hover:-translate-y-0.5"
           >
             {blog?.mainImage && (
-              <Link href={`/blog/${blog?.slug?.current}`} className="block relative overflow-hidden">
+              <Link href={`/riff-raff/${blog?.slug?.current}`} className="block relative overflow-hidden">
                 <Image
                   src={urlFor(blog?.mainImage).url()}
                   alt={blog?.title || "Blog"}
@@ -130,19 +130,19 @@ const LatestBlog = async () => {
                 {blog?.blogcategories?.slice(0, 2).map((item, index) => (
                   <span
                     key={index}
-                    className="px-2 py-0.5 bg-rose-50 text-rose-500 font-medium rounded-full text-[10px]"
+                    className="px-2 py-0.5 bg-[#F5F0E8] text-[#B8923A] font-medium rounded-full text-[10px] border border-[#E8E3D8]"
                   >
                     {item?.title}
                   </span>
                 ))}
-                <span className="flex items-center gap-1 text-gray-400 text-[10px]">
-                  <Calendar size={12} />
+                <span className="flex items-center gap-1 text-[#8A7A6A] text-[10px]">
+                  <Calendar size={12} className="text-[#8A7A6A]" />
                   {dayjs(blog.publishedAt).format("DD.MM.YYYY")}
                 </span>
               </div>
               <Link
-                href={`/blog/${blog?.slug?.current}`}
-                className="text-sm font-semibold tracking-wide mt-2 line-clamp-2 hover:text-rose-500 transition-colors"
+                href={`/riff-raff/${blog?.slug?.current}`}
+                className="text-sm font-semibold text-[#1a1a1a] mt-2 line-clamp-2 hover:text-[#B8923A] transition-colors"
               >
                 {blog?.title}
               </Link>

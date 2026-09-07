@@ -12,22 +12,22 @@ const storeServices = [
   {
     title: "Marktabholung",
     description: "Bestellen & im Markt abholen",
-    icon: <Store size={28} className="text-amber-700" />,
+    icon: <Store size={24} className="text-amber-700" />,
   },
   {
     title: "Persönliche Beratung",
     description: "Unser Team hilft Ihnen gerne weiter",
-    icon: <Headset size={28} className="text-amber-700" />,
+    icon: <Headset size={24} className="text-amber-700" />,
   },
   {
     title: "Parkplätze",
     description: "Kostenlose Parkplätze direkt vor Ort",
-    icon: <Car size={28} className="text-amber-700" />,
+    icon: <Car size={24} className="text-amber-700" />,
   },
   {
     title: "Marktöffnungszeiten",
     description: "Mo-Sa: 9:00-20:00 Uhr",
-    icon: <Clock size={28} className="text-amber-700" />,
+    icon: <Clock size={24} className="text-amber-700" />,
   },
 ];
 
@@ -86,36 +86,36 @@ const ShopByBrands = async () => {
         </Link>
       </div>
 
-      {/* Brands Grid - Horizontal Scroll on Mobile, Grid on Desktop */}
+      {/* Brands Grid - Horizontal Scroll on Mobile - Larger Cards */}
       <div className="lg:hidden overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <div className="flex gap-2 sm:gap-3">
+        <div className="flex gap-3 sm:gap-4">
           {displayBrands?.map((brand: BrandItem) => (
             <Link
               key={brand?._id}
               href={{ pathname: "/shop", query: { brand: brand?.slug?.current } }}
-              className="group bg-white rounded-xl border border-amber-200/50 w-[100px] sm:w-[140px] h-16 sm:h-24 flex flex-col items-center justify-center overflow-hidden hover:shadow-lg hover:shadow-amber-100/50 hover:border-amber-300 transition-all duration-300 relative snap-start flex-shrink-0"
+              className="group bg-white rounded-xl border border-amber-200/50 w-[140px] sm:w-[180px] h-24 sm:h-32 flex flex-col items-center justify-center overflow-hidden hover:shadow-lg hover:shadow-amber-100/50 hover:border-amber-300 transition-all duration-300 relative snap-start flex-shrink-0"
             >
               {brand?.logo ? (
                 <Image
                   src={urlFor(brand?.logo).url()}
                   alt={brand?.name || "Marke"}
-                  width={80}
-                  height={40}
-                  className="w-12 sm:w-20 h-8 sm:h-12 object-contain group-hover:scale-105 transition-transform duration-300"
+                  width={120}
+                  height={60}
+                  className="w-16 sm:w-28 h-10 sm:h-16 object-contain group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="text-[9px] sm:text-xs text-gray-400 font-medium px-2 text-center">
+                <div className="text-xs sm:text-sm text-gray-400 font-medium px-2 text-center">
                   {brand?.name || "Unbenannte Marke"}
                 </div>
               )}
               {brand?.featured && (
-                <div className="absolute top-1 right-1">
-                  <Star className="w-2 h-2 text-amber-500 fill-amber-500" />
+                <div className="absolute top-1.5 right-1.5">
+                  <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
                 </div>
               )}
               {brand?.marketLocation && (
-                <div className="absolute bottom-1 right-1">
-                  <MapPin className="w-1.5 h-1.5 text-emerald-600" />
+                <div className="absolute bottom-1.5 right-1.5">
+                  <MapPin className="w-2 h-2 text-emerald-600" />
                 </div>
               )}
             </Link>
@@ -158,43 +158,43 @@ const ShopByBrands = async () => {
         ))}
       </div>
 
-      {/* Store Services - Mobile: Compact Horizontal Scroll, Desktop: Grid */}
-      <div className="mt-4 sm:mt-8 p-2 sm:p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-amber-200/30">
+      {/* Store Services - Half the size of brand cards */}
+      <div className="mt-3 sm:mt-5 p-2 sm:p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-amber-200/30">
         <div className="lg:hidden overflow-x-auto scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="flex gap-2">
             {storeServices?.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 group hover:bg-amber-50/60 p-2 rounded-lg transition-colors min-w-[120px] snap-start flex-shrink-0"
+                className="flex items-center gap-2 group hover:bg-amber-50/60 p-1.5 rounded-lg transition-colors min-w-[100px] snap-start flex-shrink-0"
               >
                 <span className="inline-flex scale-100 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                   {item?.icon}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold text-gray-800 truncate">
+                  <p className="text-[9px] font-semibold text-gray-800 truncate">
                     {item?.title}
                   </p>
-                  <p className="text-[9px] text-gray-500 truncate">{item?.description}</p>
+                  <p className="text-[8px] text-gray-500 truncate">{item?.description}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="hidden lg:grid grid-cols-4 gap-4">
+        <div className="hidden lg:grid grid-cols-4 gap-3">
           {storeServices?.map((item, index) => (
             <div
               key={index}
-              className="flex flex-col items-center text-center gap-2 group hover:bg-amber-50/60 p-4 rounded-lg transition-colors"
+              className="flex flex-col items-center text-center gap-1.5 group hover:bg-amber-50/60 p-2.5 rounded-lg transition-colors"
             >
               <span className="inline-flex scale-100 group-hover:scale-110 transition-transform duration-300">
                 {item?.icon}
               </span>
               <div>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-xs font-semibold text-gray-800">
                   {item?.title}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">{item?.description}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">{item?.description}</p>
               </div>
             </div>
           ))}
