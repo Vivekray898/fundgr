@@ -18,6 +18,8 @@ import HeroBannerSlider from "@/components/HomePage/HeroBannerSlider";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import HotProducts from "@/components/HomePage/HotProducts";
+import VielfaltHero from "@/components/HomePage/VielfaltHero"; // ✅ Add this import
+// import ProductGrid from "@/components/ProductGrid"
 
 // Fetch hero banner slides from Sanity
 async function getHeroSlides() {
@@ -53,6 +55,8 @@ const Home = async () => {
 
   return (
     <div className={styles.grocerySections}>
+      {/* 0. VIELFALT HERO */}
+      <VielfaltHero />
       {/* 1. HERO - First impression */}
       <HeroBannerSlider slides={heroSlides} autoplayMs={6000} />
 
@@ -63,25 +67,25 @@ const Home = async () => {
       <ProductGridBestpreis />
 
       {/* 4. PRODUCT GRID - Main product showcase */}
-      {/* <ProductGrid /> */}
+     {/* <ProductGrid /> */}
       
       {/* 5. PROMO BANNER - First promotional break */}
       <GroceryPromoBanners />
 
       {/* 6. HOT PRODUCTS - Trending products */}
-      <HotProducts />
+      {/* <HotProducts /> */}
       
       {/* 7. WEEKLY DEALS - Product section with deals */}
       <GroceryWeeklyDeals products={dealProducts} />
 
       {/* 8. CATEGORIES - Quick navigation */}
-      <HomeCategories categories={categories} />
+     {/* <HomeCategories categories={categories} /> */}
       
       {/* 9. COUNTDOWN BANNER - Promotional banner with urgency */}
       <GroceryCountdownBanner />
 
       {/* 10. SALE PRODUCTS - Product section with discounted items */}
-      <ProductMinimalSection 
+    {/*  <ProductMinimalSection 
         title="Sale Angebote" 
         subtitle="Spare jetzt bei unseren Sale-Produkten!"
         status="sale"
@@ -89,7 +93,7 @@ const Home = async () => {
         columns={4}
         linkHref="/angebote"
         linkText="Alle Sale-Angebote"
-      />
+      /> */}
       
       {/* 11. FULL BANNER - Large promotional banner */}
       <GroceryFullBanner />

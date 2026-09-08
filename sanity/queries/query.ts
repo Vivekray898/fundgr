@@ -1,7 +1,91 @@
 // sanity/queries/query.ts
 import { defineQuery } from "next-sanity";
 
-// ✅ Updated: Get Brands with all fields including market location
+// ✅ FIXED: Get category with all descendants recursively (better approach)
+const CATEGORY_WITH_DESCENDANTS = defineQuery(`
+  *[_type == 'category' && slug.current == $slug][0]{
+    _id,
+    title,
+    "slug": slug.current,
+    "allDescendantIds": [
+      // Level 1: Direct children
+      *[_type == 'category' && parent._ref == ^._id]._id,
+      // Level 2: Grandchildren  
+      *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id,
+      // Level 3: Great-grandchildren
+      *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id]._id
+    ]
+  }
+`);
+
+// ✅ FIXED: Get all descendant category IDs (flattened array)
+const GET_DESCENDANT_IDS = defineQuery(`
+  *[_type == 'category' && slug.current == $slug][0]{
+    _id,
+    "descendantIds": [
+      // Level 1: Direct children
+      *[_type == 'category' && parent._ref == ^._id]._id,
+      // Level 2: Grandchildren
+      *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id,
+      // Level 3: Great-grandchildren
+      *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id]._id
+    ]
+  }
+`);
+
+// ✅ FIXED: Get product count for a category including all descendants
+const GET_PRODUCT_COUNT_WITH_DESCENDANTS = defineQuery(`
+  *[_type == 'category' && slug.current == $slug][0]{
+    _id,
+    "productCount": count(
+      *[_type == "product" && references(^._id)] + 
+      *[_type == "product" && references(*[_type == 'category' && parent._ref == ^._id]._id)] +
+      *[_type == "product" && references(*[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id)]
+    )
+  }
+`);
+
+// ✅ FIXED: Get products for a category including all descendants (with brand filter and sorting)
+// Removed the $params conditional logic - use separate queries or handle in the component
+const GET_PRODUCTS_WITH_DESCENDANTS_AND_FILTERS = defineQuery(`
+  *[_type == 'category' && slug.current == $categorySlug][0]{
+    _id,
+    "products": *[_type == "product" 
+      && (
+        references(^._id) || 
+        references(*[_type == 'category' && parent._ref == ^._id]._id) ||
+        references(*[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id)
+      )
+      ${'$brandSlug' ? `&& references(*[_type == "brand" && slug.current == $brandSlug]._id)` : ''}
+    ] | order($sortOrder) {
+      _id,
+      name,
+      slug,
+      price,
+      discount,
+      originalPrice,
+      stock,
+      status,
+      isDeal,
+      dealEndDate,
+      "images": images[]{
+        asset->{
+          _id,
+          url
+        }
+      },
+      "categories": categories[]->title,
+      "brand": brand->{
+        _id,
+        title,
+        name,
+        "slug": slug.current
+      }
+    }
+  }
+`);
+
+// ✅ FIXED: Get Brands with all fields including market location
 const BRANDS_QUERY = defineQuery(`*[_type=='brand' && isActive == true] | order(order asc) {
   _id,
   title,
@@ -33,7 +117,7 @@ const LATEST_BLOG_QUERY = defineQuery(
     }`
 );
 
-// ✅ Fixed: Get Deal Products - Properly filter and include image data
+// ✅ FIXED: Get Deal Products
 const DEAL_PRODUCTS_QUERY = defineQuery(
   `*[_type == 'product' && (isDeal == true || discount > 0) && stock > 0] | order(_createdAt desc) [0...12] {
     _id,
@@ -56,7 +140,7 @@ const DEAL_PRODUCTS_QUERY = defineQuery(
   }`
 );
 
-// ✅ Fixed: Get New Products with images
+// ✅ FIXED: Get New Products
 const NEW_PRODUCTS_QUERY = defineQuery(
   `*[_type == 'product' && status == 'new' && stock > 0] | order(_createdAt desc) [0...12] {
     _id,
@@ -79,7 +163,7 @@ const NEW_PRODUCTS_QUERY = defineQuery(
   }`
 );
 
-// ✅ Fixed: Get Hot Products with images
+// ✅ FIXED: Get Hot Products
 const HOT_PRODUCTS_QUERY = defineQuery(
   `*[_type == 'product' && (status == 'hot' || status == 'sale') && stock > 0] | order(_createdAt desc) [0...12] {
     _id,
@@ -102,7 +186,7 @@ const HOT_PRODUCTS_QUERY = defineQuery(
   }`
 );
 
-// ✅ Fixed: Get Featured Categories with proper image resolution and product count
+// ✅ FIXED: Get Featured Categories
 const FEATURED_CATEGORIES_QUERY = defineQuery(
   `*[_type == 'category' && defined(image) && !defined(parent)] | order(order asc) [0...6] {
     _id,
@@ -118,7 +202,7 @@ const FEATURED_CATEGORIES_QUERY = defineQuery(
   }`
 );
 
-// ✅ Fixed: Get Seasonal Categories with proper image resolution and product count
+// ✅ FIXED: Get Seasonal Categories
 const SEASONAL_CATEGORIES_QUERY = defineQuery(
   `*[_type == 'category' && isSeasonal == true && !defined(parent)] | order(order asc) {
     _id,
@@ -135,7 +219,7 @@ const SEASONAL_CATEGORIES_QUERY = defineQuery(
   }`
 );
 
-// ✅ Updated: Get Product by Slug with complete brand data
+// ✅ FIXED: Get Product by Slug with complete brand data
 const PRODUCT_BY_SLUG_QUERY = defineQuery(
   `*[_type == "product" && slug.current == $slug] | order(name asc) [0]{
     _id,
@@ -182,7 +266,7 @@ const PRODUCT_BY_SLUG_QUERY = defineQuery(
   }`
 );
 
-// ✅ Keep this for backward compatibility if needed
+// ✅ Keep for backward compatibility if needed
 const BRAND_QUERY = defineQuery(`*[_type == "product" && slug.current == $slug]{
   "brandName": brand->title,
   "brandSlug": brand->slug.current
@@ -195,7 +279,7 @@ const MY_ORDERS_QUERY =
 }
 }`);
 
-// ✅ Updated: Get All Blogs with excerpt and proper fields
+// ✅ FIXED: Get All Blogs
 const GET_ALL_BLOG = defineQuery(
   `*[_type == 'blog'] | order(publishedAt desc)[0...$quantity]{
     _id,
@@ -215,7 +299,7 @@ const GET_ALL_BLOG = defineQuery(
   }`
 );
 
-// ✅ Updated: Get Single Blog with excerpt and full details
+// ✅ FIXED: Get Single Blog
 const SINGLE_BLOG_QUERY =
   defineQuery(`*[_type == "blog" && slug.current == $slug][0]{
     _id,
@@ -266,13 +350,144 @@ const OTHERS_BLOG_QUERY = defineQuery(`*[
   }
 }`);
 
-// ✅ NEW: Get Related Products based on categories
+// ✅ FIXED: Get Related Products based on categories
 const RELATED_PRODUCTS_QUERY = defineQuery(`
   *[_type == "product" 
     && _id != $currentProductId 
     && count(categories[@._ref in $categoryIds]) > 0
     && stock > 0
   ] | order(_createdAt desc) [0...$limit] {
+    _id,
+    name,
+    slug,
+    price,
+    discount,
+    originalPrice,
+    stock,
+    status,
+    isDeal,
+    dealEndDate,
+    "images": images[]{
+      asset->{
+        _id,
+        url
+      }
+    },
+    "categories": categories[]->title,
+    "brand": brand->{
+      _id,
+      title,
+      name,
+      "slug": slug.current
+    }
+  }
+`);
+
+// ✅ NEW: Get products for a specific brand
+const GET_PRODUCTS_BY_BRAND = defineQuery(`
+  *[_type == 'product' 
+    && references(*[_type == "brand" && slug.current == $brandSlug]._id)
+  ] | order($sortOrder) {
+    _id,
+    name,
+    slug,
+    price,
+    discount,
+    originalPrice,
+    stock,
+    status,
+    isDeal,
+    dealEndDate,
+    "images": images[]{
+      asset->{
+        _id,
+        url
+      }
+    },
+    "categories": categories[]->title,
+    "brand": brand->{
+      _id,
+      title,
+      name,
+      "slug": slug.current
+    }
+  }
+`);
+
+// ✅ NEW: Get all products with sorting
+const GET_ALL_PRODUCTS = defineQuery(`
+  *[_type == 'product'] | order($sortOrder) {
+    _id,
+    name,
+    slug,
+    price,
+    discount,
+    originalPrice,
+    stock,
+    status,
+    isDeal,
+    dealEndDate,
+    "images": images[]{
+      asset->{
+        _id,
+        url
+      }
+    },
+    "categories": categories[]->title,
+    "brand": brand->{
+      _id,
+      title,
+      name,
+      "slug": slug.current
+    }
+  }
+`);
+
+// ✅ NEW: Get products by category with descendants (simplified version without $params)
+const GET_PRODUCTS_BY_CATEGORY_WITH_DESCENDANTS = defineQuery(`
+  *[_type == 'product' 
+    && (
+      references(*[_type == "category" && slug.current == $categorySlug]._id) ||
+      references(*[_type == "category" && parent._ref == *[_type == "category" && slug.current == $categorySlug]._id]._id) ||
+      references(*[_type == "category" && parent._ref in *[_type == "category" && parent._ref == *[_type == "category" && slug.current == $categorySlug]._id]._id]._id)
+    )
+  ] | order($sortOrder) {
+    _id,
+    name,
+    slug,
+    price,
+    discount,
+    originalPrice,
+    stock,
+    status,
+    isDeal,
+    dealEndDate,
+    "images": images[]{
+      asset->{
+        _id,
+        url
+      }
+    },
+    "categories": categories[]->title,
+    "brand": brand->{
+      _id,
+      title,
+      name,
+      "slug": slug.current
+    }
+  }
+`);
+
+// ✅ NEW: Get products by category and brand with descendants
+const GET_PRODUCTS_BY_CATEGORY_AND_BRAND_WITH_DESCENDANTS = defineQuery(`
+  *[_type == 'product' 
+    && (
+      references(*[_type == "category" && slug.current == $categorySlug]._id) ||
+      references(*[_type == "category" && parent._ref == *[_type == "category" && slug.current == $categorySlug]._id]._id) ||
+      references(*[_type == "category" && parent._ref in *[_type == "category" && parent._ref == *[_type == "category" && slug.current == $categorySlug]._id]._id]._id)
+    )
+    && references(*[_type == "brand" && slug.current == $brandSlug]._id)
+  ] | order($sortOrder) {
     _id,
     name,
     slug,
@@ -315,4 +530,12 @@ export {
   BLOG_CATEGORIES,
   OTHERS_BLOG_QUERY,
   RELATED_PRODUCTS_QUERY,
+  CATEGORY_WITH_DESCENDANTS,
+  GET_DESCENDANT_IDS,
+  GET_PRODUCT_COUNT_WITH_DESCENDANTS,
+  GET_PRODUCTS_WITH_DESCENDANTS_AND_FILTERS,
+  GET_PRODUCTS_BY_BRAND,
+  GET_ALL_PRODUCTS,
+  GET_PRODUCTS_BY_CATEGORY_WITH_DESCENDANTS,
+  GET_PRODUCTS_BY_CATEGORY_AND_BRAND_WITH_DESCENDANTS,
 };

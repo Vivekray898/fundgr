@@ -16,8 +16,95 @@ import {
   SEASONAL_CATEGORIES_QUERY,
   SINGLE_BLOG_QUERY,
   RELATED_PRODUCTS_QUERY,
+  CATEGORY_WITH_DESCENDANTS,
+  GET_DESCENDANT_IDS,
 } from "./query";
 
+// ✅ NEW: Get products for a category including all descendants
+const getProductsByCategoryWithDescendants = async (slug: string) => {
+  try {
+    // First get the category and all descendant IDs
+    const { data: categoryData } = await sanityFetch({
+      query: GET_DESCENDANT_IDS,
+      params: { slug },
+    });
+
+    if (!categoryData) return [];
+
+    const { _id, descendantIds } = categoryData;
+    const allCategoryIds = [_id, ...(descendantIds || [])].filter(Boolean);
+
+    // Then fetch all products that reference any of these categories
+    const query = `
+      *[_type == "product" && count(categories[@._ref in $categoryIds]) > 0] | order(name asc) {
+        _id,
+        name,
+        slug,
+        price,
+        discount,
+        originalPrice,
+        stock,
+        status,
+        isDeal,
+        dealEndDate,
+        "images": images[]{
+          asset->{
+            _id,
+            url
+          }
+        },
+        "categories": categories[]->title,
+        "brand": brand->{
+          _id,
+          title,
+          name,
+          "slug": slug.current
+        }
+      }
+    `;
+
+    const { data } = await sanityFetch({
+      query,
+      params: { categoryIds: allCategoryIds },
+    });
+
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching products with descendants:", error);
+    return [];
+  }
+};
+
+// ✅ NEW: Get product count for a category including descendants
+const getProductCountWithDescendants = async (slug: string) => {
+  try {
+    const { data: categoryData } = await sanityFetch({
+      query: GET_DESCENDANT_IDS,
+      params: { slug },
+    });
+
+    if (!categoryData) return 0;
+
+    const { _id, descendantIds } = categoryData;
+    const allCategoryIds = [_id, ...(descendantIds || [])].filter(Boolean);
+
+    const query = `
+      count(*[_type == "product" && count(categories[@._ref in $categoryIds]) > 0])
+    `;
+
+    const { data } = await sanityFetch({
+      query,
+      params: { categoryIds: allCategoryIds },
+    });
+
+    return data || 0;
+  } catch (error) {
+    console.error("Error fetching product count with descendants:", error);
+    return 0;
+  }
+};
+
+// ✅ Updated: Get Categories with nested children directly from Sanity
 const getCategories = async (quantity?: number) => {
   try {
     const query = quantity
@@ -45,11 +132,43 @@ const getCategories = async (quantity?: number) => {
             _id,
             title,
             "slug": slug.current,
+            description,
+            teaserSubtitle,
+            range,
+            featured,
+            "image": image.asset->url,
+            parent,
+            order,
+            showInNavigation,
+            icon,
+            categoryIcon,
             isSeasonal,
             seasonalMessage,
             seasonalStart,
             seasonalEnd,
-            seasonalIcon
+            seasonalIcon,
+            "productCount": count(*[_type == "product" && references(^._id)]),
+            "children": *[_type == "category" && parent._ref == ^._id] | order(order asc) {
+              _id,
+              title,
+              "slug": slug.current,
+              description,
+              teaserSubtitle,
+              range,
+              featured,
+              "image": image.asset->url,
+              parent,
+              order,
+              showInNavigation,
+              icon,
+              categoryIcon,
+              isSeasonal,
+              seasonalMessage,
+              seasonalStart,
+              seasonalEnd,
+              seasonalIcon,
+              "productCount": count(*[_type == "product" && references(^._id)])
+            }
           }
         }`
       : `*[_type == 'category' && !defined(parent)] | order(order asc) {
@@ -76,11 +195,43 @@ const getCategories = async (quantity?: number) => {
             _id,
             title,
             "slug": slug.current,
+            description,
+            teaserSubtitle,
+            range,
+            featured,
+            "image": image.asset->url,
+            parent,
+            order,
+            showInNavigation,
+            icon,
+            categoryIcon,
             isSeasonal,
             seasonalMessage,
             seasonalStart,
             seasonalEnd,
-            seasonalIcon
+            seasonalIcon,
+            "productCount": count(*[_type == "product" && references(^._id)]),
+            "children": *[_type == "category" && parent._ref == ^._id] | order(order asc) {
+              _id,
+              title,
+              "slug": slug.current,
+              description,
+              teaserSubtitle,
+              range,
+              featured,
+              "image": image.asset->url,
+              parent,
+              order,
+              showInNavigation,
+              icon,
+              categoryIcon,
+              isSeasonal,
+              seasonalMessage,
+              seasonalStart,
+              seasonalEnd,
+              seasonalIcon,
+              "productCount": count(*[_type == "product" && references(^._id)])
+            }
           }
         }`;
     const { data } = await sanityFetch({
@@ -384,4 +535,6 @@ export {
   getSingleBlog,
   getBlogCategories,
   getOthersBlog,
+  getProductsByCategoryWithDescendants,
+  getProductCountWithDescendants,
 };

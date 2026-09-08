@@ -15,20 +15,9 @@ import SeasonalNoProductAvailable from "./SeasonalNoProductAvailable";
 import ProductCard from "./ProductCard";
 import { motion } from "motion/react";
 
-// Define interface for categories with children
+// Define interface for categories with children (supports nested structure)
 interface CategoryWithChildren extends Omit<Category, 'parent' | 'slug'> {
-  children?: Array<{
-    _id: string;
-    title: string;
-    slug?: {
-      current: string;
-    } | string;
-    isSeasonal?: boolean;
-    seasonalMessage?: string;
-    seasonalStart?: string;
-    seasonalEnd?: string;
-    seasonalIcon?: string;
-  }>;
+  children?: CategoryWithChildren[];
   parent?: {
     _ref: string;
   } | null;
@@ -139,36 +128,35 @@ const Shop = ({ categories, brands }: Props) => {
 
   const typedCategories = categories as unknown as CategoryWithChildren[];
 
+  // ✅ Updated: Recursive function to find a category by slug in nested structure
   const findSelectedCategory = (catSlug: string | null) => {
     if (!catSlug) return { category: null, parent: null };
 
-    const topLevel = typedCategories?.find(
-      (cat) => getSlugString(cat.slug) === catSlug
-    );
-    
-    if (topLevel) return { category: topLevel, parent: null };
-
-    for (const parentCat of typedCategories || []) {
-      const child = parentCat.children?.find(
-        (child) => getSlugString(child.slug) === catSlug
-      );
-      if (child) {
-        return { category: child, parent: parentCat };
+    // Recursive search function
+    const searchInChildren = (
+      categories: CategoryWithChildren[], 
+      targetSlug: string, 
+      parent: CategoryWithChildren | null = null
+    ): { category: CategoryWithChildren | null; parent: CategoryWithChildren | null } => {
+      for (const cat of categories) {
+        // Check current category
+        if (getSlugString(cat.slug) === targetSlug) {
+          return { category: cat, parent };
+        }
+        
+        // Check children recursively
+        if (cat.children && cat.children.length > 0) {
+          const result = searchInChildren(cat.children, targetSlug, cat);
+          if (result.category) {
+            return result;
+          }
+        }
       }
-    }
+      return { category: null, parent: null };
+    };
 
-    const fullCategory = typedCategories?.find(
-      (cat) => getSlugString(cat.slug) === catSlug
-    );
-    
-    if (fullCategory) {
-      const parent = typedCategories?.find(
-        (cat) => cat._id === fullCategory.parent?._ref
-      );
-      return { category: fullCategory, parent: parent || null };
-    }
-
-    return { category: null, parent: null };
+    // Start search from top level categories
+    return searchInChildren(typedCategories, catSlug);
   };
 
   const { category: selectedCategoryData, parent: selectedParentData } = findSelectedCategory(selectedCategory);
@@ -194,12 +182,10 @@ const Shop = ({ categories, brands }: Props) => {
     selectedBrandName ||
     (selectedCategory ? selectedCategory : selectedBrand ? selectedBrand : "alle Produkte");
 
+  // ✅ FIXED: Handle root categories like "Fundgrube" and "Bestpreis"
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      let query;
-      let params: any = {};
-
       let sortOrder = "name asc";
       if (selectedSort === "popular") sortOrder = "popularity desc";
       else if (selectedSort === "newest") sortOrder = "_createdAt desc";
@@ -207,40 +193,238 @@ const Shop = ({ categories, brands }: Props) => {
       else if (selectedSort === "name-desc") sortOrder = "name desc";
       else if (selectedSort === "rating") sortOrder = "rating desc";
 
+      let finalProducts: Product[] = [];
+
       if (selectedCategory) {
-        query = `
-          *[_type == 'product' 
-            && references(*[_type == "category" && slug.current == $selectedCategory]._id)
-            && (!defined($selectedBrand) || references(*[_type == "brand" && slug.current == $selectedBrand]._id))
-          ] 
-          | order(${sortOrder}) {
-            ...,"categories": categories[]->title
+        // Step 1: Find the selected category data to check if it's a root category
+        const selectedCat = findSelectedCategory(selectedCategory);
+        
+        // Step 2: If it's a root category (Fundgrube, Bestpreis, etc.), get ALL products from all subcategories
+        // Root categories are those that appear in CategoryList (topLevelCategories)
+        const isRootCategory = topLevelCategories?.some(
+          (cat) => getSlugString(cat.slug) === selectedCategory
+        );
+
+        if (isRootCategory) {
+          console.log('🏷️ Root category detected:', selectedCategory);
+          
+          // For root categories, we want ALL products from ALL subcategories
+          // First, get ALL category IDs (including all descendants)
+          const allCategoryQuery = `
+            *[_type == 'category'] {
+              _id,
+              "descendantIds": [
+                *[_type == 'category' && parent._ref == ^._id]._id,
+                *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id,
+                *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id]._id
+              ]
+            }
+          `;
+          
+          const allCategoryData = await client.fetch(allCategoryQuery);
+          
+          // Flatten all category IDs
+          let allCategoryIds: string[] = [];
+          allCategoryData.forEach((cat: any) => {
+            allCategoryIds.push(cat._id);
+            const descendants = cat.descendantIds?.flat() || [];
+            allCategoryIds = allCategoryIds.concat(descendants);
+          });
+          
+          // Remove duplicates
+          allCategoryIds = [...new Set(allCategoryIds)];
+          
+          console.log('📋 All Category IDs (for root):', allCategoryIds);
+          
+          if (allCategoryIds.length > 0) {
+            const refChecks = allCategoryIds.map(id => `references(${JSON.stringify(id)})`).join(' || ');
+            
+            const brandFilter = selectedBrand 
+              ? `&& references(*[_type == "brand" && slug.current == $brandSlug]._id)` 
+              : '';
+
+            const productQuery = `
+              *[_type == 'product' 
+                && (${refChecks})
+                ${brandFilter}
+              ] | order($sortOrder) {
+                _id,
+                name,
+                slug,
+                price,
+                discount,
+                originalPrice,
+                stock,
+                status,
+                isDeal,
+                dealEndDate,
+                "images": images[]{
+                  asset->{
+                    _id,
+                    url
+                  }
+                },
+                "categories": categories[]->title,
+                "brand": brand->{
+                  _id,
+                  title,
+                  name,
+                  "slug": slug.current
+                }
+              }
+            `;
+
+            const params: any = { sortOrder };
+            if (selectedBrand) params.brandSlug = selectedBrand;
+
+            console.log('📝 Product Query (root):', productQuery);
+            finalProducts = await client.fetch(productQuery, params, { next: { revalidate: 0 } });
+          } else {
+            finalProducts = [];
           }
-        `;
-        params = { ...params, selectedCategory, selectedBrand };
+        } else {
+          // Step 3: Regular category - get only this category and its descendants
+          const categoryQuery = `
+            *[_type == 'category' && slug.current == $slug][0]{
+              _id,
+              "descendantIds": [
+                *[_type == 'category' && parent._ref == ^._id]._id,
+                *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id,
+                *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id]._id
+              ]
+            }
+          `;
+          
+          const categoryData = await client.fetch(categoryQuery, { slug: selectedCategory });
+          
+          const descendantIds = categoryData?.descendantIds?.flat() || [];
+          const allCategoryIds = [categoryData?._id, ...descendantIds].filter(Boolean);
+
+          console.log('🔍 Category:', selectedCategory);
+          console.log('📋 All Category IDs:', allCategoryIds);
+
+          if (allCategoryIds.length > 0) {
+            const refChecks = allCategoryIds.map(id => `references(${JSON.stringify(id)})`).join(' || ');
+            
+            const brandFilter = selectedBrand 
+              ? `&& references(*[_type == "brand" && slug.current == $brandSlug]._id)` 
+              : '';
+
+            const productQuery = `
+              *[_type == 'product' 
+                && (${refChecks})
+                ${brandFilter}
+              ] | order($sortOrder) {
+                _id,
+                name,
+                slug,
+                price,
+                discount,
+                originalPrice,
+                stock,
+                status,
+                isDeal,
+                dealEndDate,
+                "images": images[]{
+                  asset->{
+                    _id,
+                    url
+                  }
+                },
+                "categories": categories[]->title,
+                "brand": brand->{
+                  _id,
+                  title,
+                  name,
+                  "slug": slug.current
+                }
+              }
+            `;
+
+            const params: any = { sortOrder };
+            if (selectedBrand) params.brandSlug = selectedBrand;
+
+            console.log('📝 Product Query:', productQuery);
+            finalProducts = await client.fetch(productQuery, params, { next: { revalidate: 0 } });
+          } else {
+            finalProducts = [];
+          }
+        }
       } else if (selectedBrand) {
-        query = `
+        // Brand-only filter
+        const productQuery = `
           *[_type == 'product' 
-            && references(*[_type == "brand" && slug.current == $selectedBrand]._id)
-          ] 
-          | order(${sortOrder}) {
-            ...,"categories": categories[]->title
+            && references(*[_type == "brand" && slug.current == $brandSlug]._id)
+          ] | order($sortOrder) {
+            _id,
+            name,
+            slug,
+            price,
+            discount,
+            originalPrice,
+            stock,
+            status,
+            isDeal,
+            dealEndDate,
+            "images": images[]{
+              asset->{
+                _id,
+                url
+              }
+            },
+            "categories": categories[]->title,
+            "brand": brand->{
+              _id,
+              title,
+              name,
+              "slug": slug.current
+            }
           }
         `;
-        params = { ...params, selectedBrand };
+        finalProducts = await client.fetch(
+          productQuery, 
+          { brandSlug: selectedBrand, sortOrder }, 
+          { next: { revalidate: 0 } }
+        );
       } else {
-        query = `
-          *[_type == 'product'] 
-          | order(${sortOrder}) {
-            ...,"categories": categories[]->title
+        // No filters - show all products
+        const productQuery = `
+          *[_type == 'product'] | order($sortOrder) {
+            _id,
+            name,
+            slug,
+            price,
+            discount,
+            originalPrice,
+            stock,
+            status,
+            isDeal,
+            dealEndDate,
+            "images": images[]{
+              asset->{
+                _id,
+                url
+              }
+            },
+            "categories": categories[]->title,
+            "brand": brand->{
+              _id,
+              title,
+              name,
+              "slug": slug.current
+            }
           }
         `;
+        finalProducts = await client.fetch(
+          productQuery, 
+          { sortOrder }, 
+          { next: { revalidate: 0 } }
+        );
       }
 
-      const data = await client.fetch(query, params, { next: { revalidate: 0 } });
-      setProducts(data);
+      setProducts(finalProducts);
     } catch (error) {
-      console.log("Shop product fetching Error", error);
+      console.error("❌ Shop product fetching Error:", error);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -251,9 +435,10 @@ const Shop = ({ categories, brands }: Props) => {
     fetchProducts();
   }, [selectedCategory, selectedBrand, selectedSort]);
 
+  // Get top-level categories for display
   const topLevelCategories = typedCategories?.filter(
     (category) => !category.parent
-  );
+  ) || [];
 
   const hasActiveFilters = selectedCategory !== null || selectedBrand !== null || selectedSort !== null;
   const activeFilterCount = [selectedCategory, selectedBrand, selectedSort].filter(Boolean).length;

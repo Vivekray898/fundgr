@@ -18,6 +18,23 @@ interface MenuItem {
   }>;
 }
 
+interface CategoryWithChildren {
+  _id: string;
+  title: string;
+  slug: {
+    current: string;
+  } | string;
+  parent?: {
+    _ref: string;
+  } | null;
+  children?: CategoryWithChildren[];
+  isSeasonal?: boolean;
+  seasonalMessage?: string;
+  seasonalStart?: string;
+  seasonalEnd?: string;
+  seasonalIcon?: string;
+}
+
 interface MobileMenuProps {
   menuItems?: MenuItem[];
   searchPlaceholder?: string;
@@ -36,6 +53,13 @@ interface ProductSuggestion {
   price: number;
 }
 
+// Helper function to safely get slug string
+const getSlugString = (slug: any): string => {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current || "";
+};
+
 const MobileMenu = ({ 
   menuItems,
   searchPlaceholder = "Wonach suchen Sie?",
@@ -44,7 +68,7 @@ const MobileMenu = ({
 }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSortimentPage, setShowSortimentPage] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [productSuggestions, setProductSuggestions] = useState<ProductSuggestion[]>([]);
@@ -182,6 +206,55 @@ const MobileMenu = ({
 
   // Filter to ONLY show top-level categories (no parent)
   const topLevelCategories = categories.filter(category => !category.parent);
+
+  // Recursive function to render category tree
+  const renderCategoryTree = (categories: CategoryWithChildren[], level: number = 0) => {
+    return categories.map((category) => {
+      const hasChildren = category.children && category.children.length > 0;
+      const isExpanded = expandedCategory === category._id;
+      const slug = getSlugString(category.slug);
+      
+      return (
+        <li key={category._id} className="border-b border-amber-100/50 last:border-0">
+          {hasChildren ? (
+            <>
+              <button
+                onClick={() => toggleCategory(category._id)}
+                className={`flex items-center justify-between w-full px-4 py-3.5 text-sm font-medium text-gray-700 hover:bg-amber-50 active:bg-amber-100 transition-colors ${
+                  level > 0 ? 'pl-' + (4 + level * 4) : ''
+                }`}
+                style={{ paddingLeft: `${16 + level * 16}px` }}
+              >
+                <span>{category.title}</span>
+                <ChevronDown 
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              
+              {isExpanded && category.children && (
+                <ul className="bg-amber-50/30">
+                  {renderCategoryTree(category.children, level + 1)}
+                </ul>
+              )}
+            </>
+          ) : (
+            <Link
+              href={`/category/${slug}`}
+              onClick={handleClose}
+              className={`block px-4 py-3.5 text-sm text-gray-700 hover:text-amber-700 hover:bg-amber-50 active:bg-amber-100 transition-colors ${
+                level > 0 ? 'pl-' + (4 + level * 4) : ''
+              }`}
+              style={{ paddingLeft: `${16 + level * 16}px` }}
+            >
+              {category.title}
+            </Link>
+          )}
+        </li>
+      );
+    });
+  };
 
   return (
     <>
@@ -401,7 +474,7 @@ const MobileMenu = ({
               </ul>
             </nav>
           ) : (
-            /* Sortiment Page - Sliding Submenu */
+            /* Sortiment Page - Sliding Submenu with nested categories */
             <div className="h-[calc(100%-120px)] flex flex-col">
               {/* Submenu Header */}
               <div className="sticky top-0 bg-white z-10 border-b border-amber-200/30 px-4 py-3 flex items-center gap-3">
@@ -414,7 +487,7 @@ const MobileMenu = ({
                 <p className="text-base font-bold text-gray-900">Sortiment</p>
               </div>
 
-              {/* Categories List */}
+              {/* Categories List - Recursive Tree */}
               <div className="flex-1 overflow-y-auto">
                 <ul className="py-2">
                   {/* Alle anzeigen link */}
@@ -428,58 +501,11 @@ const MobileMenu = ({
                     </Link>
                   </li>
 
-                  {/* Top-Level Categories ONLY */}
+                  {/* Render category tree recursively */}
                   {topLevelCategories.length === 0 ? (
-                    <li className="px-4 py-3 text-sm text-gray-500">No categories found</li>
+                    <li className="px-4 py-3 text-sm text-gray-500">Keine Kategorien gefunden</li>
                   ) : (
-                    topLevelCategories.map((category) => {
-                      const hasChildren = category.children && category.children.length > 0;
-                      const isExpanded = expandedCategory === category._id;
-                      
-                      return (
-                        <li key={category._id} className="border-b border-amber-100/50">
-                          {hasChildren ? (
-                            <>
-                              <button
-                                onClick={() => toggleCategory(category._id)}
-                                className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-medium text-gray-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
-                              >
-                                <span>{category.title}</span>
-                                <ChevronDown 
-                                  className={`w-4 h-4 transition-transform duration-200 ${
-                                    isExpanded ? "rotate-180" : ""
-                                  }`}
-                                />
-                              </button>
-                              
-                              {isExpanded && category.children && (
-                                <ul className="bg-amber-50/30">
-                                  {category.children.map((child: any) => (
-                                    <li key={child._id}>
-                                      <Link
-                                        href={`/category/${child.slug?.current || child.slug}`}
-                                        onClick={handleClose}
-                                        className="block px-8 py-3 text-sm text-gray-600 hover:text-amber-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
-                                      >
-                                        {child.title}
-                                      </Link>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </>
-                          ) : (
-                            <Link
-                              href={`/category/${category.slug?.current || category.slug}`}
-                              onClick={handleClose}
-                              className="block px-4 py-3.5 text-sm text-gray-700 hover:text-amber-700 hover:bg-amber-50 active:bg-amber-100 transition-colors"
-                            >
-                              {category.title}
-                            </Link>
-                          )}
-                        </li>
-                      );
-                    })
+                    renderCategoryTree(topLevelCategories)
                   )}
                 </ul>
               </div>
@@ -498,7 +524,7 @@ const MobileMenu = ({
                     key={storeLocatorKey}
                     className="flex items-center gap-2 text-sm text-gray-600 hover:text-amber-700 active:text-amber-700 transition-colors w-full px-4 py-3 bg-white hover:bg-amber-50/50 cursor-pointer"
                     settings={storeLocatorSettings}
-                    onNavigate={handleClose} // ✅ Pass handleClose to close menu when store is selected
+                    onNavigate={handleClose}
                   >
                     <MapPin className="w-4 h-4 flex-shrink-0 text-amber-600" />
                     <span className="flex-1 font-medium">Mein Markt</span>

@@ -3,7 +3,6 @@
 import { Category, Product } from "@/sanity.types";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
-import { Button } from "./ui/button";
 import { client } from "@/sanity/lib/client";
 import { AnimatePresence, motion } from "motion/react";
 import { 
@@ -33,20 +32,9 @@ interface Props {
   slug: string;
 }
 
-// ✅ Define interface for categories with children
+// ✅ Updated: Define interface for categories with nested children support
 interface CategoryWithChildren extends Omit<Category, 'parent' | 'slug'> {
-  children?: Array<{
-    _id: string;
-    title: string;
-    slug?: {
-      current: string;
-    } | string;
-    isSeasonal?: boolean;
-    seasonalMessage?: string;
-    seasonalStart?: string;
-    seasonalEnd?: string;
-    seasonalIcon?: string;
-  }>;
+  children?: CategoryWithChildren[];
   parent?: {
     _ref: string;
   } | null;
@@ -62,22 +50,9 @@ const getSlugString = (slug: any): string => {
   return slug.current || "";
 };
 
-const iconMap = {
-  flower: Flower2,
-  sun: Sun,
-  autumn: Leaf,
-  snowflake: Snowflake,
-  christmas: TreePine,
-  pumpkin: Star,
-  rain: Cloud,
-  spring: Sprout,
-  summer: SunMedium,
-};
-
 const CategoryProducts = ({ categories, slug }: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const categoryParam = searchParams?.get("category");
   
   const [currentSlug, setCurrentSlug] = useState(slug);
   const [products, setProducts] = useState<Product[]>([]);
@@ -116,41 +91,37 @@ const CategoryProducts = ({ categories, slug }: Props) => {
   // Filter to only TOP-LEVEL categories (no parent)
   const topLevelCategories = typedCategories?.filter(
     (category) => !category.parent
-  );
+  ) || [];
 
-  // 🔥 FIXED: Find current category data (including children)
+  // 🔥 UPDATED: Recursive function to find a category by slug in nested structure
   const findCategory = (catSlug: string) => {
-    // Search in top-level categories
-    const topLevel = topLevelCategories?.find(
-      (cat) => getSlugString(cat.slug) === catSlug
-    );
-    
-    if (topLevel) return { category: topLevel, parent: null };
+    if (!catSlug) return { category: null, parent: null };
 
-    // Search in children of all top-level categories
-    for (const parentCat of topLevelCategories || []) {
-      const child = parentCat.children?.find(
-        (child) => getSlugString(child.slug) === catSlug
-      );
-      if (child) {
-        return { category: child, parent: parentCat };
+    // Recursive search function
+    const searchInChildren = (
+      categories: CategoryWithChildren[], 
+      targetSlug: string, 
+      parent: CategoryWithChildren | null = null
+    ): { category: CategoryWithChildren | null; parent: CategoryWithChildren | null } => {
+      for (const cat of categories) {
+        // Check current category
+        if (getSlugString(cat.slug) === targetSlug) {
+          return { category: cat, parent };
+        }
+        
+        // Check children recursively
+        if (cat.children && cat.children.length > 0) {
+          const result = searchInChildren(cat.children, targetSlug, cat);
+          if (result.category) {
+            return result;
+          }
+        }
       }
-    }
+      return { category: null, parent: null };
+    };
 
-    // Also search in the full categories list (for safety)
-    const fullCategory = typedCategories?.find(
-      (cat) => getSlugString(cat.slug) === catSlug
-    );
-    
-    if (fullCategory) {
-      // Find parent if exists
-      const parent = typedCategories?.find(
-        (cat) => cat._id === fullCategory.parent?._ref
-      );
-      return { category: fullCategory, parent: parent || null };
-    }
-
-    return { category: null, parent: null };
+    // Start search from top level categories
+    return searchInChildren(topLevelCategories, catSlug);
   };
 
   const { category: currentCategory, parent: parentCategory } = findCategory(currentSlug);
@@ -161,7 +132,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
   const seasonalEnd = currentCategory?.seasonalEnd || parentCategory?.seasonalEnd;
   const seasonalIcon = currentCategory?.seasonalIcon || parentCategory?.seasonalIcon;
 
-  // Filter categories based on search
+  // Filter categories based on search (recursive)
   const filterCategories = (cats: CategoryWithChildren[], term: string): CategoryWithChildren[] => {
     if (!term) return cats;
     
@@ -174,7 +145,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
     });
   };
 
-  const filteredCategories = filterCategories(topLevelCategories || [], searchTerm);
+  const filteredCategories = filterCategories(topLevelCategories, searchTerm);
 
   const handleCategoryChange = (newSlug: string) => {
     if (newSlug === currentSlug) return;
@@ -187,45 +158,179 @@ const CategoryProducts = ({ categories, slug }: Props) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
+  // ✅ FIXED: Updated fetchProducts to handle root categories like Shop page
   const fetchProducts = async (categorySlug: string) => {
     setLoading(true);
     try {
-      let query;
-      let params: any = { categorySlug };
+      let finalProducts: Product[] = [];
 
-      const selectedCat = typedCategories?.find(
+      // Check if this is a root category (like "Fundgrube", "Bestpreis", etc.)
+      const isRootCategory = topLevelCategories.some(
         (cat) => getSlugString(cat.slug) === categorySlug
       );
 
-      if (selectedCat?.children && selectedCat.children.length > 0) {
-        const childSlugs = selectedCat.children.map((child) => 
-          getSlugString(child.slug)
-        );
+      if (isRootCategory) {
+        console.log('🏷️ Root category detected:', categorySlug);
         
-        query = `
-          *[_type == 'product' 
-            && (references(*[_type == "category" && slug.current == $categorySlug]._id)
-              || references(*[_type == "category" && slug.current in $childSlugs]._id)
-            )
-          ] | order(name asc) {
-            ...,"categories": categories[]->title
+        // For root categories, get ALL products from ALL subcategories
+        const allCategoryQuery = `
+          *[_type == 'category'] {
+            _id,
+            "descendantIds": [
+              *[_type == 'category' && parent._ref == ^._id]._id,
+              *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id,
+              *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id]._id
+            ]
           }
         `;
-        params = { ...params, childSlugs };
+        
+        const allCategoryData = await client.fetch(allCategoryQuery);
+        
+        // Flatten all category IDs
+        let allCategoryIds: string[] = [];
+        allCategoryData.forEach((cat: any) => {
+          allCategoryIds.push(cat._id);
+          const descendants = cat.descendantIds?.flat() || [];
+          allCategoryIds = allCategoryIds.concat(descendants);
+        });
+        
+        // Remove duplicates
+        allCategoryIds = [...new Set(allCategoryIds)];
+        
+        console.log('📋 All Category IDs (for root):', allCategoryIds);
+        
+        if (allCategoryIds.length > 0) {
+          const refChecks = allCategoryIds.map(id => `references(${JSON.stringify(id)})`).join(' || ');
+
+          const productQuery = `
+            *[_type == 'product' 
+              && (${refChecks})
+            ] | order(name asc) {
+              _id,
+              name,
+              slug,
+              price,
+              discount,
+              originalPrice,
+              stock,
+              status,
+              isDeal,
+              dealEndDate,
+              "images": images[]{
+                asset->{
+                  _id,
+                  url
+                }
+              },
+              "categories": categories[]->title,
+              "brand": brand->{
+                _id,
+                title,
+                name,
+                "slug": slug.current
+              }
+            }
+          `;
+
+          console.log('📝 Product Query (root):', productQuery);
+          finalProducts = await client.fetch(productQuery, {}, { next: { revalidate: 0 } });
+        } else {
+          finalProducts = [];
+        }
       } else {
-        query = `
-          *[_type == 'product' 
-            && references(*[_type == "category" && slug.current == $categorySlug]._id)
-          ] | order(name asc) {
-            ...,"categories": categories[]->title
+        // Regular category - get this category and its descendants
+        const categoryQuery = `
+          *[_type == 'category' && slug.current == $slug][0]{
+            _id,
+            "descendantIds": [
+              *[_type == 'category' && parent._ref == ^._id]._id,
+              *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id,
+              *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref in *[_type == 'category' && parent._ref == ^._id]._id]._id]._id
+            ]
           }
         `;
+        
+        const categoryData = await client.fetch(categoryQuery, { slug: categorySlug });
+        
+        const descendantIds = categoryData?.descendantIds?.flat() || [];
+        const allCategoryIds = [categoryData?._id, ...descendantIds].filter(Boolean);
+
+        console.log('🔍 Category:', categorySlug);
+        console.log('📋 All Category IDs:', allCategoryIds);
+
+        if (allCategoryIds.length > 0) {
+          const refChecks = allCategoryIds.map(id => `references(${JSON.stringify(id)})`).join(' || ');
+
+          const productQuery = `
+            *[_type == 'product' 
+              && (${refChecks})
+            ] | order(name asc) {
+              _id,
+              name,
+              slug,
+              price,
+              discount,
+              originalPrice,
+              stock,
+              status,
+              isDeal,
+              dealEndDate,
+              "images": images[]{
+                asset->{
+                  _id,
+                  url
+                }
+              },
+              "categories": categories[]->title,
+              "brand": brand->{
+                _id,
+                title,
+                name,
+                "slug": slug.current
+              }
+            }
+          `;
+
+          console.log('📝 Product Query:', productQuery);
+          finalProducts = await client.fetch(productQuery, {}, { next: { revalidate: 0 } });
+        } else {
+          // Fallback: try direct reference
+          const fallbackQuery = `
+            *[_type == 'product' 
+              && references(*[_type == "category" && slug.current == $slug]._id)
+            ] | order(name asc) {
+              _id,
+              name,
+              slug,
+              price,
+              discount,
+              originalPrice,
+              stock,
+              status,
+              isDeal,
+              dealEndDate,
+              "images": images[]{
+                asset->{
+                  _id,
+                  url
+                }
+              },
+              "categories": categories[]->title,
+              "brand": brand->{
+                _id,
+                title,
+                name,
+                "slug": slug.current
+              }
+            }
+          `;
+          finalProducts = await client.fetch(fallbackQuery, { slug: categorySlug }, { next: { revalidate: 0 } });
+        }
       }
 
-      const data = await client.fetch(query, params);
-      setProducts(data);
+      setProducts(finalProducts);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("❌ Error fetching products:", error);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -234,13 +339,78 @@ const CategoryProducts = ({ categories, slug }: Props) => {
 
   useEffect(() => {
     fetchProducts(currentSlug);
-  }, [currentSlug, categories]);
+  }, [currentSlug]);
 
   // Get selected category name
-  const selectedName = currentCategory?.title || 
+  const { category: selectedCategory } = findCategory(currentSlug);
+  const selectedName = selectedCategory?.title || 
     typedCategories?.find(c => getSlugString(c.slug) === currentSlug)?.title;
 
   const hasActiveFilters = currentSlug !== slug;
+
+  // ✅ FIXED: Recursive function to render category tree (no nested buttons)
+  const renderCategoryTree = (categories: CategoryWithChildren[], level: number = 0) => {
+    return categories.map((item) => {
+      const hasChildren = item.children && item.children.length > 0;
+      const isExpanded = expandedCategory === item._id;
+      const slugString = getSlugString(item.slug);
+      const isActive = slugString === currentSlug;
+      const childActive = item.children?.some(
+        (child) => getSlugString(child.slug) === currentSlug
+      );
+      
+      // Check if this category has a parent (for root detection)
+      const isRoot = !item.parent;
+      
+      return (
+        <div key={item?._id} className={cn(
+          "border-b border-[#E8E3D8]/30 last:border-0",
+          isRoot && level === 0 ? "font-medium" : ""
+        )}>
+          <div
+            onClick={() => handleCategoryChange(slugString)}
+            className={cn(
+              "w-full text-left px-3 py-2.5 rounded-lg transition-all text-sm flex items-center justify-between group cursor-pointer",
+              isActive || childActive
+                ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
+                : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
+            )}
+            style={{ paddingLeft: level > 0 ? `${16 + level * 16}px` : undefined }}
+          >
+            <span className="flex-1">{item?.title}</span>
+            <div className="flex items-center gap-1.5">
+              {hasChildren && (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleCategory(item?._id);
+                  }}
+                  className="p-1 rounded hover:bg-[#E8E3D8] transition-colors cursor-pointer"
+                >
+                  <ChevronDown 
+                    className={cn(
+                      "w-3.5 h-3.5 transition-transform text-[#8A7A6A]",
+                      isExpanded ? "rotate-180" : ""
+                    )}
+                  />
+                </div>
+              )}
+              {(isActive || childActive) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D4A853]" />
+              )}
+            </div>
+          </div>
+          
+          {/* Children - Recursive */}
+          {hasChildren && isExpanded && (
+            <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-[#E8E3D8] pl-3">
+              {renderCategoryTree(item.children, level + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
 
   return (
     <div className="py-3 sm:py-5">
@@ -273,7 +443,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
       </div>
 
       <div className="flex flex-col lg:flex-row items-start gap-3 sm:gap-5">
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar - Same as Shop page */}
         <div className="hidden lg:block lg:sticky lg:top-20 lg:self-start lg:h-[calc(100vh-160px)] lg:overflow-y-auto lg:min-w-56 pb-5 lg:border-r border-[#E8E3D8]/50 scrollbar-hide">
           <div className="pr-4">
             {/* Search */}
@@ -286,119 +456,39 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                 className="w-full px-3 py-2 text-sm border-2 border-[#E8E3D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A853] focus:border-[#D4A853] bg-white/80 transition-all"
               />
               {searchTerm && (
-                <button
+                <div
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8A7A6A] hover:text-[#B8923A] transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8A7A6A] hover:text-[#B8923A] transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
-                </button>
+                </div>
               )}
             </div>
 
-            {/* Categories List */}
+            {/* Categories List - Recursive */}
             <div className="space-y-1">
-              {filteredCategories?.map((item: CategoryWithChildren) => {
-                const hasChildren = item.children && item.children.length > 0;
-                const isExpanded = expandedCategory === item._id;
-                const slugString = getSlugString(item.slug);
-                const isActive = slugString === currentSlug;
-                const childActive = item.children?.some(
-                  (child) => getSlugString(child.slug) === currentSlug
-                );
-                
-                return (
-                  <div key={item?._id} className="border-b border-[#E8E3D8]/30 last:border-0">
-                    <button
-                      onClick={() => handleCategoryChange(slugString)}
-                      className={cn(
-                        "w-full text-left px-3 py-2.5 rounded-lg transition-all text-sm flex items-center justify-between group",
-                        isActive || childActive
-                          ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
-                          : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
-                      )}
-                    >
-                      <span className="flex-1">{item?.title}</span>
-                      <div className="flex items-center gap-1.5">
-                        {hasChildren && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleCategory(item?._id);
-                            }}
-                            className="p-1 rounded hover:bg-[#E8E3D8] transition-colors"
-                          >
-                            <ChevronDown 
-                              className={cn(
-                                "w-3.5 h-3.5 transition-transform text-[#8A7A6A]",
-                                isExpanded ? "rotate-180" : ""
-                              )}
-                            />
-                          </button>
-                        )}
-                        {(isActive || childActive) && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#D4A853]" />
-                        )}
-                      </div>
-                    </button>
-                    
-                    {/* Children */}
-                    {hasChildren && isExpanded && (
-                      <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-[#E8E3D8] pl-3">
-                        {item.children?.map((child) => {
-                          const childSlug = getSlugString(child.slug);
-                          const isChildActive = childSlug === currentSlug;
-                          return (
-                            <button
-                              key={child?._id}
-                              onClick={() => handleCategoryChange(childSlug)}
-                              className={cn(
-                                "w-full text-left px-3 py-2 rounded-lg transition-all text-sm flex items-center justify-between group",
-                                isChildActive
-                                  ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
-                                  : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
-                              )}
-                            >
-                              <span className="flex-1">{child?.title}</span>
-                              {isChildActive && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#D4A853]" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {filteredCategories?.length === 0 ? (
+                <div className="text-center py-8 text-sm text-[#8A7A6A]">
+                  {searchTerm ? "Keine Kategorien gefunden" : "Keine Kategorien verfügbar"}
+                </div>
+              ) : (
+                renderCategoryTree(filteredCategories)
+              )}
             </div>
-
-            {filteredCategories.length === 0 && (
-              <div className="text-center py-8 text-sm text-[#8A7A6A]">
-                {searchTerm ? "Keine Kategorien gefunden" : "Keine Kategorien verfügbar"}
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Mobile Filter - Bottom Sheet */}
+        {/* Mobile Filter - Bottom Sheet - Same as Shop page */}
         <AnimatePresence>
           {isMobileFilterOpen && !isDesktop && (
             <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+              <div
                 className="fixed inset-0 bg-black/50 z-[100]"
                 onClick={() => setIsMobileFilterOpen(false)}
               />
 
-              <motion.div
+              <div
                 ref={filterRef}
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="fixed bottom-0 left-0 right-0 z-[101] bg-white rounded-t-3xl shadow-2xl max-h-[92vh] flex flex-col"
               >
                 {/* Drag Handle */}
@@ -441,98 +531,113 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                       className="w-full px-4 py-3 text-sm border-2 border-[#E8E3D8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#D4A853] focus:border-[#D4A853] bg-white transition-all"
                     />
                     {searchTerm && (
-                      <button
+                      <div
                         onClick={() => setSearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A7A6A] hover:text-[#B8923A] transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A7A6A] hover:text-[#B8923A] transition-colors cursor-pointer"
                       >
                         <X className="w-4 h-4" />
-                      </button>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* Content - Recursive */}
                 <div className="flex-1 overflow-y-auto px-5 pb-24">
                   <div className="space-y-1">
-                    {filteredCategories?.map((item: CategoryWithChildren) => {
-                      const hasChildren = item.children && item.children.length > 0;
-                      const isExpanded = expandedCategory === item._id;
-                      const slugString = getSlugString(item.slug);
-                      const isActive = slugString === currentSlug;
-                      const childActive = item.children?.some(
-                        (child) => getSlugString(child.slug) === currentSlug
-                      );
-                      
-                      return (
-                        <div key={item?._id} className="border-b border-[#E8E3D8]/30 last:border-0">
-                          <button
-                            onClick={() => handleCategoryChange(slugString)}
-                            className={cn(
-                              "w-full text-left px-3 py-3.5 rounded-xl transition-all text-sm flex items-center justify-between group",
-                              isActive || childActive
-                                ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
-                                : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
-                            )}
-                          >
-                            <span className="flex-1">{item?.title}</span>
-                            <div className="flex items-center gap-2">
-                              {hasChildren && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleCategory(item?._id);
-                                  }}
-                                  className="p-1 rounded hover:bg-[#E8E3D8] transition-colors"
-                                >
-                                  <ChevronDown 
-                                    className={cn(
-                                      "w-4 h-4 transition-transform text-[#8A7A6A]",
-                                      isExpanded ? "rotate-180" : ""
-                                    )}
-                                  />
-                                </button>
+                    {filteredCategories?.length === 0 ? (
+                      <div className="text-center py-8 text-sm text-[#8A7A6A]">
+                        {searchTerm ? "Keine Kategorien gefunden" : "Keine Kategorien verfügbar"}
+                      </div>
+                    ) : (
+                      filteredCategories.map((item) => {
+                        const hasChildren = item.children && item.children.length > 0;
+                        const isExpanded = expandedCategory === item._id;
+                        const slugString = getSlugString(item.slug);
+                        const isActive = slugString === currentSlug;
+                        const childActive = item.children?.some(
+                          (child) => getSlugString(child.slug) === currentSlug
+                        );
+                        
+                        return (
+                          <div key={item?._id} className="border-b border-[#E8E3D8]/30 last:border-0">
+                            <div
+                              onClick={() => handleCategoryChange(slugString)}
+                              className={cn(
+                                "w-full text-left px-3 py-3.5 rounded-xl transition-all text-sm flex items-center justify-between group cursor-pointer",
+                                isActive || childActive
+                                  ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
+                                  : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
                               )}
-                              {(isActive || childActive) && (
-                                <span className="w-2 h-2 rounded-full bg-[#D4A853]" />
-                              )}
-                            </div>
-                          </button>
-                          
-                          {hasChildren && isExpanded && (
-                            <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-[#E8E3D8] pl-3">
-                              {item.children?.map((child) => {
-                                const childSlug = getSlugString(child.slug);
-                                const isChildActive = childSlug === currentSlug;
-                                return (
-                                  <button
-                                    key={child?._id}
-                                    onClick={() => handleCategoryChange(childSlug)}
-                                    className={cn(
-                                      "w-full text-left px-3 py-2.5 rounded-xl transition-all text-sm flex items-center justify-between group",
-                                      isChildActive
-                                        ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
-                                        : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
-                                    )}
+                            >
+                              <span className="flex-1">{item?.title}</span>
+                              <div className="flex items-center gap-2">
+                                {hasChildren && (
+                                  <div
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleCategory(item?._id);
+                                    }}
+                                    className="p-1 rounded hover:bg-[#E8E3D8] transition-colors cursor-pointer"
                                   >
-                                    <span className="flex-1">{child?.title}</span>
-                                    {isChildActive && (
-                                      <span className="w-2 h-2 rounded-full bg-[#D4A853]" />
-                                    )}
-                                  </button>
-                                );
-                              })}
+                                    <ChevronDown 
+                                      className={cn(
+                                        "w-4 h-4 transition-transform text-[#8A7A6A]",
+                                        isExpanded ? "rotate-180" : ""
+                                      )}
+                                    />
+                                  </div>
+                                )}
+                                {(isActive || childActive) && (
+                                  <span className="w-2 h-2 rounded-full bg-[#D4A853]" />
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            
+                            {/* Children - Recursive */}
+                            {hasChildren && isExpanded && (
+                              <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-[#E8E3D8] pl-3">
+                                {item.children?.map((child) => {
+                                  const childSlug = getSlugString(child.slug);
+                                  const isChildActive = childSlug === currentSlug;
+                                  const hasGrandChildren = child.children && child.children.length > 0;
+                                  
+                                  return (
+                                    <div key={child?._id}>
+                                      <div
+                                        onClick={() => handleCategoryChange(childSlug)}
+                                        className={cn(
+                                          "w-full text-left px-3 py-2.5 rounded-xl transition-all text-sm flex items-center justify-between group cursor-pointer",
+                                          isChildActive
+                                            ? "bg-[#F5F0E8] text-[#1a1a1a] font-semibold border border-[#D4A853]"
+                                            : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
+                                        )}
+                                      >
+                                        <span className="flex-1">{child?.title}</span>
+                                        <div className="flex items-center gap-2">
+                                          {hasGrandChildren && (
+                                            <ChevronRight className="w-4 h-4 text-[#8A7A6A]" />
+                                          )}
+                                          {isChildActive && (
+                                            <span className="w-2 h-2 rounded-full bg-[#D4A853]" />
+                                          )}
+                                        </div>
+                                      </div>
+                                      {/* Show nested children if expanded */}
+                                      {hasGrandChildren && isChildActive && (
+                                        <div className="ml-4 mt-1 mb-1 text-xs text-[#8A7A6A] pl-2 border-l border-[#E8E3D8]">
+                                          <span className="italic">Unterkategorien verfügbar</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
-
-                  {filteredCategories.length === 0 && (
-                    <div className="text-center py-8 text-sm text-[#8A7A6A]">
-                      {searchTerm ? "Keine Kategorien gefunden" : "Keine Kategorien verfügbar"}
-                    </div>
-                  )}
                 </div>
 
                 {/* Footer */}
@@ -544,7 +649,7 @@ const CategoryProducts = ({ categories, slug }: Props) => {
                     Fertig
                   </button>
                 </div>
-              </motion.div>
+              </div>
             </>
           )}
         </AnimatePresence>

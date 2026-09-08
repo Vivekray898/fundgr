@@ -1,3 +1,4 @@
+// components/HeaderMenu.tsx
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,6 +16,23 @@ interface MenuItem {
   }>;
 }
 
+interface CategoryWithChildren {
+  _id: string;
+  title: string;
+  slug: {
+    current: string;
+  } | string;
+  parent?: {
+    _ref: string;
+  } | null;
+  children?: CategoryWithChildren[];
+  isSeasonal?: boolean;
+  seasonalMessage?: string;
+  seasonalStart?: string;
+  seasonalEnd?: string;
+  seasonalIcon?: string;
+}
+
 interface HeaderMenuProps {
   menuItems?: MenuItem[];
   useCategories?: boolean;
@@ -27,6 +45,13 @@ interface HeaderMenuProps {
   storeLocatorSettings?: any;
 }
 
+// Helper function to safely get slug string
+const getSlugString = (slug: any): string => {
+  if (!slug) return "";
+  if (typeof slug === "string") return slug;
+  return slug.current || "";
+};
+
 const HeaderMenu = ({ 
   menuItems,
   useCategories = false,
@@ -34,7 +59,7 @@ const HeaderMenu = ({
   storeLocatorSettings = {}
 }: HeaderMenuProps) => {
   const pathname = usePathname();
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSortiment, setShowSortiment] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -89,6 +114,60 @@ const HeaderMenu = ({
   // Filter to ONLY show top-level categories (no parent)
   const topLevelCategories = categories.filter(category => !category.parent);
 
+  // Recursive function to render category tree
+  const renderCategoryTree = (categories: CategoryWithChildren[], level: number = 0) => {
+    return categories.map((category) => {
+      const hasChildren = category.children && category.children.length > 0;
+      const isExpanded = expandedCategory === category._id;
+      const slug = getSlugString(category.slug);
+      
+      return (
+        <li key={category._id} className={level === 0 ? "border-t border-amber-200/30 first:border-t-0" : ""}>
+          {hasChildren ? (
+            <>
+              <button
+                onClick={() => handleCategoryClick(category._id)}
+                className={`flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors ${
+                  level > 0 ? 'pl-' + (4 + level * 4) : ''
+                }`}
+                style={{ paddingLeft: `${16 + level * 16}px` }}
+              >
+                <span className={level > 0 ? "text-sm" : "text-base"}>
+                  {category.title}
+                </span>
+                <ChevronDown 
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              
+              {isExpanded && category.children && (
+                <ul className="bg-amber-50/30">
+                  {renderCategoryTree(category.children, level + 1)}
+                </ul>
+              )}
+            </>
+          ) : (
+            <Link
+              href={`/category/${slug}`}
+              onClick={() => {
+                setShowSortiment(false);
+                setExpandedCategory(null);
+              }}
+              className={`block px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors ${
+                level > 0 ? 'pl-' + (4 + level * 4) : ''
+              }`}
+              style={{ paddingLeft: `${16 + level * 16}px` }}
+            >
+              {category.title}
+            </Link>
+          )}
+        </li>
+      );
+    });
+  };
+
   return (
     <nav className="hidden lg:flex items-center gap-1 text-sm font-medium text-gray-700">
       {/* Sortiment Hamburger Menu */}
@@ -134,66 +213,13 @@ const HeaderMenu = ({
               
               <li className="border-t border-amber-200/30 my-1"></li>
               
-              {/* Top-Level Categories ONLY */}
+              {/* Top-Level Categories with nested children */}
               {isLoading ? (
-                <li className="px-4 py-3 text-sm text-gray-500">Loading...</li>
+                <li className="px-4 py-3 text-sm text-gray-500">Lade Kategorien...</li>
               ) : topLevelCategories.length === 0 ? (
-                <li className="px-4 py-3 text-sm text-gray-500">No categories found</li>
+                <li className="px-4 py-3 text-sm text-gray-500">Keine Kategorien gefunden</li>
               ) : (
-                topLevelCategories.map((category) => {
-                  const hasChildren = category.children && category.children.length > 0;
-                  const isExpanded = expandedCategory === category._id;
-                  
-                  return (
-                    <li key={category._id} className="relative">
-                      {hasChildren ? (
-                        <>
-                          <button
-                            onClick={() => handleCategoryClick(category._id)}
-                            className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
-                          >
-                            <span>{category.title}</span>
-                            <ChevronDown 
-                              className={`w-4 h-4 transition-transform duration-200 ${
-                                isExpanded ? "rotate-180" : ""
-                              }`}
-                            />
-                          </button>
-                          
-                          {isExpanded && (
-                            <ul className="bg-amber-50/30 py-1">
-                              {category.children.map((child: any) => (
-                                <li key={child._id}>
-                                  <Link
-                                    href={`/category/${child.slug?.current || child.slug}`}
-                                    onClick={() => {
-                                      setShowSortiment(false);
-                                      setExpandedCategory(null);
-                                    }}
-                                    className="block pl-10 pr-4 py-2.5 text-sm text-gray-600 hover:bg-amber-50 hover:text-amber-800 transition-colors"
-                                  >
-                                    {child.title}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </>
-                      ) : (
-                        <Link
-                          href={`/category/${category.slug?.current || category.slug}`}
-                          onClick={() => {
-                            setShowSortiment(false);
-                            setExpandedCategory(null);
-                          }}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
-                        >
-                          {category.title}
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })
+                renderCategoryTree(topLevelCategories)
               )}
             </ul>
           </div>

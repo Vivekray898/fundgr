@@ -4,20 +4,9 @@ import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, Tag, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Define interface for categories with children
+// Define interface for categories with nested children
 interface CategoryWithChildren extends Omit<Category, 'parent' | 'slug'> {
-  children?: Array<{
-    _id: string;
-    title: string;
-    slug?: {
-      current: string;
-    } | string;
-    isSeasonal?: boolean;
-    seasonalMessage?: string;
-    seasonalStart?: string;
-    seasonalEnd?: string;
-    seasonalIcon?: string;
-  }>;
+  children?: CategoryWithChildren[];
   parent?: {
     _ref: string;
   } | null;
@@ -39,6 +28,104 @@ interface Props {
   setSelectedCategory: React.Dispatch<React.SetStateAction<string | null>>;
   isMobile?: boolean;
 }
+
+// Recursive category item component
+const CategoryItem = ({ 
+  category, 
+  selectedCategory, 
+  setSelectedCategory, 
+  expandedCategories, 
+  toggleCategory,
+  searchTerm,
+  level = 0
+}: { 
+  category: CategoryWithChildren;
+  selectedCategory: string | null;
+  setSelectedCategory: (value: string | null) => void;
+  expandedCategories: string[];
+  toggleCategory: (categoryId: string, e: React.MouseEvent) => void;
+  searchTerm?: string;
+  level?: number;
+}) => {
+  const hasChildren = category.children && category.children.length > 0;
+  const isExpanded = expandedCategories.includes(category._id);
+  const isSelected = selectedCategory === getSlugString(category.slug);
+  const slug = getSlugString(category.slug);
+
+  // Filter children based on search term
+  const filteredChildren = hasChildren && searchTerm 
+    ? category.children?.filter(child => 
+        child.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : category.children;
+
+  return (
+    <li className="relative">
+      <div
+        onClick={() => {
+          if (slug) {
+            setSelectedCategory(slug);
+          }
+        }}
+        className={cn(
+          "flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer transition-all",
+          isSelected
+            ? "bg-[#F5F0E8] text-[#1a1a1a] font-medium border border-[#D4A853]"
+            : "hover:bg-[#F5F0E8] text-[#1a1a1a]",
+          level > 0 && "ml-4"
+        )}
+        style={{ paddingLeft: level > 0 ? `${level * 12 + 8}px` : undefined }}
+      >
+        {hasChildren && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCategory(category._id, e);
+            }}
+            className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded hover:bg-[#E8E3D8] transition-colors"
+          >
+            {isExpanded ? (
+              <ChevronDown className="w-3.5 h-3.5 text-[#D4A853]" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5 text-[#8A7A6A]" />
+            )}
+          </button>
+        )}
+        
+        <span className={cn("text-sm flex-1", isSelected && "font-semibold")}>
+          {category?.title}
+        </span>
+        
+        {hasChildren && (
+          <span className="text-xs text-[#8A7A6A] bg-[#E8E3D8]/30 px-1.5 py-0.5 rounded-full">
+            {category.children?.length || 0}
+          </span>
+        )}
+        
+        {isSelected && (
+          <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[#D4A853]" />
+        )}
+      </div>
+
+      {hasChildren && isExpanded && filteredChildren && filteredChildren.length > 0 && (
+        <ul className="space-y-0.5">
+          {filteredChildren.map((child) => (
+            <CategoryItem
+              key={child._id}
+              category={child}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              expandedCategories={expandedCategories}
+              toggleCategory={toggleCategory}
+              searchTerm={searchTerm}
+              level={level + 1}
+            />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+};
 
 const CategoryList = ({
   categories: propCategories,
@@ -90,6 +177,7 @@ const CategoryList = ({
     });
   };
 
+  // Only show top-level categories (no parent)
   const topLevelCategories = categories?.filter(
     (category) => !category.parent
   );
@@ -146,82 +234,18 @@ const CategoryList = ({
               {searchTerm ? "Keine Kategorien gefunden" : "Keine Kategorien verfügbar"}
             </li>
           ) : (
-            filteredCategories?.map((category) => {
-              const hasChildren = category.children && category.children.length > 0;
-              const isExpanded = expandedCategories.includes(category?._id);
-              const isSelected = selectedCategory === getSlugString(category.slug);
-
-              return (
-                <li key={category?._id}>
-                  <div
-                    onClick={() => handleCategoryClick(category)}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all",
-                      isSelected
-                        ? "bg-[#F5F0E8] text-[#1a1a1a] font-medium border border-[#D4A853]"
-                        : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
-                    )}
-                  >
-                    {hasChildren && (
-                      <button
-                        onClick={(e) => toggleCategory(category?._id, e)}
-                        className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#E8E3D8] transition-colors"
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 text-[#D4A853]" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-[#8A7A6A]" />
-                        )}
-                      </button>
-                    )}
-                    
-                    <span className={cn("text-sm flex-1", isSelected && "font-semibold")}>
-                      {category?.title}
-                    </span>
-                    
-                    {hasChildren && (
-                      <span className="text-xs text-[#8A7A6A] bg-[#E8E3D8]/30 px-2 py-0.5 rounded-full">
-                        {category.children?.length || 0}
-                      </span>
-                    )}
-                    
-                    {isSelected && (
-                      <span className="flex-shrink-0 w-2 h-2 rounded-full bg-[#D4A853]" />
-                    )}
-                  </div>
-
-                  {hasChildren && isExpanded && (
-                    <ul className="ml-4 mt-1 space-y-1 border-l-2 border-[#E8E3D8] pl-3">
-                      {category.children?.map((child: any) => {
-                        const childSlug = getSlugString(child.slug);
-                        const isChildSelected = selectedCategory === childSlug;
-
-                        return (
-                          <li key={child?._id || childSlug}>
-                            <div
-                              onClick={() => handleCategoryClick(child)}
-                              className={cn(
-                                "flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all",
-                                isChildSelected
-                                  ? "bg-[#F5F0E8] text-[#1a1a1a] font-medium border border-[#D4A853]"
-                                  : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
-                              )}
-                            >
-                              <span className={cn("text-sm", isChildSelected && "font-semibold")}>
-                                {child?.title}
-                              </span>
-                              {isChildSelected && (
-                                <span className="flex-shrink-0 w-2 h-2 rounded-full bg-[#D4A853]" />
-                              )}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </li>
-              );
-            })
+            filteredCategories?.map((category) => (
+              <CategoryItem
+                key={category._id}
+                category={category}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                expandedCategories={expandedCategories}
+                toggleCategory={toggleCategory}
+                searchTerm={searchTerm}
+                level={0}
+              />
+            ))
           )}
         </ul>
       </div>
@@ -294,82 +318,18 @@ const CategoryList = ({
               {searchTerm ? "Keine Kategorien gefunden" : "Keine Kategorien verfügbar"}
             </li>
           ) : (
-            filteredCategories?.map((category) => {
-              const hasChildren = category.children && category.children.length > 0;
-              const isExpanded = expandedCategories.includes(category?._id);
-              const isSelected = selectedCategory === getSlugString(category.slug);
-
-              return (
-                <li key={category?._id}>
-                  <div
-                    onClick={() => handleCategoryClick(category)}
-                    className={cn(
-                      "flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer transition-all",
-                      isSelected
-                        ? "bg-[#F5F0E8] text-[#1a1a1a] font-medium border border-[#D4A853]"
-                        : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
-                    )}
-                  >
-                    {hasChildren && (
-                      <button
-                        onClick={(e) => toggleCategory(category?._id, e)}
-                        className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded hover:bg-[#E8E3D8] transition-colors"
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="w-3.5 h-3.5 text-[#D4A853]" />
-                        ) : (
-                          <ChevronRight className="w-3.5 h-3.5 text-[#8A7A6A]" />
-                        )}
-                      </button>
-                    )}
-                    
-                    <span className={cn("text-sm flex-1", isSelected && "font-semibold")}>
-                      {category?.title}
-                    </span>
-                    
-                    {hasChildren && (
-                      <span className="text-xs text-[#8A7A6A] bg-[#E8E3D8]/30 px-1.5 py-0.5 rounded-full">
-                        {category.children?.length || 0}
-                      </span>
-                    )}
-                    
-                    {isSelected && (
-                      <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[#D4A853]" />
-                    )}
-                  </div>
-
-                  {hasChildren && isExpanded && (
-                    <ul className="ml-6 mt-0.5 space-y-0.5 border-l-2 border-[#E8E3D8] pl-2">
-                      {category.children?.map((child: any) => {
-                        const childSlug = getSlugString(child.slug);
-                        const isChildSelected = selectedCategory === childSlug;
-
-                        return (
-                          <li key={child?._id || childSlug}>
-                            <div
-                              onClick={() => handleCategoryClick(child)}
-                              className={cn(
-                                "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all",
-                                isChildSelected
-                                  ? "bg-[#F5F0E8] text-[#1a1a1a] font-medium border border-[#D4A853]"
-                                  : "hover:bg-[#F5F0E8] text-[#1a1a1a]"
-                              )}
-                            >
-                              <span className={cn("text-sm", isChildSelected && "font-semibold")}>
-                                {child?.title}
-                              </span>
-                              {isChildSelected && (
-                                <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[#D4A853]" />
-                              )}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </li>
-              );
-            })
+            filteredCategories?.map((category) => (
+              <CategoryItem
+                key={category._id}
+                category={category}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                expandedCategories={expandedCategories}
+                toggleCategory={toggleCategory}
+                searchTerm={searchTerm}
+                level={0}
+              />
+            ))
           )}
         </ul>
       </div>

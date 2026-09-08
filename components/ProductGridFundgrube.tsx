@@ -1,7 +1,7 @@
 // components/ProductGridFundgrube.tsx
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import ProductCard from "./ProductCard";
 import { motion } from "motion/react";
 import { client } from "@/sanity/lib/client";
@@ -31,45 +31,60 @@ interface Product {
 
 const ProductGridFundgrube = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Fetch products with brand "Fundgrube" and status "new"
+  // ✅ FIXED: Single-step GROQ query with native references() and correct field names
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
+      setError(null);
+      
       try {
-        const query = `*[_type == "product" && status == "new" && stock > 0 && brand->name == "Fundgrube"] | order(_createdAt desc)[0...12] {
-          _id,
-          name,
-          slug,
-          "images": images[]{
-            asset->{
-              _id,
-              url
-            }
-          },
-          price,
-          discount,
-          originalPrice,
-          isDeal,
-          dealEndDate,
-          status,
-          stock,
-          "categories": categories[]->title,
-          "brandName": brand->name,
-          "brandSlug": brand->slug.current,
-          "brand": brand->title,
-          description
-        }`;
-
-        const response = await client.fetch(query);
+        console.log('🔍 Fetching Fundgrube products...');
+        
+        // ✅ ONE-STEP QUERY: Natively handles draft IDs and joins the brand filter
+        const productQuery = `
+          *[_type == "product" 
+            && stock > 0 
+            && references(*[_type == "brand" && slug.current == "fundgrube"]._id)
+          ] | order(_createdAt desc)[0...12] {
+            _id,
+            name,
+            slug,
+            "images": images[]{
+              asset->{
+                _id,
+                url
+              }
+            },
+            price,
+            discount,
+            originalPrice,
+            isDeal,
+            dealEndDate,
+            status,
+            stock,
+            "categories": categories[]->title,
+            "brandName": brand->name,
+            "brandSlug": brand->slug.current,
+            "brand": brand->name,
+            description
+          }
+        `;
+        
+        const response = await client.fetch(productQuery);
+        console.log(`✅ Found ${response?.length || 0} Fundgrube products`);
+        
         setProducts(response || []);
+        
       } catch (error) {
-        console.error("Error fetching Fundgrube products:", error);
+        console.error("❌ Error fetching Fundgrube products:", error);
+        setError(error instanceof Error ? error.message : "Unknown error");
         setProducts([]);
       } finally {
         setLoading(false);
@@ -80,7 +95,7 @@ const ProductGridFundgrube = () => {
   }, []);
 
   // Check scroll position
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
       const maxScroll = scrollWidth - clientWidth;
@@ -89,7 +104,7 @@ const ProductGridFundgrube = () => {
       setCanScrollLeft(scrollLeft > 4);
       setCanScrollRight(scrollLeft < maxScroll - 4);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -102,7 +117,7 @@ const ProductGridFundgrube = () => {
         window.removeEventListener("resize", handleScroll);
       };
     }
-  }, [products]);
+  }, [products, handleScroll]);
 
   const scrollProducts = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
@@ -117,6 +132,38 @@ const ProductGridFundgrube = () => {
   };
 
   const hasOverflow = canScrollLeft || canScrollRight;
+
+  // Show error state
+  if (error) {
+    return (
+      <Container className="flex flex-col lg:px-0 my-8 sm:my-10">
+        <div className="text-center mb-6 sm:mb-10">
+          <h2 className="text-3xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+            Neu in der Fundgrube
+          </h2>
+          <p className="text-base sm:text-lg text-gray-700 mt-2 sm:mt-3">
+            Entdecken Sie die neuesten Schnäppchen aus unserem Fundgrube-Sortiment
+          </p>
+          <div className="w-20 sm:w-24 h-1 sm:h-1.5 bg-amber-700 mx-auto mt-3 sm:mt-4 rounded-full" />
+        </div>
+        <div className="text-center py-14 sm:py-16 bg-red-50/60 rounded-xl mt-4 sm:mt-10 border-2 border-red-200/50">
+          <div className="text-6xl sm:text-7xl mb-4">⚠️</div>
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+            Fehler beim Laden
+          </h3>
+          <p className="text-base sm:text-lg text-gray-600 max-w-md mx-auto">
+            {error}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-6 py-2 bg-amber-700 text-white rounded-full hover:bg-amber-800 transition-colors"
+          >
+            Erneut versuchen
+          </button>
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container className="flex flex-col lg:px-0 my-8 sm:my-10">
@@ -242,6 +289,9 @@ const ProductGridFundgrube = () => {
           </p>
           <p className="text-sm sm:text-base text-gray-500 mt-3">
             Schauen Sie später wieder vorbei – wir füllen regelmäßig neue Schnäppchen ein!
+          </p>
+          <p className="text-xs text-gray-400 mt-2">
+            Tipp: Stellen Sie sicher, dass Ihre Produkte einen Stock-Wert &gt; 0 haben.
           </p>
         </div>
       )}
